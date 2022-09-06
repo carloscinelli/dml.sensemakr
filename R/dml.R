@@ -1,4 +1,5 @@
 #' @importFrom caret train
+#' @import caret
 #' @export
 dml <- function(y, d, x,
                 model = c("plm", "npm"),
