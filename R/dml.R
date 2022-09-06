@@ -6,7 +6,6 @@ dml <- function(y, d, x,
                 cf.folds = 5,
                 cf.reps  = 1,
                 ps.trim = 0.02,
-                causal.contrasts = list(d1=1, d0=0),
                 yreg = list(method = "ranger",
                             trControl = list(method = "none"),
                             tuneGrid  = data.frame(mtry = sqrt(ncol(x)), splitrule = "variance", min.node.size = 5)),
@@ -20,6 +19,12 @@ dml <- function(y, d, x,
 
   # check arguments
   model   <- match.arg(model)
+
+  if(model == "npm"){
+    d.value <- unique(d)
+    binary <- all(d.value %in% c(0,1))
+    if(!binary) stop("Treatment must be binary for nonparametric model (model = npm).")
+  }
 
   if(cf.folds < 2){
     cf.folds <- 2
@@ -85,8 +90,6 @@ dml <- function(y, d, x,
                                     d            = d,
                                     x            = x,
                                     model        = model,
-                                    d1           = causal.contrasts$d1,
-                                    d0           = causal.contrasts$d0,
                                     cf.folds     = cf.folds,
                                     yreg         = yreg,
                                     dreg         = dreg,
@@ -107,7 +110,8 @@ dml <- function(y, d, x,
       dhat   <- cross.fit.i$preds$dhat
       yhat0  <- cross.fit.i$preds$yhat0
       yhat1  <- cross.fit.i$preds$yhat1
-      results[[i]] <- ate.npm(y, d, yhat1, yhat0, dhat, trim = ps.trim)
+      results[[i]] <- ate.npm(y, d,
+                              yhat1, yhat0, dhat, trim = ps.trim)
     }
     cat("\n")
   }
