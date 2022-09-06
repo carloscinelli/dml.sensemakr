@@ -21,6 +21,10 @@ dml <- function(y, d, x,
   # check arguments
   model   <- match.arg(model)
 
+  if(cf.folds < 2){
+    cf.folds <- 2
+    warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
+  }
   out <- list()
   out$call <-   match.call()
 
@@ -136,8 +140,10 @@ dml <- function(y, d, x,
 
 #' @export
 dml_gate <- function(dml.fit, groups,...){
+  call2 <- match.call()
   groups  <- as.factor(groups)
-  model    <- dml.fit$call$model
+  model    <- dml.fit$info$model
+  dml.fit$call$groups <- call2$groups
   gate.fun <- switch(model,
                      plm = group.ate.plm,
                      npm = group.ate.npm)
