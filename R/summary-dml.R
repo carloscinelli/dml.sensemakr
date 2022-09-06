@@ -4,6 +4,7 @@ summary.dml <- function(object, combine.method = "median", ...){
   out <- list()
   out$info <- object$info
   out$info <- object$info
+  out$combine.method <- combine.method
 
   # goodness of fits
   comb_fun <- get(combine.method)

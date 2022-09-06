@@ -97,12 +97,9 @@ plot(dml.plm)
 ```{r}
 ## compute GATE by married
 g2 <- ifelse(pension$marr, "married", "not.married")
-
-## compute GATEs
 dml.g2 <- dml_gate(dml.fit = dml.plm, groups = g2)
-dml.g2
-
 summary(dml.g2)
+
 coef(dml.g2)
 confint(dml.g2)
 plot(dml.g2)

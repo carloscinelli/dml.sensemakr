@@ -67,23 +67,23 @@ summary(dml.plm)
 #> 
 #>  Model: Partially Linear 
 #>  Cross-Fitting: 5 folds, 5 reps 
-#>  ML Method: outcome (ranger, R2 = 0.271), treatment (ranger, R2 = 0.116)
+#>  ML Method: outcome (ranger, R2 = 0.263), treatment (ranger, R2 = 0.117)
 #>  Tuning: clean 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>     Estimate Std. Error t value   P(>|t|)    
-#> ate   8965.2     1388.6  6.4564 1.072e-10 ***
+#> ate   8978.9     1365.1  6.5776 4.782e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Group Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value   P(>|t|)    
-#> gate.q1   4466.0     1058.5  4.2190 2.454e-05 ***
-#> gate.q2   3303.7     1213.3  2.7229 0.0064703 ** 
-#> gate.q3   6788.9     1859.7  3.6504 0.0002618 ***
-#> gate.q4  18393.8     4051.2  4.5403 5.616e-06 ***
+#> gate.q1   4470.4     1036.9  4.3112 1.624e-05 ***
+#> gate.q2   3180.6     1254.3  2.5357 0.0112208 *  
+#> gate.q3   6785.9     1925.4  3.5245 0.0004244 ***
+#> gate.q4  18226.3     4071.0  4.4771 7.567e-06 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
@@ -96,27 +96,27 @@ summary(dml.plm, combine.method = "mean")
 #> 
 #>  Model: Partially Linear 
 #>  Cross-Fitting: 5 folds, 5 reps 
-#>  ML Method: outcome (ranger, R2 = 0.269), treatment (ranger, R2 = 0.116)
+#>  ML Method: outcome (ranger, R2 = 0.262), treatment (ranger, R2 = 0.116)
 #>  Tuning: clean 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>     Estimate Std. Error t value   P(>|t|)    
-#> ate   9073.0     1328.7  6.8283 8.591e-12 ***
+#> ate   8983.4     1337.7  6.7156 1.873e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Group Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value   P(>|t|)    
-#> gate.q1   4484.8     1025.4  4.3738 1.221e-05 ***
-#> gate.q2   3240.8     1191.1  2.7208 0.0065119 ** 
-#> gate.q3   6731.6     1844.4  3.6498 0.0002624 ***
-#> gate.q4  18522.3     3939.8  4.7013 2.585e-06 ***
+#> gate.q1   4464.5     1034.9  4.3138 1.605e-05 ***
+#> gate.q2   3225.3     1201.2  2.6850 0.0072523 ** 
+#> gate.q3   6804.1     1853.3  3.6713 0.0002414 ***
+#> gate.q4  18164.4     3990.9  4.5514 5.329e-06 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Note: DML estimates combined using the median method.
+#> Note: DML estimates combined using the mean method.
 ```
 
 ### extract coefs, se, confidence intervals
@@ -125,40 +125,40 @@ summary(dml.plm, combine.method = "mean")
 # coef median method (default)
 coef(dml.plm)
 #>       ate   gate.q1   gate.q2   gate.q3   gate.q4 
-#>  8965.198  4466.042  3303.666  6788.857 18393.828
+#>  8978.883  4470.375  3180.599  6785.947 18226.276
 
 # coef mean method (default)
 coef(dml.plm, combine.method = "mean")
 #>       ate   gate.q1   gate.q2   gate.q3   gate.q4 
-#>  9073.003  4484.794  3240.847  6731.565 18522.309
+#>  8983.350  4464.520  3225.331  6804.128 18164.356
 
 # se median method (default)
 se(dml.plm); 
 #>      ate  gate.q1  gate.q2  gate.q3  gate.q4 
-#> 1388.567 1058.547 1213.269 1859.737 4051.194
+#> 1365.076 1036.921 1254.304 1925.390 4071.009
 
 # se median method (default)
 se(dml.plm, combine.method = "mean")
 #>      ate  gate.q1  gate.q2  gate.q3  gate.q4 
-#> 1328.729 1025.371 1191.127 1844.364 3939.797
+#> 1337.685 1034.942 1201.227 1853.348 3990.944
 
 # confint median method (default)
 confint(dml.plm) 
 #>              2.5 %    97.5 %
-#> ate      6243.6563 11686.740
-#> gate.q1  2391.3276  6540.756
-#> gate.q2   925.7016  5681.630
-#> gate.q3  3143.8398 10433.875
-#> gate.q4 10453.6339 26334.022
+#> ate      6303.3823 11654.383
+#> gate.q1  2438.0482  6502.702
+#> gate.q2   722.2076  5638.990
+#> gate.q3  3012.2521 10559.641
+#> gate.q4 10247.2451 26205.306
 
 # confint mean method
 confint(dml.plm, combine.method = "mean")
-#>              2.5 %    97.5 %
-#> ate      6468.7433 11677.264
-#> gate.q1  2475.1033  6494.486
-#> gate.q2   906.2816  5575.412
-#> gate.q3  3116.6781 10346.452
-#> gate.q4 10800.4491 26244.168
+#>             2.5 %    97.5 %
+#> ate      6361.535 11605.165
+#> gate.q1  2436.071  6492.969
+#> gate.q2   870.969  5579.694
+#> gate.q3  3171.633 10436.622
+#> gate.q4 10342.249 25986.463
 ```
 
 ### plot
@@ -174,54 +174,41 @@ plot(dml.plm)
 ``` r
 ## compute GATE by married
 g2 <- ifelse(pension$marr, "married", "not.married")
-
-## compute GATEs
 dml.g2 <- dml_gate(dml.fit = dml.plm, groups = g2)
-dml.g2
-#> 
-#> Debiased Machine Learning
-#> 
-#> Call:
-#> dml(y = y, d = d, x = x, model = "plm", groups = g2, cf.folds = 5, 
-#>     cf.reps = 5)
-#> 
-#> Estimates:
-#>              ate      gate.married  gate.not.married  
-#>             8965              9890              7346
-
 summary(dml.g2)
 #> 
 #> Debiased Machine Learning
 #> 
 #>  Model: Partially Linear 
 #>  Cross-Fitting: 5 folds, 5 reps 
-#>  ML Method: outcome (ranger, R2 = 0.271), treatment (ranger, R2 = 0.116)
+#>  ML Method: outcome (ranger, R2 = 0.263), treatment (ranger, R2 = 0.117)
 #>  Tuning: clean 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>     Estimate Std. Error t value   P(>|t|)    
-#> ate   8965.2     1388.6  6.4564 1.072e-10 ***
+#> ate   8978.9     1365.1  6.5776 4.782e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Group Average Treatment Effect: 
 #> 
 #>                  Estimate Std. Error t value   P(>|t|)    
-#> gate.married       9889.7     1906.3  5.1879 2.126e-07 ***
-#> gate.not.married   7346.2     1742.4  4.2161 2.486e-05 ***
+#> gate.married       9946.8     1849.8  5.3772 7.566e-08 ***
+#> gate.not.married   7545.4     1928.3  3.9129 9.119e-05 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Note: DML estimates combined using the median method.
+
 coef(dml.g2)
 #>              ate     gate.married gate.not.married 
-#>         8965.198         9889.721         7346.183
+#>         8978.883         9946.838         7545.380
 confint(dml.g2)
 #>                     2.5 %   97.5 %
-#> ate              6243.656 11686.74
-#> gate.married     6153.456 13625.99
-#> gate.not.married 3931.085 10761.28
+#> ate              6303.382 11654.38
+#> gate.married     6321.253 13572.42
+#> gate.not.married 3765.924 11324.84
 plot(dml.g2)
 ```
 

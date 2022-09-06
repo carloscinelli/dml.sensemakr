@@ -1,6 +1,6 @@
 
 #' @export
-print.summary_dml <- function(x, combine.method = "median", ...){
+print.summary_dml <- function(x, ...){
   cat("\n")
   cat("Debiased Machine Learning\n")
   cat("\n")
@@ -23,7 +23,7 @@ print.summary_dml <- function(x, combine.method = "median", ...){
     print(x$groups)
     cat("\n")
   }
-  cat("Note: DML estimates combined using the", combine.method, "method.")
+  cat("Note: DML estimates combined using the", x$combine.method, "method.")
 }
 
 #' @export
