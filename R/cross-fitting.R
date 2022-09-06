@@ -41,7 +41,7 @@ cross.fitting <- function(y, d, x,
     if (verbose) cat(b," ")
 
     # d model
-    args.dx  <- c(list(x = x[ -Id[[b]], ],  y = d[ -Id[[b]] ] ), dreg)
+    args.dx  <- c(list(x = x[ -Id[[b]], ,drop = F],  y = d[ -Id[[b]] ] ), dreg)
     model.dx <- silent.do.call(what = "train", args = args.dx, warnings = warnings)
     metric.d <- model.dx$metric
 
@@ -50,12 +50,12 @@ cross.fitting <- function(y, d, x,
     }
 
     # predictions
-    dhat[Id[[b]]]  <-  predict(model.dx, newdata =   x[ Id[[b]], ])
+    dhat[Id[[b]]]  <-  predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])
 
 
     if(model == "plm"){
       # y model for plm
-      args.yx  <- c(list(x = x[ -Id[[b]], ], y = y[ -Id[[b]] ] ), yreg)
+      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = F], y = y[ -Id[[b]] ] ), yreg)
       model.yx <- silent.do.call(what = "train", args = args.yx, warnings = warnings)
       metric.y <- model.yx$metric
 
@@ -64,13 +64,13 @@ cross.fitting <- function(y, d, x,
       }
 
       # predictions for plm
-      yhat[Id[[b]]]    <- predict(model.yx, x[Id[[b]],]) #predict the left-out fold
+      yhat[Id[[b]]]    <- predict(model.yx, x[Id[[b]], ,drop = F]) #predict the left-out fold
     }
 
 
     if(model == "npm"){
       # y model for npm
-      args.ydx  <- c(list(x = dx[ -Id[[b]], ], y = y[ -Id[[b]] ] ), yreg)
+      args.ydx  <- c(list(x = dx[ -Id[[b]], ,drop = F], y = y[ -Id[[b]] ] ), yreg)
       model.ydx <- silent.do.call(what = "train", args = args.ydx, warnings = warnings)
       metric.y <- model.ydx$metric
 
@@ -79,9 +79,9 @@ cross.fitting <- function(y, d, x,
       }
 
       # predictions for npm
-      yhat[Id[[b]]]  <-  predict(model.ydx, newdata =  dx[ Id[[b]], ])
-      yhat0[Id[[b]]] <-  predict(model.ydx, newdata = dx0[ Id[[b]], ])
-      yhat1[Id[[b]]] <-  predict(model.ydx, newdata = dx1[ Id[[b]], ])
+      yhat[Id[[b]]]  <-  predict(model.ydx, newdata =  dx[ Id[[b]], ,drop = F])
+      yhat0[Id[[b]]] <-  predict(model.ydx, newdata = dx0[ Id[[b]], ,drop = F])
+      yhat1[Id[[b]]] <-  predict(model.ydx, newdata = dx1[ Id[[b]], ,drop = F])
     }
 
   }

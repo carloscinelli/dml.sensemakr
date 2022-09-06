@@ -14,16 +14,16 @@ trim.ps <- function(ps, trim = 0.02){
 
 # computes ate for npm
 ate.npm <- function(y, d,
-                    yhat1, yhat0, dhat,
+                    yhat1, yhat0, dhat, idx = 1,
                     trim = 0.02){
 
   # trim propensity score
   dhat.t       <- trim.ps(dhat, trim = 0.02)
 
-  # compute ATE and SE
+  # ate
   gs           <- d * yhat1 + (1 - d) * yhat0
-  RRs          <- d/dhat.t - (1-d)/(1-dhat.t)
-  Ms           <- yhat1 - yhat0
+  RRs          <- (d/dhat.t - (1-d)/(1-dhat.t))*(idx/mean(idx))
+  Ms           <- (yhat1 - yhat0)*(idx/mean(idx))
   theta.s      <- mean(Ms + RRs * (y - gs))
   psi.theta.s  <- Ms + RRs * (y - gs) - theta.s
 
@@ -37,10 +37,11 @@ ate.npm <- function(y, d,
 
   # output
   out <- list(
+    # influence functions
     psis      = list(psi.theta.s = psi.theta.s,
                      psi.sigma2.s = psi.sigma2.s,
                      psi.nu2.s    = psi.nu2.s),
-
+    # estimates and se
     estimates = list(theta.s     = theta.s,
                      se.theta.s  = psi.sd(psi.theta.s),
                      sigma2.s    = sigma2.s,
@@ -51,18 +52,23 @@ ate.npm <- function(y, d,
 
 
 # computes ate for plm
-ate.plm <- function(y, d, yhat, dhat){
+ate.plm <- function(y, d, yhat, dhat, idx= 1){
 
   # residuals
-  resY         <- y - yhat
-  resY         <- resY - mean(resY)
-  resD         <- d - dhat
-  resD         <- resD - mean(resD)
+  resY         <- (y - yhat)
+  # resY         <- resY - mean(resY)
+  resD         <- (d - dhat)
+  # resD         <- resD - mean(resD)
 
-  # ATE
-  theta.s      <- mean(resY*resD)/mean(resD^2)
+  # ate
+  RRs          <- (resD/mean(resD^2))*idx/mean(idx)
+  theta.s      <- mean(resY*RRs)
   eresY        <- (resY - theta.s*resD)
-  psi.theta.s  <- (eresY*resD)/mean(resD^2)
+  psi.theta.s  <- (eresY*RRs)
+
+  # theta.s      <- mean(resY*resD)/mean(resD^2)
+  # eresY        <- (resY - theta.s*resD)
+  # psi.theta.s  <- (eresY*resD)/mean(resD^2)
 
   # sigma2
   sigma2.s       <- mean(eresY^2)
@@ -74,10 +80,11 @@ ate.plm <- function(y, d, yhat, dhat){
 
   # output
   out <- list(
+    # influence functions
     psis      = list(psi.theta.s = psi.theta.s,
                      psi.sigma2.s = psi.sigma2.s,
                      psi.nu2.s    = psi.nu2.s),
-
+    # estimates and se
     estimates = list(theta.s     = theta.s,
                      se.theta.s  = psi.sd(psi.theta.s),
                      sigma2.s    = sigma2.s,
@@ -104,6 +111,8 @@ group.ate.npm <- function(dml, groups, trim = 0.02) {
       yhat0  <- dml$fits[[i]]$preds$yhat0
       yhat1  <- dml$fits[[i]]$preds$yhat1
       res[[i]] <- ate.npm(y[idx], d[idx], yhat1[idx], yhat0[idx], dhat[idx], trim = trim)
+      # res[[i]] <- ate.npm(y, d, yhat1, yhat0, dhat,idx = idx, trim = trim)
+      # res[[i]] <- ate.npm(y, d*idx, yhat1/mean(idx), yhat0/mean(idx), dhat*idx, trim = trim)
     }
     ate.g[[j]] <- res
   }
@@ -124,6 +133,9 @@ group.ate.plm <- function(dml, groups) {
     for(i in 1:cf.reps){
       dhat  <-   dml$fits[[i]]$preds$dhat
       yhat  <-   dml$fits[[i]]$preds$yhat
+      # res[[i]] <- ate.plm(y, d, yhat, dhat, idx=idx)
+      # res[[i]] <- ate.plm(y*idx, d*idx, yhat*idx, dhat*idx)
+      # res[[i]] <- ate.plm(y, d*idx, yhat, dhat*idx)
       res[[i]] <- ate.plm(y[idx], d[idx], yhat[idx], dhat[idx])
     }
     ate.g[[j]] <- res

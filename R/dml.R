@@ -21,6 +21,11 @@ dml <- function(y, d, x,
   # check arguments
   model   <- match.arg(model)
 
+  if(is.numeric(x) && !is.matrix(x)){
+    x <- as.matrix(x)
+    colnames(x) <- "x"
+  }
+
   if(model == "npm"){
     d.value <- unique(d)
     binary <- all(d.value %in% c(0,1))
