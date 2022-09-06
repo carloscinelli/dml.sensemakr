@@ -1,0 +1,76 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# dml.sensemakr
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+
+## Development version
+
+To install the development version on GitHub make sure you have the package devtools installed.
+
+```{r, eval = FALSE}
+# install.packages("devtools") 
+devtools::install_github("carloscinelli/dml.sensemakr")
+```
+
+
+
+## Example
+
+```{r example}
+# loads package
+library(dml.sensemakr)
+
+## loads data
+data("pension")
+y <- pension$net_tfa  # net total financial assets
+d <-  pension$e401    # 401K eligibility
+x <- model.matrix(~ -1+ age + inc  + educ+ fsize+marr + twoearn + pira + hown, data = pension)
+
+# run DML (partially linear model)
+dml.fit <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
+
+# short description of results
+dml.fit
+
+# longer summary of results
+summary(dml.fit)
+
+# change pooling method to "mean"
+summary(dml.fit, combine.method = "mean")
+
+# extract coefs, se, confidence intervals
+coef(dml.fit); coef(dml.fit, combine.method = "mean")
+se(dml.fit); se(dml.fit, combine.method = "mean")
+confint(dml.fit); confint(dml.fit, combine.method = "mean")
+
+# group average treatment effects (GATEs)
+## compute income quartiles
+g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE), 
+          labels = c("q1", "q2", "q3", "q4"), include.lowest = T)
+
+## compute GATEs
+dml.g1 <- dml_gate(dml.fit = dml.fit, groups = g1)
+dml.g1
+
+summary(dml.g1)
+coef(dml.g1)
+confint(dml.g1)
+plot(dml.g1)
+```
+
