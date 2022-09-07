@@ -3,7 +3,6 @@ summary.dml <- function(object, combine.method = "median", ...){
 
   out <- list()
   out$info <- object$info
-  out$info <- object$info
   out$combine.method <- combine.method
 
   # goodness of fits
@@ -61,18 +60,18 @@ se.dml <- function(object, combine.method = "median", ...){
 
 
 #' @export
-confint.dml <- function(object, parm, level = 0.95, combine.method = "median", ...){
+confint.dml <- function(object, parm = NULL, level = 0.95, combine.method = "median", ...){
   cf  <- coef(object, combine.method = combine.method)
   ses <- se(object, combine.method = combine.method)
   calc_confint(cf =cf, ses =ses,  parm = parm, level = level)
 }
 
 
-calc_confint <- function(cf, ses, parm, level) {
+calc_confint <- function(cf, ses, parm=NULL, level) {
   pnames <- names(ses)
   if (is.matrix(cf))
     cf <- setNames(as.vector(cf), pnames)
-  if (missing(parm))
+  if (is.null(parm))
     parm <- pnames
   else if (is.numeric(parm))
     parm <- pnames[parm]
