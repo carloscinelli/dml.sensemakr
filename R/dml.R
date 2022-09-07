@@ -26,6 +26,10 @@ dml <- function(y, d, x,
     colnames(x) <- "x"
   }
 
+  if(is.null(colnames(x))){
+    colnames(x) <- paste0("x", 1:ncol(x))
+  }
+
   if(model == "npm"){
     d.value <- unique(d)
     binary <- all(d.value %in% c(0,1))
