@@ -50,38 +50,38 @@ g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE),
 
 ### Fit DML
 ```{r}
-# run DML (partially linear model)
-dml.plm <- dml(y, d, x, model = "plm", groups = g1, cf.folds = 5, cf.reps = 5)
+# run DML (nonparametric model)
+dml.401k <- dml(y, d, x, model = "npm", groups = g1, cf.folds = 5, cf.reps = 5)
 ```
 
 ### Explore results
 ```{r}
 # summary of results with median method (default)
-summary(dml.plm)
+summary(dml.401k)
 
 # summary of results with mean method
-summary(dml.plm, combine.method = "mean")
+summary(dml.401k, combine.method = "mean")
 ```
 
 ### extract coefs, se, confidence intervals
 ```{r}
 # coef median method (default)
-coef(dml.plm)
+coef(dml.401k)
 
 # coef mean method (default)
-coef(dml.plm, combine.method = "mean")
+coef(dml.401k, combine.method = "mean")
 
 # se median method (default)
-se(dml.plm); 
+se(dml.401k); 
 
 # se median method (default)
-se(dml.plm, combine.method = "mean")
+se(dml.401k, combine.method = "mean")
 
 # confint median method (default)
-confint(dml.plm) 
+confint(dml.401k) 
 
 # confint mean method
-confint(dml.plm, combine.method = "mean")
+confint(dml.401k, combine.method = "mean")
 ```
 
 
@@ -89,7 +89,7 @@ confint(dml.plm, combine.method = "mean")
 ### plot
 
 ```{r}
-plot(dml.plm)
+plot(dml.401k)
 ```
 
 ### You can add groups after the model is fit
@@ -97,11 +97,37 @@ plot(dml.plm)
 ```{r}
 ## compute GATE by married
 g2 <- ifelse(pension$marr, "married", "not.married")
-dml.g2 <- dml_gate(dml.fit = dml.plm, groups = g2)
-summary(dml.g2)
+dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2)
+summary(dml.401k.g2)
 
-coef(dml.g2)
-confint(dml.g2)
-plot(dml.g2)
+coef(dml.401k.g2)
+confint(dml.401k.g2)
+plot(dml.401k.g2)
+```
+
+## Sensitivity Analysis
+
+### Robustness Values
+
+```{r}
+robustness_value(dml.401k, alpha = 0.05)
+```
+### Confidence Bounds
+
+```{r}
+confidence_bounds(dml.401k, r2ya.dx = 0.04, r2.rr = 0.03, level = 0.95)
+```
+
+### Further results
+
+```{r}
+bounds.401k <- dml_bounds(dml.401k, r2ya.dx = 0.04, r2.rr = 0.03)
+bounds.401k
+```
+
+```{r}
+coef(bounds.401k)
+se(bounds.401k)
+confint(bounds.401k)
 ```
 
