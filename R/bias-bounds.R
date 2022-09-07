@@ -108,14 +108,14 @@ confidence_bounds.dml <- function(object,
 }
 
 
-rv_fun <- function(rv,dml.fit, par, side = "lwr",theta = 0){
-  (confidence_bounds(dml.fit,  r2ya.dx = rv,r2.rr = rv)[par,side] - theta)^2
+rv_fun <- function(rv,dml.fit, par, side = "lwr",theta = 0, alpha = 0.05){
+  (confidence_bounds(dml.fit,  r2ya.dx = rv,r2.rr = rv, level = 1-alpha)[par,side] - theta)^2
 }
 
 
 
 ##' @export
-robustness_value <- function(object, ...){
+robustness_value <- function(object, alpha = 0.05, ...){
   UseMethod("robustness_value")
 }
 
@@ -124,14 +124,15 @@ robustness_value <- function(object, ...){
 ##'@exportS3Method sensemakr::robustness_value dml
 ##'@exportS3Method dml.sensemakr::robustness_value dml
 robustness_value.dml <- function(object, theta = 0, alpha = 0.05, ...){
-  conf <- confint(object, level = 1-alpha)
+  conf <- confint(object, level = 1-alpha,...)
   out <- setNames(rep(NA,nrow(conf)), rownames(conf))
   for(i in 1:nrow(conf)){
     if(conf[i,1] <= theta & theta <= conf[i,2]){
       out[i] <- 0
     }
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
-    fn <- function(rv) rv_fun(rv, dml.fit = object,par=names(out)[i], side = side, theta = theta)
+    fn <- function(rv) rv_fun(rv, dml.fit = object,par=names(out)[i],
+                              side = side, theta = theta, alpha = alpha)
     out[i] <- optim(par = c(0.01), fn, lower=0, upper = 1, method = "Brent")$par
   }
   return(out)
