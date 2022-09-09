@@ -31,9 +31,9 @@ cross.fitting <- function(y, d, x,
   dhat <- yhat <- yhat1 <-  yhat0 <- rep(NA, nobs)
 
   # data for npm
-  dx   <- cbind(d, x)
-  dx0  <- cbind("d" = rep(d0, nobs), x)
-  dx1  <- cbind("d" = rep(d1, nobs), x)
+  dx   <- data.frame(d, x)
+  dx0  <- data.frame("d" = rep(d0, nobs), x)
+  dx1  <- data.frame("d" = rep(d1, nobs), x)
 
   if (verbose) cat(" Folds: ")
   for(b in 1:length(Id)){
@@ -50,7 +50,7 @@ cross.fitting <- function(y, d, x,
     }
 
     # predictions
-    dhat[Id[[b]]]  <-  predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])
+    dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])
 
 
     if(model == "plm"){
@@ -64,7 +64,7 @@ cross.fitting <- function(y, d, x,
       }
 
       # predictions for plm
-      yhat[Id[[b]]]    <- predict(model.yx, x[Id[[b]], ,drop = F]) #predict the left-out fold
+      yhat[Id[[b]]]    <- safe.predict(model.yx, x[Id[[b]], ,drop = F]) #predict the left-out fold
     }
 
 
@@ -79,9 +79,9 @@ cross.fitting <- function(y, d, x,
       }
 
       # predictions for npm
-      yhat[Id[[b]]]  <-  predict(model.ydx, newdata =  dx[ Id[[b]], ,drop = F])
-      yhat0[Id[[b]]] <-  predict(model.ydx, newdata = dx0[ Id[[b]], ,drop = F])
-      yhat1[Id[[b]]] <-  predict(model.ydx, newdata = dx1[ Id[[b]], ,drop = F])
+      yhat[Id[[b]]]  <-  safe.predict(model.ydx, newdata =  dx[ Id[[b]], ,drop = F])
+      yhat0[Id[[b]]] <-  safe.predict(model.ydx, newdata = dx0[ Id[[b]], ,drop = F])
+      yhat1[Id[[b]]] <-  safe.predict(model.ydx, newdata = dx1[ Id[[b]], ,drop = F])
     }
 
   }
@@ -112,4 +112,15 @@ silent.do.call <- function(..., warnings = F) {
     out <- suppressWarnings(do.call(...))
   }
   return(out)
+}
+
+safe.predict <- function(model, newdata){
+  type <- model$modelType
+  if(type=="Regression"){
+    pred <- predict(object=model, newdata = newdata)
+  } else {
+    pred <- predict(object=model, newdata =newdata, type = "prob")
+    pred <- pred$one
+  }
+  return(pred)
 }

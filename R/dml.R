@@ -4,6 +4,8 @@
 dml <- function(y, d, x,
                 model = c("plm", "npm"),
                 groups = NULL,
+                binary.y = F,
+                binary.d = F,
                 cf.folds = 5,
                 cf.reps  = 1,
                 ps.trim = 0.02,
@@ -20,6 +22,7 @@ dml <- function(y, d, x,
 
   # check arguments
   model   <- match.arg(model)
+
 
   if(is.numeric(x) && !is.matrix(x)){
     x <- as.matrix(x)
@@ -40,8 +43,21 @@ dml <- function(y, d, x,
     cf.folds <- 2
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
+
+
   out <- list()
+  out$data <- list(y = y, d= d, x = x)
   out$call <-   match.call()
+
+  if(binary.y){
+    y <- factor(y, levels = c(0,1), labels = c("zero", "one"))
+  }
+
+  if(binary.d){
+    d <- factor(d, levels = c(0,1), labels = c("zero", "one"))
+  }
+
+
 
 
   out$info <- list(model = model,
@@ -51,14 +67,16 @@ dml <- function(y, d, x,
                    yreg = yreg,
                    dreg = dreg)
 
-  out$data <- list(y = y, d= d, x = x)
-
-
+  yreg$trControl$classProbs <- T
+  dreg$trControl$classProbs <- T
   yreg$trControl <- do.call("trainControl", yreg$trControl)
   dreg$trControl <- do.call("trainControl", dreg$trControl)
 
 
-  if(verbose) cat("Debiased Machine Learning\n")
+  if(verbose){
+    cat("\f")
+    cat("Debiased Machine Learning\n")
+  }
 
   if (dirty.tuning){
 
@@ -99,6 +117,8 @@ dml <- function(y, d, x,
     cross.fit.i    <- cross.fitting(y            = y,
                                     d            = d,
                                     x            = x,
+                                    d1           = ifelse(binary.d, "one", 1),
+                                    d0           = ifelse(binary.d, "zero", 0),
                                     model        = model,
                                     cf.folds     = cf.folds,
                                     yreg         = yreg,
@@ -113,14 +133,18 @@ dml <- function(y, d, x,
     if(model == "plm"){
       dhat   <- cross.fit.i$preds$dhat
       yhat <- cross.fit.i$preds$yhat
-      results[[i]] <- ate.plm(y, d, yhat, dhat)
+      results[[i]] <- ate.plm(num(y),
+                              num(d),
+                              yhat,
+                              dhat)
     }
 
     if(model == "npm"){
       dhat   <- cross.fit.i$preds$dhat
       yhat0  <- cross.fit.i$preds$yhat0
       yhat1  <- cross.fit.i$preds$yhat1
-      results[[i]] <- ate.npm(y, d,
+      results[[i]] <- ate.npm(num(y),
+                              num(d),
                               yhat1, yhat0, dhat, trim = ps.trim)
     }
     cat("\n")
@@ -167,6 +191,14 @@ dml_gate <- function(dml.fit, groups,...){
   return(dml.fit)
 }
 
+num <- function(v){
+  if(is.factor(v)){
+    return(ifelse(v == "zero", 0, 1))
+  } else {
+    return(v)
+  }
+}
+
 # function to tune the model outside cross-fitting
 # returns the best tune
 tune_model <- function(x, y, args) {
@@ -177,6 +209,9 @@ tune_model <- function(x, y, args) {
                           tuneGrid = best.model$bestTune)
   return(tuned.args)
 }
+
+# extracts estimates from dml.fit
+extract_estimate <- function(results, param) sapply(results, function(x) x$estimates[[param]])
 
 # r2
 r2 <- function(pred, obs) max(1-var(obs-pred)/var(obs), 0)
@@ -198,15 +233,21 @@ combine.cross.fits <- function(results, param = "theta.s"){
   thetas <- sapply(results, function(x) x$estimates[[param]])
   ses    <- sapply(results, function(x) x$estimates[[paste0("se.", param)]])
 
-  # mean and median
-  mean.theta    <- mean(thetas)
-  median.theta  <- median(thetas)
+  out <- rbind(mean =   combine.mean(thetas, ses),
+               median = combine.median(thetas, ses))
+  out
+}
 
-  # var mean / var median
+combine.median <- function(thetas, ses){
+  median.theta  <- median(thetas)
+  ss <- c((thetas - mean(thetas)) %*% (thetas - mean(thetas)))
+  se.median.theta <- sqrt(median(ses^2 + c(ss)))
+  c(estimate = median.theta, se = se.median.theta)
+}
+
+combine.mean <- function(thetas, ses){
+  mean.theta    <- mean(thetas)
   ss <- c((thetas - mean(thetas)) %*% (thetas - mean(thetas)))
   se.mean.theta   <- sqrt(mean(ses^2) + ss/length(ses))
-  se.median.theta <- sqrt(median(ses^2 + c(ss)))
-  out <- rbind(mean =   c(estimate = mean.theta,   se = se.mean.theta),
-               median = c(estimate = median.theta, se = se.median.theta))
-  out
+  c(estimate = mean.theta,   se = se.mean.theta)
 }

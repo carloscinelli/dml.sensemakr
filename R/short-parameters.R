@@ -35,19 +35,28 @@ ate.npm <- function(y, d,
   nu2.s        <-  mean(2*(1/dhat.t + 1/(1-dhat.t)) - RRs^2)
   psi.nu2.s    <-  2*(1/dhat.t + 1/(1-dhat.t)) - RRs^2 - nu2.s
 
+  # S2
+  S2           <- sigma2.s*nu2.s
+  psi.S2       <- (sigma2.s*(psi.nu2.s) + nu2.s*psi.sigma2.s)
+
   # output
   out <- list(
     # influence functions
     psis      = list(psi.theta.s = psi.theta.s,
                      psi.sigma2.s = psi.sigma2.s,
-                     psi.nu2.s    = psi.nu2.s),
+                     psi.nu2.s    = psi.nu2.s,
+                     psi.S2        = psi.S2),
+
     # estimates and se
     estimates = list(theta.s     = theta.s,
                      se.theta.s  = psi.sd(psi.theta.s),
                      sigma2.s    = sigma2.s,
-                     se.sigma2.s  = psi.sd(psi.sigma2.s),
+                     se.sigma2.s = psi.sd(psi.sigma2.s),
                      nu2.s       = nu2.s,
-                     se.nu2.s     = psi.sd(psi.nu2.s)))
+                     se.nu2.s    = psi.sd(psi.nu2.s),
+                     S2          = S2,
+                     se.S2       = psi.sd(psi.S2),
+                     cov.theta.S2 = mean(psi.theta.s*psi.S2)/length(psi.S2)))
 }
 
 
@@ -78,19 +87,29 @@ ate.plm <- function(y, d, yhat, dhat, idx= 1){
   nu2.s          <- 1/mean(resD^2)
   psi.nu2.s      <- nu2.s - (resD)^2 * (nu2.s)^2
 
+  # S2
+  S2           <- sigma2.s*nu2.s
+  psi.S2       <- (sigma2.s*(psi.nu2.s) + nu2.s*psi.sigma2.s)
+
+
   # output
   out <- list(
     # influence functions
     psis      = list(psi.theta.s = psi.theta.s,
                      psi.sigma2.s = psi.sigma2.s,
-                     psi.nu2.s    = psi.nu2.s),
+                     psi.nu2.s    = psi.nu2.s,
+                     psi.S2        = psi.S2),
+
     # estimates and se
     estimates = list(theta.s     = theta.s,
                      se.theta.s  = psi.sd(psi.theta.s),
                      sigma2.s    = sigma2.s,
-                     se.sigma2.s  = psi.sd(psi.sigma2.s),
+                     se.sigma2.s = psi.sd(psi.sigma2.s),
                      nu2.s       = nu2.s,
-                     se.nu2.s     = psi.sd(psi.nu2.s)))
+                     se.nu2.s    = psi.sd(psi.nu2.s),
+                     S2          = S2,
+                     se.S2       = psi.sd(psi.S2),
+                     cov.theta.S2 = mean(psi.theta.s*psi.S2)/length(psi.S2)))
   return(out)
 }
 

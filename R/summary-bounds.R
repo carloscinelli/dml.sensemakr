@@ -103,33 +103,19 @@ confint.dml.bounds <- function(object, parm = NULL, level = 0.95, combine.method
 }
 
 
-#'@export
-confidence_bounds <- function(object, ...){
-  UseMethod("confidence_bounds")
-}
-
-#'@export
-confidence_bounds.dml.bounds <- function(object,
-                                         level = 0.95,
-                                         combine.method = "median", ...){
-  level2 = max(0, 1 - (1-level)*2)
-  confs <- confint(object, level = level2, combine.method = combine.method)
-  if(is.list(confs)){
-    out <- t(sapply(confs, function(x) c(lwr = x["theta.m",1], upr = x["theta.p",2])))
-  }else{
-    out <- rbind(ate = c(lwr = confs["theta.m",1], upr = confs["theta.p",2]))
-  }
-  attr(out, "conf.levels") <- c(point = level, region = level2)
-  class(out) <- "confidence.bounds"
-  out
-}
 
 
 #'@export
 print.confidence.bounds <- function(x, ...){
    print.table(x)
-  cat("\nConfidence levels: point =",
+  cat("\nConfidence level: point =",
       paste0(attributes(x)$conf.levels["point"]*100, "%;"),
       "region =",
       paste0(attributes(x)$conf.levels["region"]*100, "%."))
+  cat("\nSensitivity parameters: r2ya.dx =",
+      paste0(attributes(x)$sens.param["r2ya.dx"], ";"),
+      "r2.rr =",
+      paste0(attributes(x)$sens.param["r2.rr"], ";"),
+      "rho2 =",
+      paste0(attributes(x)$sens.param["rho2"], "."))
 }
