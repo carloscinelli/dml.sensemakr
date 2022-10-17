@@ -204,7 +204,9 @@ tune_model <- function(x, y, args) {
 extract_estimate <- function(results, param) sapply(results, function(x) x$estimates[[param]])
 
 # r2
-r2 <- function(pred, obs) max(1-var(obs-pred)/var(obs), 0)
+r2 <- function(pred, obs){
+  max(1-var(obs-pred)/var(obs), 0)
+}
 
 # function to get the goodness of fit metric used by caret
 get_metric <- function(fits, obs, metric = "metric.y"){
@@ -258,6 +260,10 @@ caretArgs <- function(reg){
   } else {
     reg$trControl <- do.call("trainControl", reg$trControl)
   }
+  if (is.null(reg$preProcess)){
+    reg$preProcess <- "range"
+  }
+
   reg$trControl$classProbs <- T
 
   return(reg)

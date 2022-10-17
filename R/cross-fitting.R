@@ -35,52 +35,106 @@ cross.fitting <- function(y, d, x,
   dx0  <- data.frame("d" = rep(d0, nobs), x)
   dx1  <- data.frame("d" = rep(d1, nobs), x)
   if (verbose) cat(" -- Folds: ")
-  for(b in 1:length(Id)){
+
+  for (b in 1:length(Id)) {
 
     if (verbose) cat(b," ")
 
-    # d model
-    args.dx  <- c(list(x = x[ -Id[[b]], ,drop = F],  y = d[ -Id[[b]] ] ), dreg)
-    model.dx <- silent.do.call(what = "train", args = args.dx, warnings = warnings)
-    metric.d <- model.dx$metric
-
-    if(save.models){
-      out$model.d[[b]] <- model.dx
-    }
-
-    # predictions
-    dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])
 
 
-    if(model == "plm"){
+    if (model == "plm") {
+      # d model
+      if (is.numeric(d)) {
+        dtil <- d[ -Id[[b]] ]
+        mud <- min(dtil)
+        sdd <- max(dtil) - min(dtil)
+        dtil <- (dtil - mud)/sdd
+      } else {
+        dtil <- d[ -Id[[b]] ]
+        mud <- 0
+        sdd <- 1
+      }
+
+      args.dx  <- c(list(x = x[ -Id[[b]], ,drop = F],  y = dtil ), dreg)
+      model.dx <- silent.do.call(what = "train", args = args.dx, warnings = warnings)
+      metric.d <- model.dx$metric
+
+      # predictions
+      dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])*sdd + mud
+
       # y model for plm
-      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = F], y = y[ -Id[[b]] ] ), yreg)
+      if (is.numeric(y)) {
+        ytil <- y[ -Id[[b]] ]
+        muy <- min(ytil)
+        sdy <- max(ytil) - min(ytil)
+        ytil <- (ytil - muy)/sdy
+      } else {
+        ytil <- y[ -Id[[b]] ]
+        muy <- 0
+        sdy <- 1
+      }
+
+      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = F], y = ytil ), yreg)
       model.yx <- silent.do.call(what = "train", args = args.yx, warnings = warnings)
       metric.y <- model.yx$metric
 
       if(save.models){
+        out$model.d[[b]] <- model.dx
         out$model.y[[b]] <- model.yx
       }
 
+
       # predictions for plm
-      yhat[Id[[b]]]    <- safe.predict(model.yx, x[Id[[b]], ,drop = F]) #predict the left-out fold
+      yhat[Id[[b]]]    <- safe.predict(model.yx, x[Id[[b]], ,drop = F])*sdy + muy #predict the left-out fold
     }
 
 
     if(model == "npm"){
+
+      if (is.numeric(d)) {
+        dtil <- d[ -Id[[b]] ]
+        mud <- min(dtil)
+        sdd <- max(dtil) - min(dtil)
+        dtil <- (dtil - mud)/sdd
+      } else {
+        dtil <- d[ -Id[[b]] ]
+        mud <- 0
+        sdd <- 1
+      }
+
+      # d model
+      args.dx  <- c(list(x = x[ -Id[[b]], ,drop = F],  y = dtil ), dreg)
+      model.dx <- silent.do.call(what = "train", args = args.dx, warnings = warnings)
+      metric.d <- model.dx$metric
+
+      # predictions
+      dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])*sdd + mud
+
       # y model for npm
-      args.ydx  <- c(list(x = dx[ -Id[[b]], ,drop = F], y = y[ -Id[[b]] ]), yreg)
+      if (is.numeric(y)) {
+        ytil <- y[ -Id[[b]] ]
+        muy <- min(ytil)
+        sdy <- max(ytil) - min(ytil)
+        ytil <- (ytil - muy)/sdy
+      } else {
+        ytil <- y[ -Id[[b]] ]
+        muy <- 0
+        sdy <- 1
+      }
+
+      args.ydx  <- c(list(x = dx[ -Id[[b]], ,drop = F], y = ytil), yreg)
       model.ydx <- silent.do.call(what = "train", args = args.ydx, warnings = warnings)
       metric.y <- model.ydx$metric
 
-      if(save.models){
+      if (save.models) {
         out$model.y[[b]] <- model.ydx
+        out$model.d[[b]] <- model.dx
       }
 
       # predictions for npm
-      yhat[Id[[b]]]  <-  safe.predict(model.ydx, newdata =  dx[ Id[[b]], ,drop = F])
-      yhat0[Id[[b]]] <-  safe.predict(model.ydx, newdata = dx0[ Id[[b]], ,drop = F])
-      yhat1[Id[[b]]] <-  safe.predict(model.ydx, newdata = dx1[ Id[[b]], ,drop = F])
+      yhat[Id[[b]]]  <-  safe.predict(model.ydx, newdata =  dx[ Id[[b]], ,drop = F])*sdy + muy
+      yhat0[Id[[b]]] <-  safe.predict(model.ydx, newdata = dx0[ Id[[b]], ,drop = F])*sdy + muy
+      yhat1[Id[[b]]] <-  safe.predict(model.ydx, newdata = dx1[ Id[[b]], ,drop = F])*sdy + muy
     }
 
   }

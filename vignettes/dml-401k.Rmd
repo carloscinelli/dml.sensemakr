@@ -34,7 +34,7 @@ x <- apply(x, 2, scale) # scale covariates
 
 # Partially Linear Model
 
-```{r}
+```{r, cache=TRUE}
 # run DML
 dml.401k.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
 ```
@@ -67,9 +67,17 @@ ovb_contour_plot(dml.401k.plm, which.bound = "upr", r2ya.dx = 0.04, r2.rr = 0.03
                  bound.label = "Max match (3 years)", col.contour = "blue")
 ```
 
-# Nonparametric Model
 
 ```{r}
+# benchmarks
+bench.plm <- benchmark(dml.401k.plm, benchmark_covariates = c("inc", "pira", "twoearn"))
+bench.plm
+```
+
+
+# Nonparametric Model
+
+```{r, cache=TRUE}
 ## compute income quartiles
 g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE), 
           labels = c("q1", "q2", "q3", "q4"), include.lowest = T)
@@ -132,5 +140,11 @@ ovb_contour_plot(dml.401k.npm, which.bound = "lwr", r2ya.dx = 0.04, r2.rr = 0.03
                  bound.label = "Max match (3 years)", col.contour = "blue")
 ovb_contour_plot(dml.401k.npm, which.bound = "upr", r2ya.dx = 0.04, r2.rr = 0.03, 
                  bound.label = "Max match (3 years)", col.contour = "blue")
+```
+
+```{r}
+# benchmarks
+bench.npm <- benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira", "twoearn"))
+bench.npm
 ```
 
