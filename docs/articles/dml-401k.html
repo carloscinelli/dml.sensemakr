@@ -121,29 +121,29 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.637%), treatment (ranger, R2 = 11.545%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.492%), treatment (ranger, R2 = 11.528%)</span></span>
 <span><span class="co">#&gt;  Tuning: clean </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   9236.9     1370.4  6.7404 1.58e-11 ***</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate   9164.9     1329.3  6.8943 5.411e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
-<span><span class="co">#&gt;      ate </span></span>
-<span><span class="co">#&gt; 0.074088</span></span>
+<span><span class="co">#&gt;        ate </span></span>
+<span><span class="co">#&gt; 0.07386118</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.05564494</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.05586711</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds under posited scenario</span></span>
 <span><span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           lwr       upr</span></span>
-<span><span class="co">#&gt; ate  2742.445 15742.264</span></span>
+<span><span class="co">#&gt; ate  2743.704 15619.215</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
 <span><span class="co">#&gt; Sensitivity parameters: r2ya.dx = 0.04; r2.rr = 0.03; rho2 = 1.</span></span></code></pre></div>
@@ -215,10 +215,10 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="va">bench.plm</span></span>
-<span><span class="co">#&gt;   covariate     gain.Y      gain.D        rho        bias</span></span>
-<span><span class="co">#&gt; 1       inc 0.14814021 0.048092547 0.34229151 3195.113399</span></span>
-<span><span class="co">#&gt; 2      pira 0.03872288 0.005139335 0.08751788   -5.735524</span></span>
-<span><span class="co">#&gt; 3   twoearn 0.03028348 0.007888658 0.56946728 -857.967385</span></span></code></pre></div>
+<span><span class="co">#&gt;   covariate     gain.Y      gain.D       rho      bias</span></span>
+<span><span class="co">#&gt; 1       inc 0.14671113 0.048874019 0.3503507 3403.5766</span></span>
+<span><span class="co">#&gt; 2      pira 0.05090525 0.004058693 0.1643395  207.2812</span></span>
+<span><span class="co">#&gt; 3   twoearn 0.02388914 0.006856731 0.3994155 -604.6654</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="nonparametric-model">Nonparametric Model<a class="anchor" aria-label="anchor" href="#nonparametric-model"></a>
@@ -253,23 +253,23 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.274%), treatment (ranger, R2 = 11.445%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.504%), treatment (ranger, R2 = 11.637%)</span></span>
 <span><span class="co">#&gt;  Tuning: clean </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8138.2     1247.7  6.5226 6.91e-11 ***</span></span>
+<span><span class="co">#&gt; ate   8113.5     1176.4  6.8968 5.32e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; gate.q1  4359.88     813.55  5.3591 8.364e-08 ***</span></span>
-<span><span class="co">#&gt; gate.q2  2564.26    1303.55  1.9671 0.0491683 *  </span></span>
-<span><span class="co">#&gt; gate.q3  6757.48    1904.36  3.5484 0.0003876 ***</span></span>
-<span><span class="co">#&gt; gate.q4 18983.86    4492.92  4.2253 2.386e-05 ***</span></span>
+<span><span class="co">#&gt; gate.q1  4308.18     800.17  5.3841 7.281e-08 ***</span></span>
+<span><span class="co">#&gt; gate.q2  2750.86    1384.32  1.9872 0.0469054 *  </span></span>
+<span><span class="co">#&gt; gate.q3  6909.82    1851.88  3.7312 0.0001905 ***</span></span>
+<span><span class="co">#&gt; gate.q4 18557.16    4091.61  4.5354 5.749e-06 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -290,10 +290,10 @@
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate    gate.q1    gate.q2    gate.q3    gate.q4 </span></span>
-<span><span class="co">#&gt; 0.06065072 0.10066803 0.04264415 0.06880689 0.09427585</span></span>
+<span><span class="co">#&gt; 0.06099132 0.10141536 0.04508282 0.06991356 0.09319377</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;         ate     gate.q1     gate.q2     gate.q3     gate.q4 </span></span>
-<span><span class="co">#&gt; 0.045327693 0.072045208 0.006004581 0.034931122 0.059362746</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.046029971 0.071233088 0.006799803 0.036908882 0.060355880</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># bounds and confidence bounds </span></span>
 <span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -301,12 +301,12 @@
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">.95</span><span class="op">)</span></span>
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cbds</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.cbound"</span>, <span class="st">"upr.cbound"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">bds</span>, <span class="va">cbds</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          lwr.bound upr.bound lwr.cbound upr.cbound</span></span>
-<span><span class="co">#&gt; ate      3588.8988 12648.607  1503.2663  14833.126</span></span>
-<span><span class="co">#&gt; gate.q1  2926.2922  5793.464  1619.4876   7194.202</span></span>
-<span><span class="co">#&gt; gate.q2   494.8614  4644.757 -2090.6966   6519.065</span></span>
-<span><span class="co">#&gt; gate.q3  3424.1550 10090.800    40.5328  13234.247</span></span>
-<span><span class="co">#&gt; gate.q4 12272.0074 25695.711  4992.8454  33320.471</span></span></code></pre></div>
+<span><span class="co">#&gt;         lwr.bound upr.bound lwr.cbound upr.cbound</span></span>
+<span><span class="co">#&gt; ate      3575.453 12630.443  1586.9417  14669.843</span></span>
+<span><span class="co">#&gt; gate.q1  2892.132  5724.235  1583.0778   7085.348</span></span>
+<span><span class="co">#&gt; gate.q2   653.635  4848.083 -2026.7623   6892.556</span></span>
+<span><span class="co">#&gt; gate.q3  3557.296 10262.338   256.9584  13347.702</span></span>
+<span><span class="co">#&gt; gate.q4 11887.763 25226.559  5199.4650  32135.414</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds plot</span></span>
 <span><span class="va">df2</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">bds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span>, <span class="va">cbds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -386,10 +386,10 @@
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="co">#&gt; Warning in sqrt(V.g * V.a): NaNs produced</span></span>
 <span><span class="va">bench.npm</span></span>
-<span><span class="co">#&gt;   covariate     gain.Y    gain.D       rho      bias</span></span>
-<span><span class="co">#&gt; 1       inc 0.12680978 0.1355218 0.2270411 3565.5474</span></span>
-<span><span class="co">#&gt; 2      pira 0.01852913 0.0000000        NA  373.1552</span></span>
-<span><span class="co">#&gt; 3   twoearn 0.00739683 0.0000000        NA -601.4523</span></span></code></pre></div>
+<span><span class="co">#&gt;   covariate      gain.Y      gain.D       rho      bias</span></span>
+<span><span class="co">#&gt; 1       inc 0.133036302 0.138531445 0.2161847 3482.9412</span></span>
+<span><span class="co">#&gt; 2      pira 0.034258127 0.000000000        NA  427.5841</span></span>
+<span><span class="co">#&gt; 3   twoearn 0.006378656 0.002673909        NA -529.3091</span></span></code></pre></div>
 </div>
   </div>
 
