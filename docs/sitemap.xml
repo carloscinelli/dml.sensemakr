@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>/404.html</loc>
+  </url>
+  <url>
+    <loc>/articles/dml-401k.html</loc>
+  </url>
+  <url>
+    <loc>/articles/dmm-401k.html</loc>
+  </url>
+  <url>
+    <loc>/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>/authors.html</loc>
+  </url>
+  <url>
+    <loc>/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/coef.dml.html</loc>
+  </url>
+  <url>
+    <loc>/reference/confidence_bounds.html</loc>
+  </url>
+  <url>
+    <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/ovb_contour_plot.html</loc>
+  </url>
+  <url>
+    <loc>/reference/robustness_value.html</loc>
+  </url>
+</urlset>
