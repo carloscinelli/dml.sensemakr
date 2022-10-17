@@ -121,13 +121,13 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 27.006%), treatment (ranger, R2 = 11.493%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.858%), treatment (ranger, R2 = 11.435%)</span></span>
 <span><span class="co">#&gt;  Tuning: clean </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8822.1     1385.5  6.3672 1.925e-10 ***</span></span>
+<span><span class="co">#&gt; ate   8950.0     1375.3  6.5078 7.627e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -135,27 +135,25 @@
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.07156923</span></span>
+<span><span class="co">#&gt; 0.07230411</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.05270498</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.05337206</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds under posited scenario</span></span>
 <span><span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           lwr       upr</span></span>
-<span><span class="co">#&gt; ate  2317.562 15407.036</span></span>
+<span><span class="co">#&gt; ate  2431.305 15471.045</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
 <span><span class="co">#&gt; Sensitivity parameters: r2ya.dx = 0.04; r2.rr = 0.03; rho2 = 1.</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># sensitivity contour plots</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, which.bound <span class="op">=</span> <span class="st">"lwr"</span>, </span>
-<span>                 r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
-<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, which.bound <span class="op">=</span> <span class="st">"upr"</span>, </span>
-<span>                 r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
-<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, which.bound <span class="op">=</span> <span class="st">"lwr"</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
+<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, which.bound <span class="op">=</span> <span class="st">"upr"</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
+<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="dml-401k_files/figure-html/unnamed-chunk-7-1.png" width="1152"></p>
 </div>
 <div class="section level2">
@@ -191,23 +189,23 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.721%), treatment (ranger, R2 = 11.517%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.127%), treatment (ranger, R2 = 11.621%)</span></span>
 <span><span class="co">#&gt;  Tuning: clean </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7989.1     1180.6   6.767 1.315e-11 ***</span></span>
+<span><span class="co">#&gt; ate   8019.2     1233.7  6.5003 8.017e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; gate.q1  4322.03     858.85  5.0323 4.845e-07 ***</span></span>
-<span><span class="co">#&gt; gate.q2  2749.67    1327.52  2.0713 0.0383332 *  </span></span>
-<span><span class="co">#&gt; gate.q3  6836.31    1854.94  3.6855 0.0002283 ***</span></span>
-<span><span class="co">#&gt; gate.q4 18115.48    4025.09  4.5006 6.775e-06 ***</span></span>
+<span><span class="co">#&gt; gate.q1   4367.7      845.0  5.1688 2.355e-07 ***</span></span>
+<span><span class="co">#&gt; gate.q2   2756.3     1303.2  2.1151  0.034418 *  </span></span>
+<span><span class="co">#&gt; gate.q3   6904.5     1873.2  3.6858  0.000228 ***</span></span>
+<span><span class="co">#&gt; gate.q4  17941.2     4245.9  4.2255 2.384e-05 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -228,10 +226,10 @@
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate    gate.q1    gate.q2    gate.q3    gate.q4 </span></span>
-<span><span class="co">#&gt; 0.06060851 0.09940249 0.04508581 0.06794165 0.09167264</span></span>
+<span><span class="co">#&gt; 0.06055296 0.09989675 0.04538991 0.06890869 0.08943171</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
-<span><span class="co">#&gt;         ate     gate.q1     gate.q2     gate.q3     gate.q4 </span></span>
-<span><span class="co">#&gt; 0.045462937 0.067436920 0.008050924 0.035499473 0.059100541</span></span></code></pre></div>
+<span><span class="co">#&gt;        ate    gate.q1    gate.q2    gate.q3    gate.q4 </span></span>
+<span><span class="co">#&gt; 0.04498911 0.07003503 0.00873519 0.03618454 0.05587322</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># bounds and confidence bounds </span></span>
 <span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -239,12 +237,12 @@
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">.95</span><span class="op">)</span></span>
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cbds</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.cbound"</span>, <span class="st">"upr.cbound"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">bds</span>, <span class="va">cbds</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          lwr.bound upr.bound lwr.cbound upr.cbound</span></span>
-<span><span class="co">#&gt; ate      3495.5393 12482.740  1499.9796  14522.208</span></span>
-<span><span class="co">#&gt; gate.q1  2870.7174  5773.339  1458.8422   7216.911</span></span>
-<span><span class="co">#&gt; gate.q2   653.4936  4845.841 -1955.3800   6790.305</span></span>
-<span><span class="co">#&gt; gate.q3  3419.5708 10253.053   105.6763  13337.489</span></span>
-<span><span class="co">#&gt; gate.q4 11491.2385 24739.718  4907.9396  31528.692</span></span></code></pre></div>
+<span><span class="co">#&gt;         lwr.bound upr.bound lwr.cbound upr.cbound</span></span>
+<span><span class="co">#&gt; ate      3504.435 12534.035   1431.931  14670.749</span></span>
+<span><span class="co">#&gt; gate.q1  2939.741  5793.193   1579.456   7247.700</span></span>
+<span><span class="co">#&gt; gate.q2   669.492  4843.202  -1900.394   6746.413</span></span>
+<span><span class="co">#&gt; gate.q3  3503.851 10277.391    180.541  13386.734</span></span>
+<span><span class="co">#&gt; gate.q4 11203.767 24678.634   4298.387  31873.003</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds plot</span></span>
 <span><span class="va">df2</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">bds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span>, <span class="va">cbds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -258,12 +256,10 @@
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># sensitivity contour plots</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, which.bound <span class="op">=</span> <span class="st">"lwr"</span>, </span>
-<span>                 r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
-<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, which.bound <span class="op">=</span> <span class="st">"upr"</span>, </span>
-<span>                 r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
-<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, which.bound <span class="op">=</span> <span class="st">"lwr"</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
+<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, which.bound <span class="op">=</span> <span class="st">"upr"</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
+<span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="dml-401k_files/figure-html/unnamed-chunk-14-1.png" width="1152"></p>
 </div>
   </div>

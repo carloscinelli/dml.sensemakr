@@ -61,12 +61,10 @@ confidence_bounds(dml.401k.plm, r2ya.dx = 0.04, r2.rr = 0.03, level = 0.95)
 ```{r, fig.width=12}
 # sensitivity contour plots
 par(mfrow = c(1,2))
-ovb_contour_plot(dml.401k.plm, which.bound = "lwr", 
-                 r2ya.dx = 0.04, r2.rr = 0.03, 
-                 bound.label = "Max match (3 years)")
-ovb_contour_plot(dml.401k.plm, which.bound = "upr", 
-                 r2ya.dx = 0.04, r2.rr = 0.03, 
-                 bound.label = "Max match (3 years)")
+ovb_contour_plot(dml.401k.plm, which.bound = "lwr", r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)", col.contour = "blue")
+ovb_contour_plot(dml.401k.plm, which.bound = "upr", r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)", col.contour = "blue")
 ```
 
 # Nonparametric Model
@@ -130,11 +128,9 @@ ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
 ```{r, fig.width=12}
 # sensitivity contour plots
 par(mfrow = c(1,2))
-ovb_contour_plot(dml.401k.npm, which.bound = "lwr", 
-                 r2ya.dx = 0.04, r2.rr = 0.03, 
-                 bound.label = "Max match (3 years)")
-ovb_contour_plot(dml.401k.npm, which.bound = "upr", 
-                 r2ya.dx = 0.04, r2.rr = 0.03, 
-                 bound.label = "Max match (3 years)")
+ovb_contour_plot(dml.401k.npm, which.bound = "lwr", r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)", col.contour = "blue")
+ovb_contour_plot(dml.401k.npm, which.bound = "upr", r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)", col.contour = "blue")
 ```
 
