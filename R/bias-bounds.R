@@ -189,7 +189,7 @@ confidence_bounds.dml.bounds <- function(model,
   out <- out[, return, drop = F]
   attr(out, "conf.levels") <- c(point = level, region = level2)
   attr(out, "sens.param")  <- model$info
-  class(out) <- "confidence.bounds"
+  class(out) <- c("confidence.bounds", "matrix")
   out
 }
 

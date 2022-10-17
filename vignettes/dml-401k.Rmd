@@ -1,8 +1,8 @@
 ---
-title: "dml-401k"
+title: "Sensitivity 401k"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{dmm-401k}
+  %\VignetteIndexEntry{dml-401k}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,41 +10,131 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 6, 
+  fig.height = 6
 )
 ```
 
 ```{r setup}
 library(dml.sensemakr)
+library(ggplot2)
 ```
 
 # Loads data
+
 ```{r}
 ## loads data
 data("pension")
 y <- pension$net_tfa # net total financial assets
 d <- pension$e401 # 401K eligibility
 x <- model.matrix(~ -1 + age + inc + educ+ fsize + marr + twoearn + pira + hown, data = pension)
+x <- apply(x, 2, scale) # scale covariates
 ```
 
 # Partially Linear Model
 
-Run DML
-
 ```{r}
-dml.401k.plm <- dml(y, d, x, cf.folds = 2, cf.reps = 1)
+# run DML
+dml.401k.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
 ```
 
-Results
 
-```{r, fig.width=6, fig.height=6}
+
+```{r}
+# results under ignorability
 summary(dml.401k.plm)
-confint(dml.401k.plm)
 ```
 
-Sensitivity
+```{r}
+# robustness values
+robustness_value(dml.401k.plm, alpha = 1) # RV point estimate
+robustness_value(dml.401k.plm, alpha = 0.05) # RV confidence bound
+```
 
 ```{r}
+# confidence bounds under posited scenario
+confidence_bounds(dml.401k.plm, r2ya.dx = 0.04, r2.rr = 0.03, level = 0.95)
+```
 
+
+```{r, fig.width=12}
+# sensitivity contour plots
+par(mfrow = c(1,2))
+ovb_contour_plot(dml.401k.plm, which.bound = "lwr", 
+                 r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)")
+ovb_contour_plot(dml.401k.plm, which.bound = "upr", 
+                 r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)")
+```
+
+# Nonparametric Model
+
+```{r}
+## compute income quartiles
+g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE), 
+          labels = c("q1", "q2", "q3", "q4"), include.lowest = T)
+
+## Nonparametric model
+dml.401k.npm <- dml(y, d, x, groups = g1, model = "npm", cf.folds = 5, cf.reps = 5)
+```
+
+
+
+```{r}
+# results under ignorability
+summary(dml.401k.npm)
+```
+
+```{r}
+# coefficient plot under ignorability
+df   <- data.frame(groups = 1:4, estimate = coef(dml.401k.npm)[-1])
+cis  <- confint(dml.401k.npm)[-1, ]
+cis  <- setNames(as.data.frame(cis), c("lwr.ci", "upr.ci"))
+df   <- cbind(df, cis)
+ggplot(df, aes(x = groups, y = estimate)) + geom_line() +
+  geom_ribbon(aes(ymin = lwr.ci, ymax = upr.ci), alpha = 0.1, col = "blue", fill = "blue") +
+  theme_bw() + 
+  xlab("Income Groups by Quartiles") + 
+  ylab("ATE")
+```
+
+
+```{r}
+# robustness values
+robustness_value(dml.401k.npm, alpha = 1) # RV point estimate
+robustness_value(dml.401k.npm, alpha = 0.05) # RV confidence bound
+```
+
+```{r}
+# bounds and confidence bounds 
+bds   <- confidence_bounds(dml.401k.npm, r2ya.dx = 0.04, r2.rr = 0.03, level = 0)
+bds   <- setNames(as.data.frame(bds), c("lwr.bound", "upr.bound"))
+cbds  <- confidence_bounds(dml.401k.npm, r2ya.dx = 0.04, r2.rr = 0.03, level = .95)
+cbds  <- setNames(as.data.frame(cbds), c("lwr.cbound", "upr.cbound"))
+cbind(bds, cbds)
+```
+
+```{r}
+# confidence bounds plot
+df2   <- cbind(df, bds[-1,], cbds[-1, ])
+ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
+  geom_ribbon(aes(ymin = lwr.bound, ymax = upr.bound),   alpha = 0.1, col = "red", fill = "red") +
+  geom_ribbon(aes(ymin = lwr.cbound, ymax = upr.cbound), alpha = 0.1, col = "blue", fill = "blue") +
+  theme_bw() + 
+  xlab("Income Groups by Quartiles") + 
+  ylab("ATE")
+```
+
+```{r, fig.width=12}
+# sensitivity contour plots
+par(mfrow = c(1,2))
+ovb_contour_plot(dml.401k.npm, which.bound = "lwr", 
+                 r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)")
+ovb_contour_plot(dml.401k.npm, which.bound = "upr", 
+                 r2ya.dx = 0.04, r2.rr = 0.03, 
+                 bound.label = "Max match (3 years)")
 ```
 
