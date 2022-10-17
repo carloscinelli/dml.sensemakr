@@ -1,4 +1,18 @@
-url: ~
-template:
-  bootstrap: 5
+destination: docs
 
+template:
+  params:
+    bootswatch: cosmo
+    ganalytics: UA-158095434-1
+
+authors:
+
+navbar:
+  structure:
+    left: [home, articles, reference]
+    right: [github]
+  components:
+    home: ~
+    articles:
+      href: articles/index.html
+      text: Articles
