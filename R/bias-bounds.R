@@ -1,7 +1,7 @@
 
 # bounds functions --------------------------------------------------------
 bias.factor <- function(r2ya.dx = 0.03, r2.rr = 0.04, rho2 = 1){
-  sqrt(rho2*r2ya.dx*(r2.rr/(1-r2.rr)))
+  sqrt(rho2*r2ya.dx*(r2.rr/(1 - r2.rr)))
 }
 
 
@@ -28,7 +28,7 @@ bounds <- function(short.results, r2ya.dx = 0.04, r2.rr = 0.03, rho2 = 1){
 
   # bounds IFs
   psi.S2         <- (sigma2.s*(psi.nu2.s) + nu2.s*psi.sigma2.s)
-  psi.bias.bound <- (bf/2) * (1/S)*psi.S2
+  psi.bias.bound <- (bf/2) * (1/S) * psi.S2
   psi.theta.m    <- psi.theta.s - psi.bias.bound
   psi.theta.p    <- psi.theta.s + psi.bias.bound
 
@@ -87,7 +87,7 @@ dml_bounds <- function(dml.fit, r2ya.dx, r2.rr, rho2 = 1){
   out$coefs$main <- main.coefs
 
   groups <- dml.fit$results$groups
-  if(!is.null(groups)){
+  if (!is.null(groups)) {
     groups.bounds <- lapply(groups,
                             function(x) lapply(x,
                                                bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2))
@@ -100,14 +100,18 @@ dml_bounds <- function(dml.fit, r2ya.dx, r2.rr, rho2 = 1){
 }
 
 
-
-#'@export
+#' Compute confidence bounds
+#' @description
+#'
+#' @export
 confidence_bounds <- function(model, ...){
   UseMethod("confidence_bounds")
 }
 
 
-##'@export
+
+#' @export
+#' @rdname confidence_bounds
 confidence_bounds.numeric <- function(theta.s, S2,
                                       se.theta.s, se.S2,
                                       cov.theta.S2,
@@ -115,11 +119,12 @@ confidence_bounds.numeric <- function(theta.s, S2,
                                       rho2 = 1,
                                       combine.method = "median",
                                       level = 0.95){
-  k = bias.factor(r2ya.dx =r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+  k = bias.factor(r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
   se.m <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 - (k/sqrt(S2))*cov.theta.S2)
   se.p <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 + (k/sqrt(S2))*cov.theta.S2)
-  theta.m <-  theta.s - k*sqrt(S2)
+  theta.m <- theta.s - k*sqrt(S2)
   theta.p <- theta.s + k*sqrt(S2)
+  level[level < 0.5] <- 0.5
   t_crit <- qnorm(level)
   lwr <- combine.median(theta.m, se.m)
   upr <- combine.median(theta.p, se.p)
@@ -128,7 +133,8 @@ confidence_bounds.numeric <- function(theta.s, S2,
   c(lwr = lwr, upr = upr)
 }
 
-##'@export
+#' @export
+#' @rdname confidence_bounds
 confidence_bounds.dml <- function(model,
                                   r2ya.dx,
                                   r2.rr,
@@ -141,7 +147,8 @@ confidence_bounds.dml <- function(model,
 
 
 
-#'@export
+#' @export
+#' @rdname confidence_bounds
 confidence_bounds.dml.bounds <- function(model,
                                          r2ya.dx = NULL,
                                          r2.rr = NULL,
@@ -151,17 +158,17 @@ confidence_bounds.dml.bounds <- function(model,
                                          return = c("lwr", "upr"),
                                          ...){
 
-  if(!is.null(r2ya.dx) | !is.null(r2.rr)| !is.null(rho2)){
+  if (!is.null(r2ya.dx) | !is.null(r2.rr) | !is.null(rho2)) {
 
-    if(is.null(r2ya.dx)){
+    if (is.null(r2ya.dx)) {
       r2ya.dx <- model$info$r2ya.dx
     }
 
-    if(is.null(r2.rr)){
+    if (is.null(r2.rr)) {
       r2.rr <- model$info$r2.rr
     }
 
-    if(is.null(rho2)){
+    if (is.null(rho2)) {
       rho2 <- model$info$rho2
     }
 
@@ -170,13 +177,13 @@ confidence_bounds.dml.bounds <- function(model,
 
   }
 
-  level2 = max(0, 1 - (1-level)*2)
+  level2 = max(0, 1 - (1 - level)*2)
 
   confs <- confint(model, level = level2, combine.method = combine.method)
 
-  if(is.list(confs)){
+  if (is.list(confs)) {
     out <- t(sapply(confs, function(x) c(lwr = x["theta.m",1], upr = x["theta.p",2])))
-  }else{
+  } else {
     out <- rbind(ate = c(lwr = confs["theta.m",1], upr = confs["theta.p",2]))
   }
   out <- out[, return, drop = F]
@@ -187,30 +194,30 @@ confidence_bounds.dml.bounds <- function(model,
 }
 
 
-rv_fun <- function(dml.fit, rv, par, side = "lwr",theta = 0, alpha = 0.05){
-  (confidence_bounds(dml.fit,  r2ya.dx = rv,r2.rr = rv, level = 1-alpha)[par,side] - theta)^2
+rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
+  (confidence_bounds(dml.fit,  r2ya.dx = rv,r2.rr = rv, level = 1 - alpha)[par,side] - theta)^2
 }
 
 
 ##' Computes Robustness Values for Debiased Machine Learning
 ##'
 ##' @export
-robustness_value <-sensemakr::robustness_value
+robustness_value <- sensemakr::robustness_value
 
 ##' @rdname robustness_value
 ##'@exportS3Method sensemakr::robustness_value dml
 ##'@exportS3Method dml.sensemakr::robustness_value dml
 robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
-  conf <- confint(model, level = 1-alpha,...)
+  conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA,nrow(conf)), rownames(conf))
-  for(i in 1:nrow(conf)){
-    if(conf[i,1] <= theta & theta <= conf[i,2]){
+  for (i in 1:nrow(conf)) {
+    if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
     }
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
-    fn <- function(rv) rv_fun(rv, dml.fit = model, par=names(out)[i],
+    fn <- function(rv) rv_fun(rv, dml.fit = model, par = names(out)[i],
                               side = side, theta = theta, alpha = alpha)
-    out[i] <- optim(par = c(0.01), fn, lower=0, upper = 1, method = "Brent")$par
+    out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
   }
   return(out)
   # grid <- seq(0, 0.99,by = 0.001)
@@ -224,16 +231,16 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
 ##'@exportS3Method dml.sensemakr::robustness_value dml.bounds
 robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, ...){
   model <- model$dml.fit
-  conf <- confint(model, level = 1-alpha,...)
+  conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA,length(conf)), names(conf))
-  for(i in 1:nrow(conf)){
-    if(conf[i,1] <= theta & theta <= conf[i,2]){
+  for (i in 1:nrow(conf)) {
+    if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
     }
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
-    fn <- function(rv) rv_fun(rv, dml.fit = model, par=names(out)[i],
+    fn <- function(rv) rv_fun(rv, dml.fit = model, par = names(out)[i],
                               side = side, theta = theta, alpha = alpha)
-    out[i] <- optim(par = c(0.01), fn, lower=0, upper = 1, method = "Brent")$par
+    out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
   }
   return(out)
   # grid <- seq(0, 0.99,by = 0.001)

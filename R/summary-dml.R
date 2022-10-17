@@ -18,7 +18,7 @@ summary.dml <- function(object, combine.method = "median", ...){
 
   # check for groups
   no.groups <- is.null(object$coefs$groups)
-  if(!no.groups){
+  if (!no.groups) {
     groups <- lapply(object$coefs$groups, function(x) x[combine.method, ])
     groups <- do.call("rbind", groups)
     rownames(groups) <- paste0("gate.", rownames(groups))
@@ -30,11 +30,12 @@ summary.dml <- function(object, combine.method = "median", ...){
   return(out)
 }
 
-
+#' Extract Model Coefficients for DML
+#'
 #' @export
 coef.dml <- function(object, combine.method = "median", ...){
   ate <- object$coefs$main[combine.method, "estimate"]
-  if(!is.null(object$coef$groups)){
+  if (!is.null(object$coef$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "estimate"])
   } else{
     gate = NULL
@@ -58,7 +59,8 @@ se.dml <- function(object, combine.method = "median", ...){
   c(ate= ate, gate = gate)
 }
 
-
+#' Confidence Intervals for DML
+#' @rdname coef.dml
 #' @export
 confint.dml <- function(object, parm = NULL, level = 0.95, combine.method = "median", ...){
   cf  <- coef(object, combine.method = combine.method)

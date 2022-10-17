@@ -14,7 +14,16 @@ g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE),
 
 
 # Partially Linear Model --------------------------------------------------
-dml.401k.plm <- dml(y, d, x, model = "plm")
+
+set.seed(10)
+dml.401k.plm <- dml(y, d, x,
+                    y.reg = "nnet",
+                    y.trControl = trainControl(method = "cv", number = 5),
+                    y.tuneLength = 10,
+                    dirty.tuning = T,
+                    model = "npm",
+                    groups = g1,
+                    cf.folds = 2)
 
 ## Results under unconfoundedness
 summary(dml.401k.plm)

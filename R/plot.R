@@ -1,6 +1,8 @@
-##' @import ggplot2
-##' @export
-plot.dml <- function(x, combine.method = "median", level = 0.95,...) {
+#' @description Plots
+#'
+#' @import ggplot2
+#' @export
+plot.dml <- function(x, combine.method = "median", level = 0.95, ...) {
   estimate <- coef(x, combine.method = combine.method)
   conf <- confint(x, combine.method = combine.method, level = level)
   coef_plot(labels = names(estimate),
@@ -12,16 +14,17 @@ plot.dml <- function(x, combine.method = "median", level = 0.95,...) {
 ##' @export
 plot.dml.bounds <- function(x,
                             type = c("confidence_bounds","all"),
-                            combine.method = "median", level = 0.95,...) {
+                            combine.method = "median", level = 0.95,
+                            ...) {
   type <- match.arg(type)
-  if(type == "confidence_bounds"){
+  if (type == "confidence_bounds") {
     plot.bounds2(x = x, combine.method = combine.method, level = level,...)
-  } else{
+  } else {
     plot.bounds1(x = x, combine.method = combine.method, level = level,...)
   }
 }
 
-plot.bounds2 <- function(x, combine.method = "median", level = 0.95,...){
+plot.bounds2 <- function(x, combine.method = "median", level = 0.95, ...){
   coef_plot(estimate = coef(x)["theta.s", ],
              labels =  names(coef(x)["theta.s", ]),
              lwr1 = coef(x)["theta.m", ],

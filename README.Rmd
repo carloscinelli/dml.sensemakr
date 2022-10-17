@@ -121,7 +121,9 @@ confidence_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, level = 0.95)
 ### Contour Plots
 
 ```{r}
-ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, level = 0.95)
+ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, rho2 = 1,
+                 bound.label = "Max Match (3x years)",
+                 col.contour = "blue")
 ```
 
 

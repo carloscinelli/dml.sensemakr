@@ -34,8 +34,7 @@ cross.fitting <- function(y, d, x,
   dx   <- data.frame(d, x)
   dx0  <- data.frame("d" = rep(d0, nobs), x)
   dx1  <- data.frame("d" = rep(d1, nobs), x)
-
-  if (verbose) cat(" Folds: ")
+  if (verbose) cat(" -- Folds: ")
   for(b in 1:length(Id)){
 
     if (verbose) cat(b," ")
@@ -70,7 +69,7 @@ cross.fitting <- function(y, d, x,
 
     if(model == "npm"){
       # y model for npm
-      args.ydx  <- c(list(x = dx[ -Id[[b]], ,drop = F], y = y[ -Id[[b]] ] ), yreg)
+      args.ydx  <- c(list(x = dx[ -Id[[b]], ,drop = F], y = y[ -Id[[b]] ]), yreg)
       model.ydx <- silent.do.call(what = "train", args = args.ydx, warnings = warnings)
       metric.y <- model.ydx$metric
 
@@ -109,7 +108,7 @@ silent.do.call <- function(..., warnings = F) {
   if(warnings){
     out <- do.call(...)
   } else {
-    out <- suppressWarnings(do.call(...))
+    messages <- capture.output(out <- suppressMessages(suppressWarnings(do.call(...))))
   }
   return(out)
 }

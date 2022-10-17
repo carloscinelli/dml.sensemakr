@@ -7,14 +7,10 @@ dml <- function(y, d, x,
                 binary.y = F,
                 binary.d = F,
                 cf.folds = 5,
-                cf.reps  = 1,
-                ps.trim = 0.02,
-                yreg = list(method = "ranger",
-                            trControl = list(method = "none"),
-                            tuneGrid  = data.frame(mtry = sqrt(ncol(x)), splitrule = "variance", min.node.size = 5)),
-                dreg = list(method    = "ranger",
-                            trControl = list(method = "none"),
-                            tuneGrid  = data.frame(mtry = sqrt(ncol(x)), splitrule = "variance", min.node.size = 5)),
+                cf.reps  = 5,
+                ps.trim = 0.01,
+                yreg = list(method = "ranger"),
+                dreg = yreg,
                 dirty.tuning = FALSE,
                 save.models = F,
                 verbose = TRUE,
@@ -24,40 +20,38 @@ dml <- function(y, d, x,
   model   <- match.arg(model)
 
 
-  if(is.numeric(x) && !is.matrix(x)){
+  if (is.numeric(x) && !is.matrix(x)) {
     x <- as.matrix(x)
     colnames(x) <- "x"
   }
 
-  if(is.null(colnames(x))){
+  if (is.null(colnames(x))) {
     colnames(x) <- paste0("x", 1:ncol(x))
   }
 
-  if(model == "npm"){
+  if (model == "npm") {
     d.value <- unique(d)
     binary <- all(d.value %in% c(0,1))
-    if(!binary) stop("Treatment must be binary for nonparametric model (model = npm).")
+    if (!binary) stop("Treatment must be binary for nonparametric model (model = npm).")
   }
 
-  if(cf.folds < 2){
+  if (cf.folds < 2) {
     cf.folds <- 2
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
 
 
   out <- list()
-  out$data <- list(y = y, d= d, x = x)
+  out$data <- list(y = y, d = d, x = x)
   out$call <-   match.call()
 
-  if(binary.y){
+  if (binary.y) {
     y <- factor(y, levels = c(0,1), labels = c("zero", "one"))
   }
 
-  if(binary.d){
+  if (binary.d) {
     d <- factor(d, levels = c(0,1), labels = c("zero", "one"))
   }
-
-
 
 
   out$info <- list(model = model,
@@ -67,18 +61,14 @@ dml <- function(y, d, x,
                    yreg = yreg,
                    dreg = dreg)
 
-  yreg$trControl$classProbs <- T
-  dreg$trControl$classProbs <- T
-  yreg$trControl <- do.call("trainControl", yreg$trControl)
-  dreg$trControl <- do.call("trainControl", dreg$trControl)
+  yreg <- caretArgs(yreg)
+  dreg <- caretArgs(dreg)
 
-
-  if(verbose){
-    cat("\f")
+  if (verbose) {
     cat("Debiased Machine Learning\n")
   }
 
-  if (dirty.tuning){
+  if (dirty.tuning) {
 
     if(verbose){
       cat("\n")
@@ -113,7 +103,7 @@ dml <- function(y, d, x,
     cat("======================================\n\n")
   }
   for(i in 1:cf.reps){
-    cat("-- Rep", i, "--")
+    cat("-- Rep", i)
     cross.fit.i    <- cross.fitting(y            = y,
                                     d            = d,
                                     x            = x,
@@ -147,7 +137,7 @@ dml <- function(y, d, x,
                               num(d),
                               yhat1, yhat0, dhat, trim = ps.trim)
     }
-    cat("\n")
+    if(verbose) cat("\n")
   }
 
   out$fits <- fits
@@ -251,3 +241,25 @@ combine.mean <- function(thetas, ses){
   se.mean.theta   <- sqrt(mean(ses^2) + ss/length(ses))
   c(estimate = mean.theta,   se = se.mean.theta)
 }
+
+caretArgs <- function(reg){
+  if (is.character(reg)) {
+    reg <- list(method = reg)
+  }
+  if (is.character(reg$method)) {
+
+    if (!is.null(models[[reg$method]])) {
+       reg$method <- models[[reg$method]]
+    }
+  }
+
+  if (is.null(reg$trControl)) {
+    reg$trControl <- trainControl(method = "none")
+  } else {
+    reg$trControl <- do.call("trainControl", reg$trControl)
+  }
+  reg$trControl$classProbs <- T
+
+  return(reg)
+}
+

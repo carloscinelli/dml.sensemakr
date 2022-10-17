@@ -37,7 +37,8 @@ ovb_contour_plot(model, ...)
   round = 0,
   cex.label.text = 0.7,
   label.bump.x = NULL,
-  label.bump.y = NULL
+  label.bump.y = NULL,
+  list.par = NULL
 )
 }
 \description{

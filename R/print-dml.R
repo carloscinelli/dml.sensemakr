@@ -7,8 +7,8 @@ print.summary_dml <- function(x, ...){
   cat("", "Model:", ifelse(x$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
   cat("", "Cross-Fitting:",x$info$cf.folds, "folds,", x$info$cf.reps, "reps", "\n")
   cat("", "ML Method:",
-      "outcome", paste0("(",x$info$yreg$method, ", R2 = ", round(x$r2y,3), "),"),
-      "treatment", paste0("(",x$info$dreg$method,", R2 = ", round(x$r2d,3), ")\n"))
+      "outcome", paste0("(",x$info$yreg$method, ", R2 = ", round(x$r2y*100,3), "%),"),
+      "treatment", paste0("(",x$info$dreg$method,", R2 = ", round(x$r2d*100,3), "%)\n"))
   cat("", "Tuning:", ifelse(x$info$dirty.tuning, "dirty", "clean"), "\n")
 
   cat("\n")
@@ -17,7 +17,7 @@ print.summary_dml <- function(x, ...){
   print(x$main)
 
   no.groups <- is.null(x$groups)
-  if(!no.groups){
+  if (!no.groups) {
     cat("\n")
     cat("Group Average Treatment Effect:", "\n\n")
     print(x$groups)
