@@ -16,7 +16,7 @@ ovb_contour_plot(model, ...)
   r2ya.dx = NULL,
   r2.rr = r2ya.dx,
   bound.label = "Manual",
-  group = F,
+  group = FALSE,
   group.number = 1,
   threshold = 0,
   lim.x = 0.15,
@@ -41,6 +41,81 @@ ovb_contour_plot(model, ...)
   list.par = NULL
 )
 }
+\arguments{
+\item{model}{an object of class \code{\link{dml}}.}
+
+\item{...}{arguments passed to other methods.}
+
+\item{which.bound}{show contours for the lower limit (\code{lwr}) or upper limit (\code{upr}) of confidence bounds?}
+
+\item{level}{confidence level. Default is \code{0.95}.}
+
+\item{combine.method}{method to combine the results of each repetition of the DML fit. Options are \code{mean} and \code{median}. Default is \code{median}.}
+
+\item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
+
+\item{r2ya.dx}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
+
+\item{r2.rr}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
+
+\item{bound.label}{text label for the manual bound provided via \code{r2ya.dx} and \code{r2.rr}.}
+
+\item{group}{contour plots for main analysis or group analysis? Default is \code{FALSE} (main analysis).}
+
+\item{group.number}{if \code{group = TRUE}, provide the number (level) of the group.}
+
+\item{threshold}{critical threshold of interest. Default is \code{0}.}
+
+\item{lim.x}{sets limit for x-axis. If `NULL`, limits are computed automatically.}
+
+\item{lim.y}{sets limit for y-axis. If `NULL`, limits are computed automatically.}
+
+\item{asp}{the y/x aspect ratio. Default is 1.}
+
+\item{nlevels}{number of levels for the contour plot.}
+
+\item{grid.number}{approximate number of grid points on each axis.}
+
+\item{col.contour}{color of contour lines.}
+
+\item{col.thr.line}{color of threshold contour line.}
+
+\item{xlab}{label of x axis. If `NULL`, default label is used.}
+
+\item{ylab}{label of y axis. If `NULL`, default label is used.}
+
+\item{cex.lab}{The magnification to be used for x and y labels relative to the current setting of cex.}
+
+\item{cex.axis}{The magnification to be used for axis annotation relative to the current setting of cex.}
+
+\item{cex.main}{The magnification to be used for main titles relative to the current setting of cex.}
+
+\item{show.unadjusted}{should the unadjusted estimates be shown? Default is `TRUE`.}
+
+\item{label.unadjusted}{label for the unadjusted estimate. Default is \code{"Unadjusted"}.}
+
+\item{label.text}{should label texts be plotted? Default is \code{TRUE}.}
+
+\item{round}{number of digits to show in contours and bound values}
+
+\item{cex.label.text}{The magnification to be used for label text relative to the current setting of cex.}
+
+\item{label.bump.x}{bump on the x coordinate of label text.}
+
+\item{label.bump.y}{bump on the y coordinate of label text.}
+
+\item{list.par}{arguments to be passed to \code{\link{par}}. It needs to be a named list.}
+}
 \description{
-Contour plots of omitted variable bias for Debiased Machine Learning
+Contour plots of omitted variable bias for sensitivity analysis. The main input is a \code{\link{dml}} model.
+
+The vertical axis shows the partial R2 of the omitted variables with the outcome, i.e, the maximum proportion of the residual variation of the outcome that could be explained by latent variables.
+
+The horizontal axis shows the proportion of variation in the long Riesz Representer which is not explained by the short Riesz Representer (RR). This indicates how much variation in the RR is created by latent variables. In the partial linear model, this quantity paralels the sensitivity parameter for the outcome, and simply equals the partial R2 of latent variables with the treatment, i.e, the maximum proportion of the residual variation of the treatment that could be explained by latent variables. In the non-parametric model with a binary treatment, the interpretation is analagous, but instead of gains in variance, it stands for the gains in precision (1/variance).
+
+The contour levels represent the lower (upper) limit of the confidence bound for the target of interest, considering omitted variables with the postulated strength.
+
+ The dotted red line shows the chosen critical threshold (for instance, zero).
+
+ Almost all parameters can be customized by the user.
 }

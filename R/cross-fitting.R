@@ -2,8 +2,7 @@
 ##'@importFrom  caret trainControl
 cross.fitting <- function(y, d, x,
                           model = c("plm","npm"),
-                          d1 = 1,
-                          d0 = 0,
+                          d1 = 1, d0 = 0,
                           cf.folds = 5,
                           yreg = list(method = "ranger",
                                       trControl = trainControl(method = "none"),
@@ -65,6 +64,7 @@ cross.fitting <- function(y, d, x,
       # y model for plm
       if (is.numeric(y)) {
         ytil <- y[ -Id[[b]] ]
+        # min-max normalization
         muy <- min(ytil)
         sdy <- max(ytil) - min(ytil)
         ytil <- (ytil - muy)/sdy
@@ -93,6 +93,7 @@ cross.fitting <- function(y, d, x,
 
       if (is.numeric(d)) {
         dtil <- d[ -Id[[b]] ]
+        # min-max normalization
         mud <- min(dtil)
         sdd <- max(dtil) - min(dtil)
         dtil <- (dtil - mud)/sdd
@@ -113,6 +114,7 @@ cross.fitting <- function(y, d, x,
       # y model for npm
       if (is.numeric(y)) {
         ytil <- y[ -Id[[b]] ]
+        # min-max normalization
         muy <- min(ytil)
         sdy <- max(ytil) - min(ytil)
         ytil <- (ytil - muy)/sdy
@@ -169,7 +171,7 @@ silent.do.call <- function(..., warnings = F) {
 
 safe.predict <- function(model, newdata){
   type <- model$modelType
-  if(type=="Regression"){
+  if(type == "Regression"){
     pred <- predict(object=model, newdata = newdata)
   } else {
     pred <- predict(object=model, newdata =newdata, type = "prob")

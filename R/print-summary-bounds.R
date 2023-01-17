@@ -91,11 +91,11 @@ se.dml.bounds <- function(object, combine.method = "median", ...){
 
 
 #' @export
-confint.dml.bounds <- function(object, parm = NULL, level = 0.95, combine.method = "median", ...){
+confint.dml.bounds <- function(object, params = NULL, level = 0.95, combine.method = "median", ...){
   cf  <- t(coef(object, combine.method = combine.method))
   ses <- t(se(object, combine.method = combine.method))
   loop <- setNames(rownames(cf), rownames(cf))
-  out <- lapply(loop , function(x)calc_confint(cf =cf[x,], parm = parm, ses =ses[x,], level = level))
+  out <- lapply(loop , function(x)calc_confint(cf =cf[x,], params = params, ses =ses[x,], level = level))
   if(length(out) ==1 ){
     out <- out[[1]]
   }
@@ -117,5 +117,5 @@ print.confidence.bounds <- function(x, ...){
       "r2.rr =",
       paste0(attributes(x)$sens.param["r2.rr"], ";"),
       "rho2 =",
-      paste0(attributes(x)$sens.param["rho2"], "."))
+      paste0(attributes(x)$sens.param["rho2"], ".\n"))
 }

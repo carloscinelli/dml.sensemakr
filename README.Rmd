@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
+`dml.sensemakr` implements a general suite of sensitivity analysis tools for Causal Machine Learning as discussed in [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."](https://www.nber.org/papers/w30302)
+
 
 ## Development version
 
@@ -27,83 +29,93 @@ To install the development version on GitHub make sure you have the package devt
 # install.packages("devtools") 
 devtools::install_github("carloscinelli/dml.sensemakr")
 ```
+# CRAN
+
+CRAN version coming soon.
 
 
+# Details
 
-## Example
+For theoretical details of the method [please see the working paper.](https://www.nber.org/papers/w30302) For a primer on Debiased Machine Learning, 
+[please check Chernozukohv et al (2018).](https://academic.oup.com/ectj/article/21/1/C1/5056401) 
 
-### Data
+Some presentations that may be useful:
+
+- [Carlos' presentation at the ICLR.](http://interactivecausallearning.com/Carlos_Cinelli.html)
+- [Victor's tutorial at the Chamberlain Seminar.](https://www.youtube.com/watch?v=PQtYqKfxH_I)
+
+# Quick Example
+
+
+## Fit DML model
+
+### Load Data
 ```{r example}
 # loads package
 library(dml.sensemakr)
 
 ## loads data
 data("pension")
+
+# set the outcome
 y <- pension$net_tfa  # net total financial assets
-d <-  pension$e401    # 401K eligibility
+
+# set the treatment
+d <- pension$e401    # 401K eligibility
+
+# set the covariates (a matrix)
 x <- model.matrix(~ -1 + age + inc  + educ+ fsize + marr + twoearn + pira + hown, data = pension)
 
-## compute income quartiles
+## compute income quartiles for group ATE.
 g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE), 
           labels = c("q1", "q2", "q3", "q4"), include.lowest = T)
 ```
 
-### Fit DML
+### Use DML to estimate the ATE
+
 ```{r}
 # run DML (nonparametric model)
-dml.401k <- dml(y, d, x, model = "npm", groups = g1, cf.folds = 5, cf.reps = 5)
+## 2 folds (change as needed)
+## 1 repetition (change as needed)
+dml.401k <- dml(y, d, x, model = "npm", groups = g1, cf.folds = 2, cf.reps = 1)
 ```
 
 ### Explore results
 ```{r}
 # summary of results with median method (default)
-summary(dml.401k)
-
-# summary of results with mean method
-summary(dml.401k, combine.method = "mean")
+summary(dml.401k, combine.method = "median")
 ```
 
 ### extract coefs, se, confidence intervals
 ```{r}
 # coef median method (default)
-coef(dml.401k)
-
-# coef mean method (default)
-coef(dml.401k, combine.method = "mean")
+coef(dml.401k, combine.method = "median")
 
 # se median method (default)
-se(dml.401k); 
+se(dml.401k, combine.method = "median")
 
-# se median method (default)
-se(dml.401k, combine.method = "mean")
-
-# confint median method (default)
-confint(dml.401k) 
-
-# confint mean method
-confint(dml.401k, combine.method = "mean")
+# confint median method
+confint(dml.401k, combine.method = "median")
 ```
 
+<!-- ### Coefficients Plot -->
 
+<!-- ```{r} -->
+<!-- plot(dml.401k) -->
+<!-- ``` -->
 
-### plot
+<!-- ### You can add groups after the model is fit -->
 
-```{r}
-plot(dml.401k)
-```
+<!-- ```{r} -->
+<!-- ## compute GATE by married -->
+<!-- g2 <- ifelse(pension$marr, "married", "not.married") -->
+<!-- dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2) -->
+<!-- summary(dml.401k.g2) -->
 
-### You can add groups after the model is fit
-
-```{r}
-## compute GATE by married
-g2 <- ifelse(pension$marr, "married", "not.married")
-dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2)
-summary(dml.401k.g2)
-
-coef(dml.401k.g2)
-confint(dml.401k.g2)
-plot(dml.401k.g2)
-```
+<!-- coef(dml.401k.g2) -->
+<!-- confint(dml.401k.g2) -->
+<!-- plot(dml.401k.g2) -->
+<!-- ``` -->
 
 ## Sensitivity Analysis
 
@@ -112,6 +124,7 @@ plot(dml.401k.g2)
 ```{r}
 robustness_value(dml.401k, alpha = 0.05)
 ```
+
 ### Confidence Bounds
 
 ```{r}
@@ -121,22 +134,20 @@ confidence_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, level = 0.95)
 ### Contour Plots
 
 ```{r}
-ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, rho2 = 1,
-                 bound.label = "Max Match (3x years)",
-                 col.contour = "blue")
+ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, bound.label = "Max Match (3x years)")
 ```
 
 
-### Further results
+<!-- ### Further results -->
 
-```{r}
-bounds.401k <- dml_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04)
-bounds.401k
-```
+<!-- ```{r} -->
+<!-- bounds.401k <- dml_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04) -->
+<!-- bounds.401k -->
+<!-- ``` -->
 
-```{r}
-coef(bounds.401k)
-se(bounds.401k)
-confint(bounds.401k)
-```
+<!-- ```{r} -->
+<!-- coef(bounds.401k) -->
+<!-- se(bounds.401k) -->
+<!-- confint(bounds.401k) -->
+<!-- ``` -->
 

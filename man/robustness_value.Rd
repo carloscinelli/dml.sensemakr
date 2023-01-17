@@ -12,6 +12,17 @@ robustness_value(...)
 
 \method{robustness_value}{dml.bounds}(model, theta = 0, alpha = 0.05, ...)
 }
+\arguments{
+\item{...}{arguments passed to other methods.}
+
+\item{model}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
+
+\item{theta}{the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).}
+
+\item{alpha}{significance level. Default is \code{alpha = 0.05}.}
+}
 \description{
-Computes Robustness Values for Debiased Machine Learning
+This function computes the robustness value of a target parameter estimated via debiased machine learning.
+
+The robustness value describes the minimum strength of association (parameterized in terms of  R2) that omitted variables would need to have both with the outcome and with the Riesz Representer so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
 }

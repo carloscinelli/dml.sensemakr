@@ -21,16 +21,27 @@ library(dml.sensemakr)
 library(ggplot2)
 ```
 
-# Loads data
+Here we reproduce the empirical example of  [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."](https://www.nber.org/papers/w30302) Our goal is to assess the sensitivity of of the estimate of the causal impact of 401(k) eligibility on net financial assets against potential uncontrolled confounding. 
+
+# Load Data
 
 ```{r}
+# loads package
+library(dml.sensemakr)
+
 ## loads data
 data("pension")
 y <- pension$net_tfa # net total financial assets
 d <- pension$e401 # 401K eligibility
 x <- model.matrix(~ -1 + age + inc + educ+ fsize + marr + twoearn + pira + hown, data = pension)
-x <- apply(x, 2, scale) # scale covariates
 ```
+
+# Naive Estimate (no adjustment)
+
+```{r}
+mean(y[d==1]) - mean(y[d==0])
+```
+
 
 # Partially Linear Model
 
@@ -42,7 +53,7 @@ dml.401k.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
 
 
 ```{r}
-# results under ignorability
+# results under conditional ignorability
 summary(dml.401k.plm)
 ```
 
@@ -70,7 +81,7 @@ ovb_contour_plot(dml.401k.plm, which.bound = "upr", r2ya.dx = 0.04, r2.rr = 0.03
 
 ```{r}
 # benchmarks
-bench.plm <- benchmark(dml.401k.plm, benchmark_covariates = c("inc", "pira", "twoearn"))
+bench.plm <- dml_benchmark(dml.401k.plm, benchmark_covariates = c("inc", "pira", "twoearn"))
 bench.plm
 ```
 
@@ -89,12 +100,15 @@ dml.401k.npm <- dml(y, d, x, groups = g1, model = "npm", cf.folds = 5, cf.reps =
 
 
 ```{r}
-# results under ignorability
+# results under conditional ignorability
 summary(dml.401k.npm)
 ```
 
 ```{r}
-# coefficient plot under ignorability
+# load ggplot2
+library(ggplot2)
+
+# coefficient plot under conditional ignorability
 df   <- data.frame(groups = 1:4, estimate = coef(dml.401k.npm)[-1])
 cis  <- confint(dml.401k.npm)[-1, ]
 cis  <- setNames(as.data.frame(cis), c("lwr.ci", "upr.ci"))
@@ -144,7 +158,7 @@ ovb_contour_plot(dml.401k.npm, which.bound = "upr", r2ya.dx = 0.04, r2.rr = 0.03
 
 ```{r}
 # benchmarks
-bench.npm <- benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira", "twoearn"))
+bench.npm <- dml_benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira", "twoearn"))
 bench.npm
 ```
 

@@ -1,0 +1,112 @@
+---
+title: "Using Different ML Methods"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using Different ML Methods}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dml.sensemakr)
+```
+
+Currently, `dml.sensemakr` uses `caret` for handling machine learning (ML) methods. The default ML method is the random forest implementation provided by the package `ranger`. This is not only fast, but also seems to provide good results with minimal to no tuning. However, researchers can use any ML method they prefer, by just changing the `reg` argument of the `dml()` function.  In this vignette we provide a few examples illustrating how to use different ML methods. 
+
+Here we use the same data as before: our goal is to estimate the causal impact of 401(k) eligibility on net financial assets
+
+```{r}
+# loads package
+library(dml.sensemakr)
+
+## loads data
+data("pension")
+y  <- pension$net_tfa
+d  <- pension$e401
+x  <- model.matrix(~ -1 + age + inc + educ+ fsize + marr + twoearn + pira + hown, data = pension)
+```
+
+# Quick Overview 
+
+Users can provide different ML methods to `dml()` using the `reg` argument. If only the name of the method is provided, no tuning is performed, and default parameters are used. For instance, the code below runs DML using generalized additive models (GAMs).
+
+```{r}
+# generalized additive model
+dml.gam <- dml(y, d, x, model = "npm", reg = "gam")
+summary(dml.gam)
+```
+
+And the code below uses gradient boosting machines (GBMs).
+
+```{r}
+# gradient boosting machine
+dml.gbm  <- dml(y, d, x,  model = "npm", reg = "gbm")
+summary(dml.gbm)
+```
+
+Above we used the same ML method for estimating both the regression with the treatment and with the outcome. Note, however, that you can use different methods for each regression, by specifying `yreg` and `dreg` separately. For instance, the code below uses GAM for the outcome regression, and GBM for the treatment regression.
+
+```{r}
+# gradient boosting machine
+dml.gam.gbm  <- dml(y, d, x,  model = "npm", yreg = "gam", dreg = "gbm")
+summary(dml.gam.gbm)
+```
+
+## Tuning Parameters
+
+Users can provide details such as the form of cross-validation and a specific tuning grid by passing a named list of arguments via `reg`. The arguments of `reg` should include all relevant arguments of the `train()` function of the package `caret`. The main arguments are: `method`, `trControl` and `tuneGrid` or `tuneLength`. See `?caret::train` for further information. 
+
+For instance, the code below performs 5-fold cross-validation, to search parameters in a grid of size 5 (the values of the grid is chosen by `caret`) for GBM.
+
+```{r}
+# gradient boosting machine
+gbm.args <- list(method = "gbm", 
+                 trControl = list(method = "cv", number = 5),
+                 tuneLength  = 5)
+dml.gbm  <- dml(y, d, x,  model = "npm", reg = gbm.args)
+summary(dml.gbm)
+```
+
+# Other Methods
+
+Below we provide some templates for other machine learning methods. In all examples you may change `trControl` to your favorite choice of cross-validation, for instance, `trControl = list(method = "cv", number = 5)` for 5-fold cross validation, and also expand the tuning grid accordingly.
+
+## Neural Networks
+
+Template for using neural networks. 
+
+```{r}
+# Neural Net
+nnet.args     <- list(method = "nnet", 
+                      trControl = list(method  = "none"), # change to list(method = "cv", number = 5) for 5-fold CV.
+                      tuneGrid = expand.grid(size = 8, decay = 0.01), # change the tuning grid to your choice of numbers
+                      maxit = 1000, maxNWts = 10000)
+dml.nnet <- dml(y, d, x, model = "npm", reg = nnet.args)
+summary(dml.nnet)
+```
+### Lasso with Polynomial Expantion
+
+Template for using lasso with a polynomial expansion of the covariates `x`.
+
+```{r}
+# creates pol. expanasion of x
+xl  <- model.matrix(~ -1 + (poly(age, 6, raw=TRUE) + poly(inc, 8, raw=TRUE) +
+                      poly(educ, 4, raw=TRUE) + poly(fsize, 2, raw=TRUE) +
+                      marr + twoearn + pira + hown)^2, data = pension)
+# lasso args
+lasso.args <- list(method = "glmnet",
+                   trControl = list(method = "none"),
+                   tuneGrid = expand.grid(alpha = 1, lambda = 0.002))
+
+# fit dml
+dml.glmnet <- dml(y, d, xl, model = "npm", reg= lasso.args)
+summary(dml.glmnet)
+```
+

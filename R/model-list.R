@@ -1,42 +1,7 @@
 models <- list()
 
-models$rlasso <- list(label = "rlasso",
-                      library = "hdm",
-                      type = 'Regression',
-                      parameters = data.frame(parameter = "parameter",
-                                              class = "character",
-                                              label = "parameter"),
-                      grid = function(x, y, len = NULL, search = "grid") data.frame(parameter = "none"),
-                      fit = function(x, y, wts, param, lev, last, classProbs, ...) {
-                        require(hdm)
-                        out <- hdm::rlasso(x=x, y=y, ...)
-                        out
-                      },
-                      predict = function(modelFit, newdata, submodels = NULL) {
-                        if(!is.data.frame(newdata)) newdata <- as.data.frame(newdata, stringsAsFactors = TRUE)
-                        out <- predict(object = modelFit, newdata = newdata)
-                        out
-                      },
-                      prob = function(modelFit, newdata, submodels = NULL) predict(object = modelFit, newdata = newdata),
-                      sort = function(x) x)
 
-models$cv.glmnet <- list(label = "cv.glmnet",
-                        library = "glmnet",
-                        type = 'Regression',
-                        parameters = data.frame(parameter = "parameter",
-                                                class = "character",
-                                                label = "parameter"),
-                        grid = function(x, y, len = NULL, search = "grid") data.frame(parameter = "none"),
-                        fit = function(x, y, wts, param, lev, last, classProbs, ...) {
-                          require(glmnet)
-                          out <- glmnet::cv.glmnet(x=x, y=y, ...)
-                          out
-                        },
-                        predict = function(modelFit, newdata, submodels = NULL)
-                          predict(object = modelFit, newx = as.matrix(newdata)),
-                        prob = function(modelFit, newdata, submodels = NULL)
-                          predict(object = modelFit, newx = as.matrix(newdata)),
-                        sort = function(x) x)
+# GAM ---------------------------------------------------------------------
 
 models$gam <- list(label = "Generalized Additive Model using Splines",
                    library = "mgcv",
@@ -135,6 +100,9 @@ models$gam <- list(label = "Generalized Additive Model using Splines",
                      ),
                    tags = c("Generalized Linear Model", "Generalized Additive Model"),
                    sort = function(x) x)
+
+
+# Ranger ------------------------------------------------------------------
 
 models$ranger <- list(label = "Random Forest",
                       library = "ranger",

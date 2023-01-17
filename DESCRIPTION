@@ -1,12 +1,15 @@
 Package: dml.sensemakr
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Sensitivity Analysis for Debiased Machine Learning
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Carlos Cinelli [aut, cre],
+  Victor Chernozhukov [aut],
+  Vasilis Syrgkanis [aut]
+Maintainer: Carlos Cinelli <carloscinelli@hotmail.com>
+Description: Implements a suite of sensitivity analysis tools 
+  for Debiased Machine Learning as discussed in Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). 
+  "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1

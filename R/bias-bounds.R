@@ -68,8 +68,14 @@ get_bounds <- function(bounds, combine.method = "mean"){
   lapply(bounds$coefs, f)
 }
 
-##'@export
-dml_bounds <- function(dml.fit, r2ya.dx, r2.rr, rho2 = 1){
+##' Bounds on the omitted variable bias for causal machine learning
+##'
+##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param r2ya.dx (nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).
+##' @param r2.rr how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.
+##' @param rho2 degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.
+##' @export
+dml_bounds <- function(model, r2ya.dx, r2.rr, rho2 = 1){
 
   # bounds for
   out <- list()
@@ -77,16 +83,16 @@ dml_bounds <- function(dml.fit, r2ya.dx, r2.rr, rho2 = 1){
                      r2.rr = r2.rr,
                      rho2 = rho2)
 
-  out$dml.fit <- dml.fit
+  out$dml.fit <- model
 
-  main <- dml.fit$results$main
+  main <- model$results$main
   bounds.results   <- lapply(main, bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
   out$results$main <- bounds.results
 
   main.coefs <- extract_coefs(bounds.results)
   out$coefs$main <- main.coefs
 
-  groups <- dml.fit$results$groups
+  groups <- model$results$groups
   if (!is.null(groups)) {
     groups.bounds <- lapply(groups,
                             function(x) lapply(x,
@@ -101,8 +107,9 @@ dml_bounds <- function(dml.fit, r2ya.dx, r2.rr, rho2 = 1){
 
 
 #' Compute confidence bounds
-#' @description
+#' @description Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
 #'
+#' @rdname dml_bounds
 #' @export
 confidence_bounds <- function(model, ...){
   UseMethod("confidence_bounds")
@@ -111,7 +118,7 @@ confidence_bounds <- function(model, ...){
 
 
 #' @export
-#' @rdname confidence_bounds
+#' @rdname dml_bounds
 confidence_bounds.numeric <- function(theta.s, S2,
                                       se.theta.s, se.S2,
                                       cov.theta.S2,
@@ -134,7 +141,7 @@ confidence_bounds.numeric <- function(theta.s, S2,
 }
 
 #' @export
-#' @rdname confidence_bounds
+#' @rdname dml_bounds
 confidence_bounds.dml <- function(model,
                                   r2ya.dx,
                                   r2.rr,
@@ -148,7 +155,7 @@ confidence_bounds.dml <- function(model,
 
 
 #' @export
-#' @rdname confidence_bounds
+#' @rdname dml_bounds
 confidence_bounds.dml.bounds <- function(model,
                                          r2ya.dx = NULL,
                                          r2.rr = NULL,
@@ -201,10 +208,20 @@ rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
 
 ##' Computes Robustness Values for Debiased Machine Learning
 ##'
+##' @description
+##' This function computes the robustness value of a target parameter estimated via debiased machine learning.
+##'
+##' The robustness value describes the minimum strength of association (parameterized in terms of  R2) that omitted variables would need to have both with the outcome and with the Riesz Representer so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
+##'
+##'
 ##' @export
 robustness_value <- sensemakr::robustness_value
 
 ##' @rdname robustness_value
+##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param theta the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).
+##' @param alpha significance level. Default is \code{alpha = 0.05}.
+##' @inheritParams summary.dml
 ##'@exportS3Method sensemakr::robustness_value dml
 ##'@exportS3Method dml.sensemakr::robustness_value dml
 robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){

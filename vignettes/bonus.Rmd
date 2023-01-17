@@ -1,0 +1,49 @@
+---
+title: "dml-bonus"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{dml-bonus}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dml.sensemakr)
+```
+
+
+Vignette under construction.
+
+```{r}
+rm(list = ls())
+data("Penn")
+y <- Penn[, "inuidur1"]
+d <- Penn[, "tg"]
+x <- model.matrix(~ -1 + female + black + othrace + dep + q2 + q3 + q4 + q5 + q6 + agelt35 +
+                    agegt54 + durable + lusd + husd, data = Penn)
+
+```
+
+```{r}
+# ranger
+dml.ranger <- dml(y, d, x, model = "plm")
+summary(dml.ranger)
+```
+
+```{r}
+# Neural Net Args
+nnet.args    <- list(method = "nnet",
+                     tuneGrid = data.frame(size = 2, decay = 0.02),
+                     maxit = 1000, maxNWts = 10000)
+# nnet
+dml.ranger <- dml(y, d, x, model = "plm", reg = nnet.args)
+summary(dml.ranger)
+```
+

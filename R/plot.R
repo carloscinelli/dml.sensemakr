@@ -1,7 +1,9 @@
-#' @description Plots
-#'
-#' @import ggplot2
-#' @export
+##' Coefficient plots for DML and bounds
+##'
+##' @inheritParams print.dml
+##' @param x an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @import ggplot2
+##' @export
 plot.dml <- function(x, combine.method = "median", level = 0.95, ...) {
   estimate <- coef(x, combine.method = combine.method)
   conf <- confint(x, combine.method = combine.method, level = level)
@@ -12,6 +14,8 @@ plot.dml <- function(x, combine.method = "median", level = 0.95, ...) {
 }
 
 ##' @export
+##' @param type type of plot for confidence bounds. Options are \code{confidence_bounds},
+##' @rdname plot.dml
 plot.dml.bounds <- function(x,
                             type = c("confidence_bounds","all"),
                             combine.method = "median", level = 0.95,
@@ -188,6 +192,18 @@ coef_plot <- function(estimate,
 
 ##' Contour plots of omitted variable bias for Debiased Machine Learning
 ##'
+##'@description Contour plots of omitted variable bias for sensitivity analysis. The main input is a \code{\link{dml}} model.
+##'
+##' The vertical axis shows the partial R2 of the omitted variables with the outcome, i.e, the maximum proportion of the residual variation of the outcome that could be explained by latent variables.
+##'
+##' The horizontal axis shows the proportion of variation in the long Riesz Representer which is not explained by the short Riesz Representer (RR). This indicates how much variation in the RR is created by latent variables. In the partial linear model, this quantity paralels the sensitivity parameter for the outcome, and simply equals the partial R2 of latent variables with the treatment, i.e, the maximum proportion of the residual variation of the treatment that could be explained by latent variables. In the non-parametric model with a binary treatment, the interpretation is analagous, but instead of gains in variance, it stands for the gains in precision (1/variance).
+##'
+##' The contour levels represent the lower (upper) limit of the confidence bound for the target of interest, considering omitted variables with the postulated strength.
+##'
+##'  The dotted red line shows the chosen critical threshold (for instance, zero).
+##'
+##'  Almost all parameters can be customized by the user.
+##'
 ##' @export
 ovb_contour_plot <- function(model, ...){
   UseMethod("ovb_contour_plot")
@@ -195,8 +211,37 @@ ovb_contour_plot <- function(model, ...){
 
 
 ##' @rdname ovb_contour_plot
-##'@exportS3Method sensemakr::ovb_contour_plot dml
-##'@exportS3Method dml.sensemakr::ovb_contour_plot dml
+##' @param model an object of class \code{\link{dml}}.
+##' @param which.bound show contours for the lower limit (\code{lwr}) or upper limit (\code{upr}) of confidence bounds?
+##' @inheritParams dml_bounds
+##' @inheritParams summary.dml
+##' @param bound.label text label for the manual bound provided via \code{r2ya.dx} and \code{r2.rr}.
+##' @param group contour plots for main analysis or group analysis? Default is \code{FALSE} (main analysis).
+##' @param group.number if \code{group = TRUE}, provide the number (level) of the group.
+##' @param threshold critical threshold of interest. Default is \code{0}.
+##' @param lim.x  sets limit for x-axis. If `NULL`, limits are computed automatically.
+##' @param lim.y  sets limit for y-axis. If `NULL`, limits are computed automatically.
+##' @param cex.label.text size of the label text.
+##' @param xlab label of x axis. If `NULL`, default label is used.
+##' @param ylab label of y axis. If `NULL`, default label is used.
+##' @param list.par  arguments to be passed to \code{\link{par}}. It needs to be a named list.
+##' @param cex.lab The magnification to be used for x and y labels relative to the current setting of cex.
+##' @param cex.main The magnification to be used for main titles relative to the current setting of cex.
+##' @param cex.axis The magnification to be used for axis annotation relative to the current setting of cex.
+##' @param asp the y/x aspect ratio. Default is 1.
+##' @param show.unadjusted should the unadjusted estimates be shown? Default is `TRUE`.
+##' @param label.unadjusted label for the unadjusted estimate. Default is \code{"Unadjusted"}.
+##' @param nlevels number of levels for the contour plot.
+##' @param grid.number approximate number of grid points on each axis.
+##' @param col.contour color of contour lines.
+##' @param col.thr.line color of threshold contour line.
+##' @param label.text should label texts be plotted? Default is \code{TRUE}.
+##' @param cex.label.text  The magnification to be used for label text relative to the current setting of cex.
+##' @param label.bump.x bump on the x coordinate of label text.
+##' @param label.bump.y bump on the y coordinate of label text.
+##' @param round number of digits to show in contours and bound values
+##' @exportS3Method sensemakr::ovb_contour_plot dml
+##' @exportS3Method dml.sensemakr::ovb_contour_plot dml
 ovb_contour_plot.dml <- function(model,
                                  which.bound = c("lwr", "upr"),
                                  level = 0.95,
@@ -205,7 +250,7 @@ ovb_contour_plot.dml <- function(model,
                                  r2ya.dx = NULL,
                                  r2.rr = r2ya.dx,
                                  bound.label = "Manual",
-                                 group = F,
+                                 group = FALSE,
                                  group.number = 1,
                                  threshold = 0,
                                  lim.x = 0.15,
