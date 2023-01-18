@@ -64,7 +64,7 @@ summary(dml.gam.gbm)
 
 Users can provide details such as the form of cross-validation and a specific tuning grid by passing a named list of arguments via `reg`. The arguments of `reg` should include all relevant arguments of the `train()` function of the package `caret`. The main arguments are: `method`, `trControl` and `tuneGrid` or `tuneLength`. See `?caret::train` for further information. 
 
-For instance, the code below performs 5-fold cross-validation, to search parameters in a grid of size 5 (the values of the grid is chosen by `caret`) for GBM.
+For instance, the code below performs 5-fold cross-validation, to search parameters in a grid of size 5 for GBM (the values of the grid are chosen by `caret`).
 
 ```{r}
 # gradient boosting machine

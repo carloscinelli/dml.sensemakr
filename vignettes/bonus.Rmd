@@ -1,5 +1,5 @@
 ---
-title: "dml-bonus"
+title: "Sensitivity Bonus"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{dml-bonus}
