@@ -10,18 +10,21 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  cache = T,
   comment = "#>",
-  fig.width = 6, 
+  fig.align='center', collapse=T, 
+  dpi=300,
+  fig.width = 12, 
   fig.height = 6
 )
 ```
 
-```{r setup}
+```{r setup, include = FALSE}
 library(dml.sensemakr)
 library(ggplot2)
 ```
 
-Here we reproduce the empirical example of  [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."](https://www.nber.org/papers/w30302) Our goal is to assess the sensitivity of of the estimate of the causal impact of 401(k) eligibility on net financial assets against potential uncontrolled confounding. 
+Here we reproduce the empirical example of  [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."](https://www.nber.org/papers/w30302) 
 
 # Load Data
 
@@ -104,7 +107,7 @@ dml.401k.npm <- dml(y, d, x, groups = g1, model = "npm", cf.folds = 5, cf.reps =
 summary(dml.401k.npm)
 ```
 
-```{r}
+```{r, fig.width=12}
 # load ggplot2
 library(ggplot2)
 
@@ -136,7 +139,7 @@ cbds  <- setNames(as.data.frame(cbds), c("lwr.cbound", "upr.cbound"))
 cbind(bds, cbds)
 ```
 
-```{r}
+```{r, fig.width=12}
 # confidence bounds plot
 df2   <- cbind(df, bds[-1,], cbds[-1, ])
 ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +

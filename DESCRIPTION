@@ -2,6 +2,11 @@ Package: dml.sensemakr
 Type: Package
 Title: Sensitivity Analysis for Debiased Machine Learning
 Version: 0.1.0
+Authors@R: c(
+  person("Carlos", "Cinelli", role = c("aut", "cre"), email = "carloscinelli@hotmail.com"),
+  person("Victor", "Chernozhukov", role = "aut"),
+  person("Vasilis", "Syrgkanis", role = "aut")
+  )
 Author: Carlos Cinelli [aut, cre],
   Victor Chernozhukov [aut],
   Vasilis Syrgkanis [aut]

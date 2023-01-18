@@ -4,13 +4,16 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/articles/bonus.html</loc>
+  </url>
+  <url>
     <loc>/articles/dml-401k.html</loc>
   </url>
   <url>
-    <loc>/articles/dmm-401k.html</loc>
+    <loc>/articles/index.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>/articles/other-ml-methods.html</loc>
   </url>
   <url>
     <loc>/authors.html</loc>
@@ -19,10 +22,13 @@
     <loc>/index.html</loc>
   </url>
   <url>
-    <loc>/reference/coef.dml.html</loc>
+    <loc>/reference/dml.html</loc>
   </url>
   <url>
-    <loc>/reference/confidence_bounds.html</loc>
+    <loc>/reference/dml_benchmark.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dml_bounds.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
@@ -31,6 +37,12 @@
     <loc>/reference/ovb_contour_plot.html</loc>
   </url>
   <url>
+    <loc>/reference/plot.dml.html</loc>
+  </url>
+  <url>
     <loc>/reference/robustness_value.html</loc>
+  </url>
+  <url>
+    <loc>/reference/summary.dml.html</loc>
   </url>
 </urlset>

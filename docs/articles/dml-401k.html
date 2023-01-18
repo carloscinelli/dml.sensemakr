@@ -75,30 +75,58 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">dml.sensemakr</span><span class="op">)</span></span>
-<span><span class="co">#&gt; See details in:</span></span>
-<span><span class="co">#&gt; - Chernozhukov, V. Cinelli, C. Newey, W. Sharma, A. Syrgkanis, V. (2021). Long Story Short: Omitted Variable Bias in Causal Machine Learning. National Bureau of Economic Research, Working Paper Series, 30302.</span></span>
-<span><span class="co">#&gt; - Available at: http://www.nber.org/papers/w30302</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
+<p>Here we reproduce the empirical example of <a href="https://www.nber.org/papers/w30302" class="external-link">Chernozhukov, V., Cinelli, C.,
+Newey, W., Sharma A., and Syrgkanis, V. (2021). “Long Story Short:
+Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <div class="section level2">
-<h2 id="loads-data">Loads data<a class="anchor" aria-label="anchor" href="#loads-data"></a>
+<h2 id="load-data">Load Data<a class="anchor" aria-label="anchor" href="#load-data"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## loads data</span></span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># loads package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">dml.sensemakr</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## loads data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"pension"</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">pension</span><span class="op">$</span><span class="va">net_tfa</span> <span class="co"># net total financial assets</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">pension</span><span class="op">$</span><span class="va">e401</span> <span class="co"># 401K eligibility</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">inc</span> <span class="op">+</span> <span class="va">educ</span><span class="op">+</span> <span class="va">fsize</span> <span class="op">+</span> <span class="va">marr</span> <span class="op">+</span> <span class="va">twoearn</span> <span class="op">+</span> <span class="va">pira</span> <span class="op">+</span> <span class="va">hown</span>, data <span class="op">=</span> <span class="va">pension</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">scale</span><span class="op">)</span> <span class="co"># scale covariates</span></span></code></pre></div>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">inc</span> <span class="op">+</span> <span class="va">educ</span><span class="op">+</span> <span class="va">fsize</span> <span class="op">+</span> <span class="va">marr</span> <span class="op">+</span> <span class="va">twoearn</span> <span class="op">+</span> <span class="va">pira</span> <span class="op">+</span> <span class="va">hown</span>, data <span class="op">=</span> <span class="va">pension</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="naive-estimate-no-adjustment">Naive Estimate (no adjustment)<a class="anchor" aria-label="anchor" href="#naive-estimate-no-adjustment"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">d</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">d</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 19559.34</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="partially-linear-model">Partially Linear Model<a class="anchor" aria-label="anchor" href="#partially-linear-model"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run DML</span></span>
-<span><span class="va">dml.401k.plm</span> <span class="op">&lt;-</span> <span class="fu">dml</span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">x</span>, model <span class="op">=</span> <span class="st">"plm"</span>, cf.folds <span class="op">=</span> <span class="fl">5</span>, cf.reps <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">dml.401k.plm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml.html">dml</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">x</span>, model <span class="op">=</span> <span class="st">"plm"</span>, cf.folds <span class="op">=</span> <span class="fl">5</span>, cf.reps <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Partially Linear </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (partially linear).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
@@ -114,20 +142,20 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># results under ignorability</span></span>
+<code class="sourceCode R"><span><span class="co"># results under conditional ignorability</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">dml.401k.plm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.492%), treatment (ranger, R2 = 11.528%)</span></span>
-<span><span class="co">#&gt;  Tuning: clean </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.701%), treatment (ranger, R2 = 11.415%)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   9164.9     1329.3  6.8943 5.411e-12 ***</span></span>
+<span><span class="co">#&gt; ate   8974.3     1342.8  6.6835 2.334e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -135,15 +163,15 @@
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.07386118</span></span>
+<span><span class="co">#&gt; 0.07247987</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.05586711</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.05435687</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds under posited scenario</span></span>
-<span><span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           lwr       upr</span></span>
-<span><span class="co">#&gt; ate  2743.704 15619.215</span></span>
+<span><span class="co">#&gt; ate  2543.509 15470.327</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
 <span><span class="co">#&gt; Sensitivity parameters: r2ya.dx = 0.04; r2.rr = 0.03; rho2 = 1.</span></span></code></pre></div>
@@ -154,14 +182,36 @@
 <span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, which.bound <span class="op">=</span> <span class="st">"upr"</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
 <span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="dml-401k_files/figure-html/unnamed-chunk-7-1.png" width="1152"></p>
+<p><img src="dml-401k_files/figure-html/unnamed-chunk-8-1.png" width="3600" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># benchmarks</span></span>
-<span><span class="va">bench.plm</span> <span class="op">&lt;-</span> <span class="fu">benchmark</span><span class="op">(</span><span class="va">dml.401k.plm</span>, benchmark_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inc"</span>, <span class="st">"pira"</span>, <span class="st">"twoearn"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">bench.plm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_benchmark.html">dml_benchmark</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, benchmark_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inc"</span>, <span class="st">"pira"</span>, <span class="st">"twoearn"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; === Computing benchmarks using covariate: inc  ===</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Partially Linear </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (partially linear).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
@@ -182,6 +232,28 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Partially Linear </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (partially linear).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
 <span><span class="co">#&gt; ======================================</span></span>
@@ -200,6 +272,28 @@
 <span><span class="co">#&gt; === Computing benchmarks using covariate: twoearn  ===</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Partially Linear </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (partially linear).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
@@ -215,10 +309,10 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="va">bench.plm</span></span>
-<span><span class="co">#&gt;   covariate     gain.Y      gain.D       rho      bias</span></span>
-<span><span class="co">#&gt; 1       inc 0.14671113 0.048874019 0.3503507 3403.5766</span></span>
-<span><span class="co">#&gt; 2      pira 0.05090525 0.004058693 0.1643395  207.2812</span></span>
-<span><span class="co">#&gt; 3   twoearn 0.02388914 0.006856731 0.3994155 -604.6654</span></span></code></pre></div>
+<span><span class="co">#&gt;          gain.Y   gain.D     rho theta.s theta.sj  delta</span></span>
+<span><span class="co">#&gt; inc     0.14493 0.047465  0.3478    8988    12342 3353.7</span></span>
+<span><span class="co">#&gt; pira    0.04568 0.006203  0.3042    8988     9498  510.2</span></span>
+<span><span class="co">#&gt; twoearn 0.01381 0.006955 -0.4858    8988     8474 -514.4</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="nonparametric-model">Nonparametric Model<a class="anchor" aria-label="anchor" href="#nonparametric-model"></a>
@@ -229,8 +323,30 @@
 <span>          labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"q1"</span>, <span class="st">"q2"</span>, <span class="st">"q3"</span>, <span class="st">"q4"</span><span class="op">)</span>, include.lowest <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Nonparametric model</span></span>
-<span><span class="va">dml.401k.npm</span> <span class="op">&lt;-</span> <span class="fu">dml</span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">x</span>, groups <span class="op">=</span> <span class="va">g1</span>, model <span class="op">=</span> <span class="st">"npm"</span>, cf.folds <span class="op">=</span> <span class="fl">5</span>, cf.reps <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">dml.401k.npm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml.html">dml</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">x</span>, groups <span class="op">=</span> <span class="va">g1</span>, model <span class="op">=</span> <span class="st">"npm"</span>, cf.folds <span class="op">=</span> <span class="fl">5</span>, cf.reps <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    3             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
@@ -246,36 +362,39 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># results under ignorability</span></span>
+<code class="sourceCode R"><span><span class="co"># results under conditional ignorability</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">dml.401k.npm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.504%), treatment (ranger, R2 = 11.637%)</span></span>
-<span><span class="co">#&gt;  Tuning: clean </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.693%), treatment (ranger, R2 = 11.555%)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8113.5     1176.4  6.8968 5.32e-12 ***</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate   7824.9     1236.3  6.3293 2.462e-10 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; gate.q1  4308.18     800.17  5.3841 7.281e-08 ***</span></span>
-<span><span class="co">#&gt; gate.q2  2750.86    1384.32  1.9872 0.0469054 *  </span></span>
-<span><span class="co">#&gt; gate.q3  6909.82    1851.88  3.7312 0.0001905 ***</span></span>
-<span><span class="co">#&gt; gate.q4 18557.16    4091.61  4.5354 5.749e-06 ***</span></span>
+<span><span class="co">#&gt; gate.q1  4269.23     888.46  4.8052 1.546e-06 ***</span></span>
+<span><span class="co">#&gt; gate.q2  2759.35    1392.00  1.9823 0.0474478 *  </span></span>
+<span><span class="co">#&gt; gate.q3  6677.69    1900.88  3.5129 0.0004432 ***</span></span>
+<span><span class="co">#&gt; gate.q4 17733.98    4264.69  4.1583 3.206e-05 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># coefficient plot under ignorability</span></span>
+<code class="sourceCode R"><span><span class="co"># load ggplot2</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># coefficient plot under conditional ignorability</span></span>
 <span><span class="va">df</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">dml.401k.npm</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">cis</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">dml.401k.npm</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">]</span></span>
 <span><span class="va">cis</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cis</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.ci"</span>, <span class="st">"upr.ci"</span><span class="op">)</span><span class="op">)</span></span>
@@ -285,28 +404,28 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Income Groups by Quartiles"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"ATE"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="dml-401k_files/figure-html/unnamed-chunk-11-1.png" width="576"></p>
+<p><img src="dml-401k_files/figure-html/unnamed-chunk-12-1.png" width="3600" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate    gate.q1    gate.q2    gate.q3    gate.q4 </span></span>
-<span><span class="co">#&gt; 0.06099132 0.10141536 0.04508282 0.06991356 0.09319377</span></span>
+<span><span class="co">#&gt; 0.05987821 0.09966737 0.04510139 0.06662249 0.08967410</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;         ate     gate.q1     gate.q2     gate.q3     gate.q4 </span></span>
-<span><span class="co">#&gt; 0.046029971 0.071233088 0.006799803 0.036908882 0.060355880</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.043812408 0.066854463 0.006776972 0.033765900 0.054790424</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># bounds and confidence bounds </span></span>
-<span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">bds</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.bound"</span>, <span class="st">"upr.bound"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/confidence_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">.95</span><span class="op">)</span></span>
+<span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">.95</span><span class="op">)</span></span>
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cbds</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.cbound"</span>, <span class="st">"upr.cbound"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">bds</span>, <span class="va">cbds</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         lwr.bound upr.bound lwr.cbound upr.cbound</span></span>
-<span><span class="co">#&gt; ate      3575.453 12630.443  1586.9417  14669.843</span></span>
-<span><span class="co">#&gt; gate.q1  2892.132  5724.235  1583.0778   7085.348</span></span>
-<span><span class="co">#&gt; gate.q2   653.635  4848.083 -2026.7623   6892.556</span></span>
-<span><span class="co">#&gt; gate.q3  3557.296 10262.338   256.9584  13347.702</span></span>
-<span><span class="co">#&gt; gate.q4 11887.763 25226.559  5199.4650  32135.414</span></span></code></pre></div>
+<span><span class="co">#&gt;          lwr.bound upr.bound  lwr.cbound upr.cbound</span></span>
+<span><span class="co">#&gt; ate      3368.2883 12313.881  1264.11968  14422.809</span></span>
+<span><span class="co">#&gt; gate.q1  2836.8292  5701.629  1388.09033   7195.554</span></span>
+<span><span class="co">#&gt; gate.q2   664.2309  4851.132 -2021.47222   6909.304</span></span>
+<span><span class="co">#&gt; gate.q3  3271.7355 10083.644   -87.71927  13239.922</span></span>
+<span><span class="co">#&gt; gate.q4 11097.4321 24370.536  4070.36407  31509.697</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds plot</span></span>
 <span><span class="va">df2</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">bds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span>, <span class="va">cbds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -316,7 +435,7 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Income Groups by Quartiles"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"ATE"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="dml-401k_files/figure-html/unnamed-chunk-14-1.png" width="576"></p>
+<p><img src="dml-401k_files/figure-html/unnamed-chunk-15-1.png" width="3600" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># sensitivity contour plots</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
@@ -324,14 +443,36 @@
 <span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, which.bound <span class="op">=</span> <span class="st">"upr"</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, </span>
 <span>                 bound.label <span class="op">=</span> <span class="st">"Max match (3 years)"</span>, col.contour <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="dml-401k_files/figure-html/unnamed-chunk-15-1.png" width="1152"></p>
+<p><img src="dml-401k_files/figure-html/unnamed-chunk-16-1.png" width="3600" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># benchmarks</span></span>
-<span><span class="va">bench.npm</span> <span class="op">&lt;-</span> <span class="fu">benchmark</span><span class="op">(</span><span class="va">dml.401k.npm</span>, benchmark_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inc"</span>, <span class="st">"pira"</span>, <span class="st">"twoearn"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">bench.npm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_benchmark.html">dml_benchmark</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, benchmark_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inc"</span>, <span class="st">"pira"</span>, <span class="st">"twoearn"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; === Computing benchmarks using covariate: inc  ===</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
@@ -352,6 +493,28 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
 <span><span class="co">#&gt; ======================================</span></span>
@@ -364,13 +527,35 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 4 -- Folds: 1  2  3  4  5  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
-<span><span class="co">#&gt; Warning in sqrt(V.g * V.a): NaNs produced</span></span>
+<span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5  </span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; === Computing benchmarks using covariate: twoearn  ===</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger), treatment (ranger)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; Tuning parameters using all the data</span></span>
+<span><span class="co">#&gt; ====================================</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for D.</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
+<span><span class="co">#&gt; -- Best Tune:</span></span>
+<span><span class="co">#&gt;   mtry min.node.size splitrule</span></span>
+<span><span class="co">#&gt; 1    2             5  variance</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
 <span><span class="co">#&gt; Repeating 5-fold cross-fitting 5 times</span></span>
 <span><span class="co">#&gt; ======================================</span></span>
@@ -384,12 +569,11 @@
 <span><span class="co">#&gt; -- Rep 4 -- Folds: 1  2  3  4  5  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
-<span><span class="co">#&gt; Warning in sqrt(V.g * V.a): NaNs produced</span></span>
 <span><span class="va">bench.npm</span></span>
-<span><span class="co">#&gt;   covariate      gain.Y      gain.D       rho      bias</span></span>
-<span><span class="co">#&gt; 1       inc 0.133036302 0.138531445 0.2161847 3482.9412</span></span>
-<span><span class="co">#&gt; 2      pira 0.034258127 0.000000000        NA  427.5841</span></span>
-<span><span class="co">#&gt; 3   twoearn 0.006378656 0.002673909        NA -529.3091</span></span></code></pre></div>
+<span><span class="co">#&gt;           gain.Y   gain.D    rho theta.s theta.sj  delta</span></span>
+<span><span class="co">#&gt; inc     0.128267 0.127385 0.2505    7881    11689 3808.0</span></span>
+<span><span class="co">#&gt; pira    0.034770 0.001702 0.8589    7881     8541  659.7</span></span>
+<span><span class="co">#&gt; twoearn 0.006894 0.001100 0.0000    7881     7694 -186.3</span></span></code></pre></div>
 </div>
   </div>
 
@@ -405,12 +589,12 @@
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by The package maintainer.</p>
+<p>Developed by <a href="https://carloscinelli.com" class="external-link">Carlos Cinelli</a>, <a href="http://www.mit.edu/~vchern/" class="external-link">Victor Chernozhukov</a>, <a href="https://vsyrgkanis.com/" class="external-link">Vasilis Syrgkanis</a>.</p>
 </div>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

@@ -10,11 +10,12 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  cache = T,
   comment = "#>"
 )
 ```
 
-```{r setup}
+```{r setup, include=FALSE}
 library(dml.sensemakr)
 ```
 
@@ -76,7 +77,7 @@ summary(dml.gbm)
 
 # Other Methods
 
-Below we provide some templates for other machine learning methods. In all examples you may change `trControl` to your favorite choice of cross-validation, for instance, `trControl = list(method = "cv", number = 5)` for 5-fold cross validation, and also expand the tuning grid accordingly.
+Below we provide some templates for other machine learning methods. In all examples you may change `trControl` to your favorite choice of cross-validation, for instance, `trControl = list(method = "cv", number = 5)` for 5-fold cross validation, and also expand the parameters of the tuning grid accordingly.
 
 ## Neural Networks
 
@@ -85,18 +86,18 @@ Template for using neural networks.
 ```{r}
 # Neural Net
 nnet.args     <- list(method = "nnet", 
-                      trControl = list(method  = "none"), # change to list(method = "cv", number = 5) for 5-fold CV.
-                      tuneGrid = expand.grid(size = 8, decay = 0.01), # change the tuning grid to your choice of numbers
+                      trControl = list(method  = "none"), 
+                      tuneGrid = expand.grid(size = 8, decay = 0.01), 
                       maxit = 1000, maxNWts = 10000)
 dml.nnet <- dml(y, d, x, model = "npm", reg = nnet.args)
 summary(dml.nnet)
 ```
-### Lasso with Polynomial Expantion
+## Lasso with Polynomial Expansion
 
 Template for using lasso with a polynomial expansion of the covariates `x`.
 
 ```{r}
-# creates pol. expanasion of x
+# creates polynomial expansion of x
 xl  <- model.matrix(~ -1 + (poly(age, 6, raw=TRUE) + poly(inc, 8, raw=TRUE) +
                       poly(educ, 4, raw=TRUE) + poly(fsize, 2, raw=TRUE) +
                       marr + twoearn + pira + hown)^2, data = pension)

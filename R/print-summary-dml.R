@@ -18,7 +18,7 @@
 ##' d <- pension$e401    # 401K eligibility
 ##'
 ##' # set the covariates (a matrix)
-##' x <- model.matrix(~ -1 + age + inc  + educ+ fsize + marr + twoearn + pira + hown##' , data = pension)
+##' x <- model.matrix(~ -1 + age + inc  + educ+ fsize + marr + twoearn + pira + hown, data = pension)
 ##'
 ##' ## compute income quartiles for group ATE.
 ##' g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE),
