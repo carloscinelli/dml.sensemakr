@@ -9,6 +9,7 @@ ovb_contour_plot(model, ...)
 
 \method{ovb_contour_plot}{dml}(
   model,
+  parameter = c("ate", "att", "atu"),
   which.bound = c("lwr", "upr"),
   level = 0.95,
   combine.method = "median",

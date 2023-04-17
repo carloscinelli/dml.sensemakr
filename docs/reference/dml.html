@@ -244,23 +244,23 @@ The function dml.gate is a convenience function that adds groups to a dml object
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 2 folds, 1 reps </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (ranger, R2 = 24.815%), treatment (ranger, R2 = 11.502%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (ranger, R2 = 23.471%), treatment (ranger, R2 = 11.065%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Estimate Std. Error t value   P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate   7996.2     1193.3  6.7011 2.069e-11 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate   7631.2     1155.4   6.605 3.975e-11 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Group Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value   P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  4218.91     778.62  5.4185 6.011e-08 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  3168.07    1259.99  2.5144  0.011925 *  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  6164.79    1965.75  3.1361  0.001712 ** </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 18431.37    4082.13  4.5151 6.328e-06 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  4049.42     828.68  4.8866 1.026e-06 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  2959.02    1362.13  2.1723 0.0298296 *  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  6872.12    1808.31  3.8003 0.0001445 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 16642.91    3936.85  4.2275 2.363e-05 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -269,37 +269,37 @@ The function dml.gate is a convenience function that adds groups to a dml object
 <span class="r-in"><span><span class="co"># coef median method (default)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       ate   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7996.182  4218.914  3168.069  6164.787 18431.371 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  7631.164  4049.419  2959.023  6872.123 16642.906 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># se median method (default)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.dml.html">se</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       ate   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1193.2646  778.6186 1259.9902 1965.7467 4082.1288 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1155.3590  828.6844 1362.1324 1808.3057 3936.8547 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># confint median method</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              2.5 %    97.5 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate      5657.4259 10334.937</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  2692.8492  5744.978</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2   698.5331  5637.604</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  2311.9940 10017.579</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 10430.5458 26432.197</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             2.5 %    97.5 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate     5366.7021  9895.626</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1 2425.2272  5673.610</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  289.2924  5628.753</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3 3327.9085 10416.337</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 8926.8131 24359.000</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Sensitivity Analysis</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Robustness Values</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        ate    gate.q1    gate.q2    gate.q3    gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.04491783 0.06995791 0.01518157 0.02867620 0.05831997 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.04279899 0.06791821 0.01015278 0.03721596 0.04979201 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Confidence Bounds</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.03</span>, r2.rr <span class="op">=</span> <span class="fl">0.04</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               lwr       upr</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate      1413.946 14594.248</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  1520.063  6972.852</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2 -1474.565  7066.791</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  -651.509 12777.213</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4  4873.585 32121.706</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate      1117.004 14098.795</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  1350.436  6801.392</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2 -1819.954  7035.081</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3   273.389 13213.816</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4  3163.691 30107.296</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Confidence level: point = 95%; region = 90%.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Sensitivity parameters: r2ya.dx = 0.03; r2.rr = 0.04; rho2 = 1.</span>
@@ -323,7 +323,7 @@ The function dml.gate is a convenience function that adds groups to a dml object
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

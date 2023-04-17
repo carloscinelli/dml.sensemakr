@@ -140,13 +140,13 @@ instance, the code below runs DML using generalized additive models
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 28.292%), treatment (gam, R2 = 12.334%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 26.403%), treatment (gam, R2 = 12.218%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7079.6     1138.4  6.2187 5.012e-10 ***</span></span>
+<span><span class="co">#&gt; ate   7261.5     1168.8  6.2127 5.207e-10 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -189,13 +189,13 @@ instance, the code below runs DML using generalized additive models
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 23.154%), treatment (gbm, R2 = 11.837%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 23.553%), treatment (gbm, R2 = 11.826%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7467.8     1166.4  6.4021 1.532e-10 ***</span></span>
+<span><span class="co">#&gt; ate   7673.6     1151.7   6.663 2.684e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -242,13 +242,13 @@ for the outcome regression, and GBM for the treatment regression.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 27.059%), treatment (gbm, R2 = 11.778%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 27.891%), treatment (gbm, R2 = 11.798%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7676.7     1114.0  6.8912 5.533e-12 ***</span></span>
+<span><span class="co">#&gt; ate   7759.7     1112.8  6.9733 3.097e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -288,12 +288,12 @@ are chosen by <code>caret</code>).</p>
 <span><span class="co">#&gt; - Tuning Model for D.</span></span>
 <span><span class="co">#&gt; -- Best Tune:</span></span>
 <span><span class="co">#&gt;    n.trees interaction.depth shrinkage n.minobsinnode</span></span>
-<span><span class="co">#&gt; 16      50                 4       0.1             10</span></span>
+<span><span class="co">#&gt; 11      50                 3       0.1             10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
 <span><span class="co">#&gt; -- Best Tune:</span></span>
 <span><span class="co">#&gt;    n.trees interaction.depth shrinkage n.minobsinnode</span></span>
-<span><span class="co">#&gt; 10     250                 2       0.1             10</span></span>
+<span><span class="co">#&gt; 17     100                 4       0.1             10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ======================================</span></span>
@@ -307,13 +307,13 @@ are chosen by <code>caret</code>).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 26.803%), treatment (gbm, R2 = 12.135%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 28.31%), treatment (gbm, R2 = 12.163%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8175.7     1150.2  7.1083 1.175e-12 ***</span></span>
+<span><span class="co">#&gt; ate   8480.2     1146.0  7.3996 1.366e-13 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -374,13 +374,13 @@ accordingly.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (nnet, R2 = 28.732%), treatment (nnet, R2 = 11.995%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (nnet, R2 = 28.635%), treatment (nnet, R2 = 11.783%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7676.8     1232.0  6.2313 4.627e-10 ***</span></span>
+<span><span class="co">#&gt; ate   7417.9     1237.7  5.9933 2.057e-09 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -437,13 +437,15 @@ covariates <code>x</code>.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (glmnet, R2 = 27.921%), treatment (glmnet, R2 = 11.98%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (glmnet, R2 = 28.52%), treatment (glmnet, R2 = 11.985%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value P(&gt;|t|)</span></span>
-<span><span class="co">#&gt; ate   5399.6     3570.3  1.5124  0.1304</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate  11438.3     2373.8  4.8186 1.446e-06 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
 </div>
 </div>
@@ -466,7 +468,7 @@ covariates <code>x</code>.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>

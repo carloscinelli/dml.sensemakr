@@ -85,12 +85,20 @@ dml_bounds <- function(model, r2ya.dx, r2.rr, rho2 = 1){
 
   out$dml.fit <- model
 
+  # main <- model$results$main
+  # bounds.results   <- lapply(main, bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+  # out$results$main <- bounds.results
+  #
+  # main.coefs <- extract_coefs(bounds.results)
+  # out$coefs$main <- main.coefs
   main <- model$results$main
-  bounds.results   <- lapply(main, bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
-  out$results$main <- bounds.results
-
-  main.coefs <- extract_coefs(bounds.results)
-  out$coefs$main <- main.coefs
+  if (!is.null(main)) {
+    main.bounds <- lapply(main,
+                            function(x) lapply(x,
+                                               bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2))
+    out$results$main <- main.bounds
+    out$coefs$main <- lapply(main.bounds, extract_coefs)
+  }
 
   groups <- model$results$groups
   if (!is.null(groups)) {

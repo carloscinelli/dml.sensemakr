@@ -6,16 +6,16 @@
 \alias{robustness_value.dml.bounds}
 \title{Computes Robustness Values for Debiased Machine Learning}
 \usage{
-robustness_value(...)
+robustness_value(model, ...)
 
 \method{robustness_value}{dml}(model, theta = 0, alpha = 0.05, ...)
 
 \method{robustness_value}{dml.bounds}(model, theta = 0, alpha = 0.05, ...)
 }
 \arguments{
-\item{...}{arguments passed to other methods.}
-
 \item{model}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
+
+\item{...}{arguments passed to other methods.}
 
 \item{theta}{the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).}
 

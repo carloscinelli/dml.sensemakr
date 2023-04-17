@@ -13,27 +13,35 @@ trim.ps <- function(ps, trim = 0.02){
 
 
 # computes ate for npm
-ate.npm <- function(y, d,
+ate.npm <- function(y, d, parameter = "all",
                     yhat1, yhat0, dhat,
                     trim = 0.02){
-
   # trim propensity score
   dhat.t       <- trim.ps(dhat, trim = 0.02)
 
+  # l
+  l            <- switch(parameter, all = 1, treat = d/mean(d), untr = (1-d)/(1-mean(d)))
+
+  # lbar = E[l|X]
+  lbar         <- switch(parameter, all = 1, treat = dhat/mean(d), untr = (1-dhat)/(1-mean(d)))
+
+
   # ate
-  gs           <- d * yhat1 + (1 - d) * yhat0
-  RRs          <- (d/dhat.t - (1-d)/(1-dhat.t))
-  Ms           <- (yhat1 - yhat0)
-  theta.s      <- mean(Ms + RRs * (y - gs))
-  psi.theta.s  <- Ms + RRs * (y - gs) - theta.s
+  gs           <- (d * yhat1 + (1 - d) * yhat0)
+  RRs          <- ((d/dhat.t - (1-d)/(1-dhat.t)))*lbar
+  Ms           <- (yhat1 - yhat0)*l
+  theta.s      <- mean(Ms +  (y - gs)*RRs)
+  psi.theta.s  <- Ms +   (y - gs)*RRs - theta.s
+
+  # Scaling terms (still as "global" parameters)
 
   # sigma2
-  sigma2.s     <- mean((y-gs)^2)
-  psi.sigma2.s <- (y-gs)^2 - sigma2.s
+  sigma2.s     <- mean( (y-gs)^2)
+  psi.sigma2.s <- ( (y-gs)^2 - sigma2.s)
 
   # nu2
-  nu2.s        <-  mean(2*(1/dhat.t + 1/(1-dhat.t)) - RRs^2)
-  psi.nu2.s    <-  2*(1/dhat.t + 1/(1-dhat.t)) - RRs^2 - nu2.s
+  nu2.s        <-  mean(2*( (1/dhat.t)*lbar + (1/(1-dhat.t))*lbar)*l  - RRs^2)
+  psi.nu2.s    <-  2*( (1/dhat.t)*lbar + (1/(1-dhat.t))*lbar)*l  - RRs^2 - nu2.s
 
   # S2
   S2           <- sigma2.s*nu2.s
@@ -108,6 +116,35 @@ ate.plm <- function(y, d, yhat, dhat){
 }
 
 
+
+# computes ate for each group npm
+ate.att.atu.npm <- function(dml, target, trim = 0.02) {
+  g       <- c(ate = "all", att = "treat", atu = "untr")[target]
+  ate.g   <- list()
+  cf.reps <- dml$info$cf.reps
+  y       <- dml$data$y
+  d       <- dml$data$d
+  x       <- dml$data$x
+
+  for(j in g){
+    res <- list()
+    for(i in 1:cf.reps){
+      dhat   <- dml$fits[[i]]$preds$dhat
+      yhat0  <- dml$fits[[i]]$preds$yhat0
+      yhat1  <- dml$fits[[i]]$preds$yhat1
+      res[[i]] <- ate.npm(y = y, d = d,
+                          parameter =  j,
+                          yhat1 = yhat1,
+                          yhat0 = yhat0,
+                          dhat  = dhat,
+                          trim = trim)
+    }
+    ate.g[[j]] <- res
+  }
+  return(ate.g)
+}
+
+
 # computes ate for each group npm
 group.ate.npm <- function(dml, groups, trim = 0.02) {
   g       <- levels(groups)
@@ -123,7 +160,11 @@ group.ate.npm <- function(dml, groups, trim = 0.02) {
       dhat   <- dml$fits[[i]]$preds$dhat
       yhat0  <- dml$fits[[i]]$preds$yhat0
       yhat1  <- dml$fits[[i]]$preds$yhat1
-      res[[i]] <- ate.npm(y[idx], d[idx], yhat1[idx], yhat0[idx], dhat[idx], trim = trim)
+      res[[i]] <- ate.npm(y = y[idx], d = d[idx],
+                          yhat1 = yhat1[idx],
+                          yhat0 = yhat0[idx],
+                          dhat  = dhat[idx],
+                          trim = trim)
     }
     ate.g[[j]] <- res
   }

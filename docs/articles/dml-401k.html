@@ -149,13 +149,13 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.701%), treatment (ranger, R2 = 11.415%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 27.058%), treatment (ranger, R2 = 11.52%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8974.3     1342.8  6.6835 2.334e-11 ***</span></span>
+<span><span class="co">#&gt; ate   8950.4     1366.0  6.5524 5.663e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
@@ -163,15 +163,15 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.07247987</span></span>
+<span><span class="co">#&gt; 0.07247816</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.05435687</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.05404196</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds under posited scenario</span></span>
 <span><span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           lwr       upr</span></span>
-<span><span class="co">#&gt; ate  2543.509 15470.327</span></span>
+<span><span class="co">#&gt; ate  2490.659 15511.633</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
 <span><span class="co">#&gt; Sensitivity parameters: r2ya.dx = 0.04; r2.rr = 0.03; rho2 = 1.</span></span></code></pre></div>
@@ -309,10 +309,10 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="va">bench.plm</span></span>
-<span><span class="co">#&gt;          gain.Y   gain.D     rho theta.s theta.sj  delta</span></span>
-<span><span class="co">#&gt; inc     0.14493 0.047465  0.3478    8988    12342 3353.7</span></span>
-<span><span class="co">#&gt; pira    0.04568 0.006203  0.3042    8988     9498  510.2</span></span>
-<span><span class="co">#&gt; twoearn 0.01381 0.006955 -0.4858    8988     8474 -514.4</span></span></code></pre></div>
+<span><span class="co">#&gt;          gain.Y   gain.D      rho theta.s theta.sj   delta</span></span>
+<span><span class="co">#&gt; inc     0.13864 0.047307  0.35686    8997    12337 3340.42</span></span>
+<span><span class="co">#&gt; pira    0.04163 0.006866  0.01328    8997     9044   46.92</span></span>
+<span><span class="co">#&gt; twoearn 0.02812 0.006973 -0.25640    8997     8449 -548.10</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="nonparametric-model">Nonparametric Model<a class="anchor" aria-label="anchor" href="#nonparametric-model"></a>
@@ -369,23 +369,23 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.693%), treatment (ranger, R2 = 11.555%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.827%), treatment (ranger, R2 = 11.524%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7824.9     1236.3  6.3293 2.462e-10 ***</span></span>
+<span><span class="co">#&gt; ate   7962.0     1225.9  6.4951 8.297e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; gate.q1  4269.23     888.46  4.8052 1.546e-06 ***</span></span>
-<span><span class="co">#&gt; gate.q2  2759.35    1392.00  1.9823 0.0474478 *  </span></span>
-<span><span class="co">#&gt; gate.q3  6677.69    1900.88  3.5129 0.0004432 ***</span></span>
-<span><span class="co">#&gt; gate.q4 17733.98    4264.69  4.1583 3.206e-05 ***</span></span>
+<span><span class="co">#&gt; gate.q1  4308.82     851.26  5.0617 4.156e-07 ***</span></span>
+<span><span class="co">#&gt; gate.q2  2807.49    1345.30  2.0869 0.0368975 *  </span></span>
+<span><span class="co">#&gt; gate.q3  6977.24    1870.02  3.7311 0.0001906 ***</span></span>
+<span><span class="co">#&gt; gate.q4 18028.15    4247.39  4.2445 2.191e-05 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -409,10 +409,10 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <code class="sourceCode R"><span><span class="co"># robustness values</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># RV point estimate</span></span>
 <span><span class="co">#&gt;        ate    gate.q1    gate.q2    gate.q3    gate.q4 </span></span>
-<span><span class="co">#&gt; 0.05987821 0.09966737 0.04510139 0.06662249 0.08967410</span></span>
+<span><span class="co">#&gt; 0.06040429 0.09904735 0.04552112 0.06989978 0.09100568</span></span>
 <span><span class="fu"><a href="../reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span> <span class="co"># RV confidence bound</span></span>
 <span><span class="co">#&gt;         ate     gate.q1     gate.q2     gate.q3     gate.q4 </span></span>
-<span><span class="co">#&gt; 0.043812408 0.066854463 0.006776972 0.033765900 0.054790424</span></span></code></pre></div>
+<span><span class="co">#&gt; 0.044616222 0.068090384 0.008398567 0.037192708 0.056199558</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># bounds and confidence bounds </span></span>
 <span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -420,12 +420,12 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.04</span>, r2.rr <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">.95</span><span class="op">)</span></span>
 <span><span class="va">cbds</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cbds</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.cbound"</span>, <span class="st">"upr.cbound"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">bds</span>, <span class="va">cbds</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          lwr.bound upr.bound  lwr.cbound upr.cbound</span></span>
-<span><span class="co">#&gt; ate      3368.2883 12313.881  1264.11968  14422.809</span></span>
-<span><span class="co">#&gt; gate.q1  2836.8292  5701.629  1388.09033   7195.554</span></span>
-<span><span class="co">#&gt; gate.q2   664.2309  4851.132 -2021.47222   6909.304</span></span>
-<span><span class="co">#&gt; gate.q3  3271.7355 10083.644   -87.71927  13239.922</span></span>
-<span><span class="co">#&gt; gate.q4 11097.4321 24370.536  4070.36407  31509.697</span></span></code></pre></div>
+<span><span class="co">#&gt;          lwr.bound upr.bound lwr.cbound upr.cbound</span></span>
+<span><span class="co">#&gt; ate      3468.0553 12456.038  1384.5542  14548.161</span></span>
+<span><span class="co">#&gt; gate.q1  2854.4571  5763.184  1477.0727   7216.293</span></span>
+<span><span class="co">#&gt; gate.q2   688.1874  4892.385 -1939.6374   6864.988</span></span>
+<span><span class="co">#&gt; gate.q3  3591.3135 10363.165   290.7039  13475.827</span></span>
+<span><span class="co">#&gt; gate.q4 11385.0924 24671.208  4371.3593  31764.630</span></span></code></pre></div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds plot</span></span>
 <span><span class="va">df2</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">bds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span>, <span class="va">cbds</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -570,10 +570,10 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="va">bench.npm</span></span>
-<span><span class="co">#&gt;           gain.Y   gain.D    rho theta.s theta.sj  delta</span></span>
-<span><span class="co">#&gt; inc     0.128267 0.127385 0.2505    7881    11689 3808.0</span></span>
-<span><span class="co">#&gt; pira    0.034770 0.001702 0.8589    7881     8541  659.7</span></span>
-<span><span class="co">#&gt; twoearn 0.006894 0.001100 0.0000    7881     7694 -186.3</span></span></code></pre></div>
+<span><span class="co">#&gt;          gain.Y   gain.D     rho theta.s theta.sj  delta</span></span>
+<span><span class="co">#&gt; inc     0.13599 0.138710  0.2225    7985    11638 3653.0</span></span>
+<span><span class="co">#&gt; pira    0.03579 0.007639  0.2083    7985     8581  596.1</span></span>
+<span><span class="co">#&gt; twoearn 0.01035 0.009511 -0.3926    7985     7564 -421.3</span></span></code></pre></div>
 </div>
   </div>
 
@@ -594,7 +594,7 @@ Omitted Variable Bias in Causal Machine Learning.”</a></p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>

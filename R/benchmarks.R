@@ -3,7 +3,6 @@
 ##' Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
 ##' @param model an object of class \code{\link{dml}}.
 ##' @param benchmark_covariates a character vector with the names of the observed covariates that will be used for benchmarking.
-##' @param
 ##' @export
 dml_benchmark <- function(model, benchmark_covariates){
   model.type <- model$info$model

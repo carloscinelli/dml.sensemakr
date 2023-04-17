@@ -7,10 +7,11 @@ d <- pension$e401 # 401K eligibility
 x <- model.matrix(~ -1 + age + inc + educ+ fsize + marr + twoearn + pira + hown, data = pension)
 
 nnet <- list(method = "nnet", tuneGrid = expand.grid(size = 8, decay = 0.01))
-dml.401k.plm <- dml(y, d, x, binary.d = T,dirty.tuning = F, model = "npm", yreg = nnet, cf.folds = 5, cf.reps = 1)
+dml.401k.plm <- dml(y, d, x, d.class =T,
+                    dirty.tuning = F, model = "npm", yreg = nnet, cf.folds = 5, cf.reps = 1)
 summary(dml.401k.plm)
 
-dml.401k.plm <- dml(y, d, x, binary.d = T, model = "plm", cf.folds = 5, cf.reps = 1)
+dml.401k.plm <- dml(y, d, x, d.class = T, model = "plm", cf.folds = 5, cf.reps = 1)
 summary(dml.401k.plm)
 
 

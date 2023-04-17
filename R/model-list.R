@@ -1,7 +1,42 @@
 models <- list()
 
 
+
+# rlasso ------------------------------------------------------------------
+models$rlasso <- list(label = "Rigorous Lasso",
+                   library = "hdm",
+                   loop = NULL,
+                   type = c('Regression'),
+                   parameters = data.frame(parameter = c('parameter'),
+                                           class = c('character'),
+                                           label = c('parameter')),
+                   grid = function(x, y, len = NULL, search = "grid") {
+                     data.frame(parameter = "none")
+                   },
+                   fit = function(x, y, wts, param, lev, last, classProbs, ...) {
+                     require(rlasso)
+                     theDots <- list(...)
+                     modelArgs <- c(list(x = x, y = y), theDots)
+                     out <- do.call(hdm::rlasso, modelArgs)
+                     out
+
+                   },
+                   predict = function(modelFit, newdata, submodels = NULL) {
+                     if(!is.data.frame(newdata)) newdata <- as.data.frame(newdata, stringsAsFactors = TRUE)
+                     out <- predict(object = modelFit, newdata = newdata)
+                     },
+                   prob = NULL,
+                   predictors = NULL,
+                   levels = NULL,
+                   varImp = NULL,
+                   notes = NULL,
+                   tags = c("Lasso"),
+                   sort = function(x) x)
+
+
+
 # GAM ---------------------------------------------------------------------
+
 
 models$gam <- list(label = "Generalized Additive Model using Splines",
                    library = "mgcv",

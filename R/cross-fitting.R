@@ -154,7 +154,7 @@ cross.fitting <- function(y, d, x,
     out$preds$yhat0 <- yhat0
     out$preds$yhat1 <- yhat1
   }
-  cat("\n")
+  if(verbose) cat("\n")
 
   return(out)
 }

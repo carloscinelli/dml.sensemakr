@@ -84,7 +84,7 @@
 ##' @export
 dml <- function(y, d, x,
                 model  = c("plm", "npm"),
-                target = "ate",
+                target = c("ate", "att", "atu"),
                 groups = NULL,
                 cf.folds = 5,
                 cf.reps  = 1,
@@ -101,9 +101,8 @@ dml <- function(y, d, x,
 
   # check arguments
   model   <- match.arg(model)
-
-
-  # check if x is numeric but not a matrix and convers to matrix.
+  target  <- match.arg(target,several.ok = T)
+  # check if x is numeric but not a matrix and converts to matrix.
   # this is for the case where x is a single covariate
   if (is.numeric(x) && !is.matrix(x)) {
     x <- as.matrix(x)
@@ -122,14 +121,11 @@ dml <- function(y, d, x,
     groups  <- as.factor(groups)
   }
 
-  # check target argument
-  if (target != "ate") stop("Only target = ate is implemented at the moment. Other targets (eg., att, acd) coming soon.")
-
   # check treatment condition for npm.
-  if (model == "npm" & target == "ate") {
+  if (model == "npm" & any(target %in% c("ate","att", "atu"))) {
     d.value <- unique(d)
     binary <- all(d.value %in% c(0,1))
-    if (!binary) stop("Treatment must be binary for ATE in nonparametric model (model = npm, target = ate).")
+    if (!binary) stop("Treatment must be binary for ATE/ATT/ATU in nonparametric model.")
   }
 
   if (cf.folds < 2) {
@@ -149,6 +145,7 @@ dml <- function(y, d, x,
   if (d.class) {
     d <- factor(d, levels = c(0,1), labels = c("zero", "one"))
   }
+
 
   yreg <- caretArgs(yreg)
   dreg <- caretArgs(dreg)
@@ -251,7 +248,7 @@ dml <- function(y, d, x,
     cat("======================================\n\n")
   }
   for (i in 1:cf.reps) {
-    cat("-- Rep", i)
+    if (verbose) cat("-- Rep", i)
     cross.fit.i    <- cross.fitting(y            = y,
                                     d            = d,
                                     x            = x,
@@ -283,14 +280,20 @@ dml <- function(y, d, x,
       yhat1  <- cross.fit.i$preds$yhat1
       results[[i]] <- ate.npm(num(y),
                               num(d),
+                              parameter = "all",
                               yhat1, yhat0, dhat, trim = ps.trim)
     }
     if (verbose) cat("\n")
   }
 
   out$fits <- fits
-  out$results$main <- results
-  out$coefs$main   <- combine.cross.fits(results)
+  out$results$main$all <- results
+  out$coefs$main$all   <- combine.cross.fits(results)
+
+  if (model == "npm") {
+    out$results$main <- ate.att.atu.npm(out, target = target)
+    out$coefs$main <- lapply(out$results$main, combine.cross.fits)
+  }
 
   # Group ATE
   if (!is.null(groups)) {
@@ -301,6 +304,7 @@ dml <- function(y, d, x,
       out$coefs$groups   <- lapply(out$results$groups, combine.cross.fits)
     }
 
+    # deactivate group PLM for now
     if (model == "plm") {
       out$results$groups <- group.ate.plm(out, groups)
       out$coefs$groups   <- lapply(out$results$groups, combine.cross.fits)
@@ -395,16 +399,20 @@ combine.mean <- function(thetas, ses){
 }
 
 caretArgs <- function(reg){
+
   if (is.character(reg)) {
     reg_name <- reg
     reg <- list(method = reg)
-    if (!is.null(models[[reg$method]])) {
-       reg$method <- models[[reg$method]]
-    }
   }
 
-  if (is.character(reg$method)){
+  if (is.character(reg$method)) {
     reg_name <- reg$method
+  }
+
+  if (!is.null(models[[reg$method]])) {
+    reg$method <- models[[reg$method]]
+  } else {
+    reg$method <- getModelInfo(reg$method)[[reg$method]]
   }
 
   if (is.null(reg$trControl)) {

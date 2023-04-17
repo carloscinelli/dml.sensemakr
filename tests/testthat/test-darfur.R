@@ -7,7 +7,7 @@ data("darfur")
 # runs regression model
 model <- lm(peacefactor ~ directlyharmed + age + farmer_dar + herder_dar +
               pastvoted + hhsize_darfur + female + village, data = darfur)
-
+x
 y <- as.numeric(darfur$peacefactor)
 d <- darfur$directlyharmed
 x <- model.matrix(~ age + farmer_dar + herder_dar +

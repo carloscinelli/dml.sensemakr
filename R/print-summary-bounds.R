@@ -13,10 +13,23 @@ summary.dml.bounds <- function(object, combine.method = "median", ...){
   out$combine.method <- combine.method
 
   # main coefs
-  main <- t(sapply(object$coefs$main, function(x)x[combine.method,]))
-  rownames(main) <- c("Short Estimate", "|Bias| Bound", "Lower Bound", "Upper Bound")
-  main <- expand.cmat(main)
-  out$main <- main
+  # main <- t(sapply(object$coefs$main, function(x)x[combine.method,]))
+  # rownames(main) <- c("Short Estimate", "|Bias| Bound", "Lower Bound", "Upper Bound")
+  # main <- expand.cmat(main)
+  # out$main <- main
+
+  # check for main
+  no.main <- is.null(object$coefs$main)
+  if(!no.main){
+    main <- lapply(object$coefs$main, function(x) t(sapply(x, function(x)x[combine.method,])))
+    main <- lapply(main, function(x){
+      rownames(x) <- c("Short Estimate", "|Bias| Bound", "Lower Bound", "Upper Bound")
+      x
+    })
+    main <- lapply(main, expand.cmat)
+    out$main <- main
+  }
+
 
   # check for groups
   no.groups <- is.null(object$coefs$groups)
@@ -45,12 +58,21 @@ print.summary_dml.bounds <- function(x, ...){
       "","r2ya.dx =", paste0(x$info$r2ya.dx,"\n"),
       "","r2rr =", paste0(x$info$r2.rr, "\n"),
       "", "rho =", paste0(x$info$rho,""), "\n")
-  cat("\nBounds on Average Treatment Effect:", "\n\n")
-  print(x$main)
-  groups <- x$groups
-  if(!is.null(groups)){
+  # cat("\nBounds on Average Treatment Effect:", "\n\n")
+  # print()
+  main <- x$main
+  if (!is.null(main)) {
     cat("\n")
-    for(i in seq_along(groups)){
+    for (i in seq_along(main)) {
+      cat("\nBounds on Average Treatment Effect:", names(main)[i], "\n\n")
+      print(main[[i]])
+    }
+  }
+  groups <- x$groups
+
+  if (!is.null(groups)) {
+    cat("\n")
+    for (i in seq_along(groups)) {
       cat("\nBounds on Group Average Treatment Effect:","Group", names(groups)[i], "\n\n")
       print(groups[[i]])
     }
@@ -60,14 +82,23 @@ print.summary_dml.bounds <- function(x, ...){
 
 #' @export
 coef.dml.bounds <- function(object, combine.method = "median", ...){
-  ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "estimate"]))
-  if(!is.null(object$coef$groups)){
+  # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "estimate"]))
+  if (!is.null(object$coef$main)) {
+    ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
+    ate <- do.call("rbind", ate)
+    rownames(ate) <- paste0("ate.", rownames(ate))
+  } else{
+    ate = NULL
+  }
+
+  if (!is.null(object$coef$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     gate <- do.call("rbind", gate)
-    rownames(gate)<- paste0("gate.", rownames(gate))
+    rownames(gate) <- paste0("gate.", rownames(gate))
   } else{
     gate = NULL
   }
+
   t(rbind(ate = ate, gate = gate))
 }
 
@@ -78,11 +109,18 @@ se <- function(object, ...){
 
 #' @export
 se.dml.bounds <- function(object, combine.method = "median", ...){
-  ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "se"]))
-  if(!is.null(object$coef$groups)){
+  # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "se"]))
+  if (!is.null(object$coef$main)) {
+    ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "se"]))
+    ate <- do.call("rbind", ate)
+    rownames(ate) <- paste0("ate.", rownames(ate))
+  } else{
+    ate = NULL
+  }
+  if (!is.null(object$coef$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "se"]))
     gate <- do.call("rbind", gate)
-    rownames(gate)<- paste0("gate.", rownames(gate))
+    rownames(gate) <- paste0("gate.", rownames(gate))
   } else{
     gate = NULL
   }
@@ -95,8 +133,8 @@ confint.dml.bounds <- function(object, params = NULL, level = 0.95, combine.meth
   cf  <- t(coef(object, combine.method = combine.method))
   ses <- t(se(object, combine.method = combine.method))
   loop <- setNames(rownames(cf), rownames(cf))
-  out <- lapply(loop , function(x)calc_confint(cf =cf[x,], params = params, ses =ses[x,], level = level))
-  if(length(out) ==1 ){
+  out <- lapply(loop , function(x)calc_confint(cf = cf[x,], params = params, ses = ses[x,], level = level))
+  if (length(out) == 1 ) {
     out <- out[[1]]
   }
   out

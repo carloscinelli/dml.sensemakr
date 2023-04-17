@@ -50,8 +50,11 @@ summary.dml <- function(object, combine.method = "median", ...){
   out$r2d <- comb_fun(sapply(object$fits, function(x) r2(x$preds$dhat, object$data$d)))
 
   # main coefs
-  main <- rbind(object$coefs$main[combine.method,])
-  rownames(main) <- "ate"
+  # main <- rbind(object$coefs$main[combine.method,])
+  # rownames(main) <- "ate"
+  main <- lapply(object$coefs$main, function(x) x[combine.method, ])
+  main <- do.call("rbind", main)
+  rownames(main) <- paste0("ate.", rownames(main))
   main <- expand.cmat(main)
   out$main <- main
 
@@ -74,7 +77,8 @@ summary.dml <- function(object, combine.method = "median", ...){
 ##' @description  The \code{coef} function extracts the coefficients.
 ##' @export
 coef.dml <- function(object, combine.method = "median", ...){
-  ate <- object$coefs$main[combine.method, "estimate"]
+  ate <- sapply(object$coefs$main, function(x) x[combine.method, "estimate"])
+    #object$coefs$main[combine.method, "estimate"]
   if (!is.null(object$coef$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "estimate"])
   } else{
@@ -93,7 +97,8 @@ se <- function(object, ...){
 ##' @description  The \code{se} function extracts the standard errors.
 ##' @export
 se.dml <- function(object, combine.method = "median", ...){
-  ate <- object$coefs$main[combine.method, "se"]
+  ate <- sapply(object$coefs$main, function(x) x[combine.method, "se"])
+    #object$coefs$main[combine.method, "se"]
   if(!is.null(object$coefs$groups)){
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "se"])
   } else{
@@ -143,7 +148,7 @@ expand.cmat <- function(cmat){
 
 ##' @rdname summary.dml
 ##' @export
-print.summary_dml <- function(x, ...){
+print.summary_dml <- function(x, interpret = T, ...){
   cat("\n")
   cat("Debiased Machine Learning\n")
   cat("\n")
@@ -167,6 +172,17 @@ print.summary_dml <- function(x, ...){
     cat("\n")
   }
   cat("Note: DML estimates combined using the", x$combine.method, "method.")
+
+  if (interpret) {
+    yreg.method <- x$info$yreg$method$label
+    yreg.lib    <- x$info$yreg$method$library[[1]]
+    dreg.method <- x$info$dreg$method$label
+    dreg.lib    <- x$info$dreg$method$library[[1]]
+    cf.folds    <- x$info$cf.folds
+    cf.reps     <- x$info$cf.reps
+    cat("\n\nVerbal interpretation of DML procedure:")
+    cat(paste0("\n\n-- Average treatment effects were estimated using DML with ",cf.folds,"-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure ", cf.reps ," times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses ", yreg.method, " from the R package ", yreg.lib,"; the treatment regression uses ", dreg.method," from the R package ", dreg.lib, "."))
+  }
 }
 
 ##' @param x an object of class \code{\link{dml}}.

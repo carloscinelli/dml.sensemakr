@@ -243,6 +243,7 @@ ovb_contour_plot <- function(model, ...){
 ##' @exportS3Method sensemakr::ovb_contour_plot dml
 ##' @exportS3Method dml.sensemakr::ovb_contour_plot dml
 ovb_contour_plot.dml <- function(model,
+                                 parameter = c("ate", "att", "atu"),
                                  which.bound = c("lwr", "upr"),
                                  level = 0.95,
                                  combine.method = "median",
@@ -310,7 +311,13 @@ ovb_contour_plot.dml <- function(model,
     label.bump.y <- lim.y*(1/15)
   }
 
-  results <- model$results$main
+  parameter <- match.arg(parameter)
+  parameter <- switch (parameter,
+    ate = "all",
+    att = "treat",
+    atu = "untr"
+  )
+  results <- model$results$main[[parameter]]
 
   if(group) {
     results <- model$results$groups[[group.number]]
@@ -357,7 +364,7 @@ ovb_contour_plot.dml <- function(model,
 
   points(0, 0, pch = 17, col = "black", cex = 1)
 
-  idx <- ifelse(group, group.number + 1, 1)
+  idx <- ifelse(group, group.number + 1, paste0("ate.", parameter))
   plot_estimate <- confint(model,
                            combine.method = combine.method,
                            level = level)[idx, ifelse(which.bound == "lwr", 1, 2)]
