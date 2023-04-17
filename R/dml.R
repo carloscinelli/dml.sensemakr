@@ -210,17 +210,23 @@ dml <- function(y, d, x,
     if (verbose) cat("- Tuning Model for D.\n")
 
       dreg  <- tune_model(x =  x, y = dtil, args = dreg)
-      if (verbose) cat("-- Best Tune:\n")
-      print(dreg$tuneGrid)
-      cat("\n")
+      if (verbose) {
+        cat("-- Best Tune:\n")
+        print(dreg$tuneGrid)
+        cat("\n")
+      }
+
 
 
     if (model == "plm") {
       if (verbose) cat("- Tuning Model for Y (partially linear).\n")
       yreg  <- tune_model(x =  x, y = ytil, args = yreg)
-      if (verbose) cat("-- Best Tune:\n")
-      print(yreg$tuneGrid)
-      cat("\n")
+      if (verbose) {
+        cat("-- Best Tune:\n")
+        print(yreg$tuneGrid)
+        cat("\n")
+      }
+
     }
 
     if (model == "npm") {
