@@ -134,5 +134,5 @@ plot.dml.sensemakr <- function(model,
                    rho2 = model$info$rho2,
                    cf.y = model$info$cf.y,
                    cf.d = model$info$cf.d,
-                   combine.method = combine.method)
+                   combine.method = combine.method, ...)
 }
