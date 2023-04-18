@@ -36,10 +36,10 @@ al (2018).](https://academic.oup.com/ectj/article/21/1/C1/5056401)
 
 Some presentations that may be useful:
 
--   [Carlos’ presentation at the
-    ICLR.](http://interactivecausallearning.com/Carlos_Cinelli.html)
--   [Victor’s tutorial at the Chamberlain
-    Seminar.](https://www.youtube.com/watch?v=PQtYqKfxH_I)
+- [Carlos’ presentation at the
+  ICLR.](http://interactivecausallearning.com/Carlos_Cinelli.html)
+- [Victor’s tutorial at the Chamberlain
+  Seminar.](https://www.youtube.com/watch?v=PQtYqKfxH_I)
 
 # Basic Usage
 
@@ -97,32 +97,83 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 26.274%), treatment (ranger, R2 = 11.469%)
+#>  ML Method: outcome (ranger, R2 = 27.684%), treatment (ranger, R2 = 11.417%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
-#>     Estimate Std. Error t value   P(>|t|)    
-#> ate   8081.6     1171.3  6.8997 5.211e-12 ***
+#>         Estimate Std. Error t value  P(>|t|)    
+#> ate.all     8305       1151   7.217 5.33e-13 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
+#> 
+#> Verbal interpretation of DML procedure:
+#> 
+#> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.
 
-# robustness values
-robustness_value(dml.401k, alpha = 0.05)
-#>        ate 
-#> 0.04628754
+# sensitivity analysis
+sens.401k <- sensemakr(dml.401k, cf.y = 0.03, cf.d = 0.04)
 
-# confidence bounds
-confidence_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, level = 0.95)
-#>           lwr       upr
-#> ate  1588.546 14628.766
+# summary
+summary(sens.401k)
+#> ==== Original Analysis ====
+#> 
+#> Debiased Machine Learning
+#> 
+#>  Model: Nonparametric 
+#>  Cross-Fitting: 5 folds, 1 reps 
+#>  ML Method: outcome (ranger, R2 = 27.684%), treatment (ranger, R2 = 11.417%)
+#>  Tuning: dirty 
+#> 
+#> Average Treatment Effect: 
+#> 
+#>         Estimate Std. Error t value  P(>|t|)    
+#> ate.all     8305       1151   7.217 5.33e-13 ***
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> Note: DML estimates combined using the median method.
+#> 
+#> Verbal interpretation of DML procedure:
+#> 
+#> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.
+#> 
+#> ==== Sensitivity Analysis ====
+#> 
+#> Null hypothesis: theta = 0 
+#> Signif. level: alpha = 0.05 
+#> 
+#> Robustness Values:
+#>         RV (%) RVa (%)
+#> ate.all 6.3342  4.8512
+#> 
+#> Verbal interpretation of robustness values:
+#> 
+#> -- Robustness Value for the Bound (RV): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the estimated bounds include 0. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so.
+#> 
+#> -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. 
+#> 
+#>  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.
+#> 
+#> Confidence Bounds for Sensitivity Scenario:
+#>               lwr       upr
+#> ate.all  1883.244 14790.218
 #> 
 #> Confidence level: point = 95%; region = 90%.
-#> Sensitivity parameters: r2ya.dx = 0.03; r2.rr = 0.04; rho2 = 1.
+#> Sensitivity parameters: cf.y = 0.03; cf.d = 0.04; rho2 = 1.
+#> 
+#> Verbal interpretation of confidence bounds:
+#> 
+#> -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.
+#> 
+#> Interpretation of sensitivity parameters:
+#> 
+#> -- cf.y: percentage of the residual variation of the outcome explained by latent variables.
+#> -- cf.d: percentage gains in the variation of the Riesz Representer generated by latent variables:
+#>    ATE: cf.d measures the percentage gains in the average precision on the treatment regression.
 
-# contour plots
-ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, bound.label = "Max Match (3x years)")
+# contout plots
+plot(sens.401k)
 ```
 
 <img src="man/figures/README-basic-usage-1.png" width="100%" style="display: block; margin: auto;" />

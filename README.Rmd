@@ -7,7 +7,7 @@ output: github_document
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  cache = T,
+  cache = F,
   comment = "#>",
   fig.path = "man/figures/README-",
   out.width = "100%"
@@ -68,14 +68,14 @@ dml.401k <- dml(y, d, x, model = "npm")
 # summary of results with median method (default)
 summary(dml.401k)
 
-# robustness values
-robustness_value(dml.401k, alpha = 0.05)
+# sensitivity analysis
+sens.401k <- sensemakr(dml.401k, cf.y = 0.03, cf.d = 0.04)
 
-# confidence bounds
-confidence_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, level = 0.95)
+# summary
+summary(sens.401k)
 
-# contour plots
-ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, bound.label = "Max Match (3x years)")
+# contout plots
+plot(sens.401k)
 ```
 
 <!-- ### Use DML to estimate the ATE -->

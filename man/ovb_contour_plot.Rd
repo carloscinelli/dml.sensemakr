@@ -16,7 +16,7 @@ ovb_contour_plot(model, ...)
   rho2 = 1,
   cf.y = NULL,
   cf.d = cf.y,
-  bound.label = "Manual",
+  bound.label = "Scenario",
   group = FALSE,
   group.number = 1,
   threshold = 0,

@@ -155,32 +155,83 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 26.274%), treatment (ranger, R2 = 11.469%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 27.684%), treatment (ranger, R2 = 11.417%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8081.6     1171.3  6.8997 5.211e-12 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     8305       1151   7.217 5.33e-13 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span>
 <span></span>
-<span><span class="co"># robustness values</span></span>
-<span><span class="fu"><a href="reference/robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        ate </span></span>
-<span><span class="co">#&gt; 0.04628754</span></span>
+<span><span class="co"># sensitivity analysis</span></span>
+<span><span class="va">sens.401k</span> <span class="op">&lt;-</span> <span class="fu">sensemakr</span><span class="op">(</span><span class="va">dml.401k</span>, cf.y <span class="op">=</span> <span class="fl">0.03</span>, cf.d <span class="op">=</span> <span class="fl">0.04</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># confidence bounds</span></span>
-<span><span class="fu"><a href="reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.03</span>, r2.rr <span class="op">=</span> <span class="fl">0.04</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
-<span><span class="co">#&gt;           lwr       upr</span></span>
-<span><span class="co">#&gt; ate  1588.546 14628.766</span></span>
+<span><span class="co"># summary</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sens.401k</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ==== Original Analysis ====</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Debiased Machine Learning</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
+<span><span class="co">#&gt;  ML Method: outcome (ranger, R2 = 27.684%), treatment (ranger, R2 = 11.417%)</span></span>
+<span><span class="co">#&gt;  Tuning: dirty </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     8305       1151   7.217 5.33e-13 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ==== Sensitivity Analysis ====</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Null hypothesis: theta = 0 </span></span>
+<span><span class="co">#&gt; Signif. level: alpha = 0.05 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Robustness Values:</span></span>
+<span><span class="co">#&gt;         RV (%) RVa (%)</span></span>
+<span><span class="co">#&gt; ate.all 6.3342  4.8512</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of robustness values:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Robustness Value for the Bound (RV): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the estimated bounds include 0. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Confidence Bounds for Sensitivity Scenario:</span></span>
+<span><span class="co">#&gt;               lwr       upr</span></span>
+<span><span class="co">#&gt; ate.all  1883.244 14790.218</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
-<span><span class="co">#&gt; Sensitivity parameters: r2ya.dx = 0.03; r2.rr = 0.04; rho2 = 1.</span></span>
+<span><span class="co">#&gt; Sensitivity parameters: cf.y = 0.03; cf.d = 0.04; rho2 = 1.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of confidence bounds:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Interpretation of sensitivity parameters:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- cf.y: percentage of the residual variation of the outcome explained by latent variables.</span></span>
+<span><span class="co">#&gt; -- cf.d: percentage gains in the variation of the Riesz Representer generated by latent variables:</span></span>
+<span><span class="co">#&gt;    ATE: cf.d measures the percentage gains in the average precision on the treatment regression.</span></span>
 <span></span>
-<span><span class="co"># contour plots</span></span>
-<span><span class="fu"><a href="reference/ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.03</span>, r2.rr <span class="op">=</span> <span class="fl">0.04</span>, bound.label <span class="op">=</span> <span class="st">"Max Match (3x years)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># contout plots</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sens.401k</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-basic-usage-1.png" width="100%" style="display: block; margin: auto;"></p>
 <!-- ### Use DML to estimate the ATE -->
 <!-- ```{r} -->

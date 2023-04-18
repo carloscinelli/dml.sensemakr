@@ -140,16 +140,20 @@ instance, the code below runs DML using generalized additive models
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 26.403%), treatment (gam, R2 = 12.218%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 28.511%), treatment (gam, R2 = 12.201%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7261.5     1168.8  6.2127 5.207e-10 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     7161       1142    6.27 3.61e-10 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Generalized Additive Model using Splines from the R package mgcv; the treatment regression uses Generalized Additive Model using Splines from the R package mgcv.</span></span></code></pre></div>
 <p>And the code below uses gradient boosting machines (GBMs).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># gradient boosting machine</span></span>
@@ -189,16 +193,20 @@ instance, the code below runs DML using generalized additive models
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 23.553%), treatment (gbm, R2 = 11.826%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 22.658%), treatment (gbm, R2 = 11.67%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7673.6     1151.7   6.663 2.684e-11 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     7784       1163   6.693 2.18e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Stochastic Gradient Boosting from the R package gbm; the treatment regression uses Stochastic Gradient Boosting from the R package gbm.</span></span></code></pre></div>
 <p>Above we used the same ML method for estimating both the regression
 with the treatment and with the outcome. Note, however, that you can use
 different methods for each regression, by specifying <code>yreg</code>
@@ -242,16 +250,20 @@ for the outcome regression, and GBM for the treatment regression.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 27.891%), treatment (gbm, R2 = 11.798%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gam, R2 = 27.421%), treatment (gbm, R2 = 11.861%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7759.7     1112.8  6.9733 3.097e-12 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     7638       1118    6.83 8.51e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Generalized Additive Model using Splines from the R package mgcv; the treatment regression uses Stochastic Gradient Boosting from the R package gbm.</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="tuning-parameters">Tuning Parameters<a class="anchor" aria-label="anchor" href="#tuning-parameters"></a>
 </h3>
@@ -287,8 +299,8 @@ are chosen by <code>caret</code>).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; - Tuning Model for D.</span></span>
 <span><span class="co">#&gt; -- Best Tune:</span></span>
-<span><span class="co">#&gt;    n.trees interaction.depth shrinkage n.minobsinnode</span></span>
-<span><span class="co">#&gt; 11      50                 3       0.1             10</span></span>
+<span><span class="co">#&gt;   n.trees interaction.depth shrinkage n.minobsinnode</span></span>
+<span><span class="co">#&gt; 7     100                 2       0.1             10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
 <span><span class="co">#&gt; -- Best Tune:</span></span>
@@ -307,16 +319,20 @@ are chosen by <code>caret</code>).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 28.31%), treatment (gbm, R2 = 12.163%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (gbm, R2 = 24.029%), treatment (gbm, R2 = 12.327%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   8480.2     1146.0  7.3996 1.366e-13 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     8098       1245   6.506 7.7e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Stochastic Gradient Boosting from the R package gbm; the treatment regression uses Stochastic Gradient Boosting from the R package gbm.</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -374,22 +390,37 @@ accordingly.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (nnet, R2 = 28.635%), treatment (nnet, R2 = 11.783%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (nnet, R2 = 30.377%), treatment (nnet, R2 = 11.461%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate   7417.9     1237.7  5.9933 2.057e-09 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     7567       1217   6.219   5e-10 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Neural Network from the R package nnet; the treatment regression uses Neural Network from the R package nnet.</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="lasso-with-polynomial-expansion">Lasso with Polynomial Expansion<a class="anchor" aria-label="anchor" href="#lasso-with-polynomial-expansion"></a>
 </h3>
 <p>Template for using lasso with a polynomial expansion of the
 covariates <code>x</code>.</p>
+<!-- We suggest using `rlasso`, which is not only fast but also has rigorous guarantees. -->
+<!-- ```{r} -->
+<!-- # creates polynomial expansion of x -->
+<!-- xl  <- model.matrix(~ -1 + (poly(age, 6, raw=TRUE) + poly(inc, 8, raw=TRUE) + -->
+<!--                       poly(educ, 4, raw=TRUE) + poly(fsize, 2, raw=TRUE) + -->
+<!--                       marr + twoearn + pira + hown)^2, data = pension) -->
+<!-- # fit dml -->
+<!-- dml.rlasso <- dml(y, d, xl, model = "plm", reg = "rlasso") -->
+<!-- summary(dml.rlasso) -->
+<!-- ``` -->
+<!-- You can also use regular lasso with cross-validation: -->
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># creates polynomial expansion of x</span></span>
 <span><span class="va">xl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">age</span>, <span class="fl">6</span>, raw<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">inc</span>, <span class="fl">8</span>, raw<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
@@ -401,10 +432,10 @@ covariates <code>x</code>.</p>
 <span>                   tuneGrid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">1</span>, lambda <span class="op">=</span> <span class="fl">0.002</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># fit dml</span></span>
-<span><span class="va">dml.glmnet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml.html">dml</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">xl</span>, model <span class="op">=</span> <span class="st">"npm"</span>, reg<span class="op">=</span> <span class="va">lasso.args</span><span class="op">)</span></span>
+<span><span class="va">dml.glmnet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml.html">dml</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">xl</span>, model <span class="op">=</span> <span class="st">"plm"</span>, reg <span class="op">=</span> <span class="va">lasso.args</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Model: Partially Linear </span></span>
 <span><span class="co">#&gt;  Target: ate </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (glmnet), treatment (glmnet)</span></span>
@@ -420,7 +451,7 @@ covariates <code>x</code>.</p>
 <span><span class="co">#&gt;   alpha lambda</span></span>
 <span><span class="co">#&gt; 1     1  0.002</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; - Tuning Model for Y (non-parametric).</span></span>
+<span><span class="co">#&gt; - Tuning Model for Y (partially linear).</span></span>
 <span><span class="co">#&gt; -- Best Tune:</span></span>
 <span><span class="co">#&gt;   alpha lambda</span></span>
 <span><span class="co">#&gt; 1     1  0.002</span></span>
@@ -435,18 +466,22 @@ covariates <code>x</code>.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Model: Nonparametric </span></span>
+<span><span class="co">#&gt;  Model: Partially Linear </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (glmnet, R2 = 28.52%), treatment (glmnet, R2 = 11.985%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (glmnet, R2 = 28.772%), treatment (glmnet, R2 = 11.969%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     Estimate Std. Error t value   P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate  11438.3     2373.8  4.8186 1.446e-06 ***</span></span>
+<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate.all     9159       1316   6.959 3.42e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span></code></pre></div>
+<span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses glmnet from the R package glmnet; the treatment regression uses glmnet from the R package glmnet.</span></span></code></pre></div>
 </div>
 </div>
   </div>

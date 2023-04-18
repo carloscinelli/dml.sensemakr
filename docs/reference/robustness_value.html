@@ -55,7 +55,7 @@ The robustness value describes the minimum strength of association (parameterize
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">robustness_value</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">robustness_value</span><span class="op">(</span><span class="va">model</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for dml</span></span>
 <span><span class="fu">robustness_value</span><span class="op">(</span><span class="va">model</span>, theta <span class="op">=</span> <span class="fl">0</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, <span class="va">...</span><span class="op">)</span></span>
@@ -66,12 +66,12 @@ The robustness value describes the minimum strength of association (parameterize
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>...</dt>
-<dd><p>arguments passed to other methods.</p></dd>
-
-
-<dt>model</dt>
+    <dl><dt>model</dt>
 <dd><p>an object of class <code><a href="dml.html">dml</a></code> or <code>dml.bounds</code>.</p></dd>
+
+
+<dt>...</dt>
+<dd><p>arguments passed to other methods.</p></dd>
 
 
 <dt>theta</dt>

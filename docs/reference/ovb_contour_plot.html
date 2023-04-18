@@ -68,13 +68,14 @@ Almost all parameters can be customized by the user."><!-- mathjax --><script sr
 <span><span class="co"># S3 method for dml</span></span>
 <span><span class="fu">ovb_contour_plot</span><span class="op">(</span></span>
 <span>  <span class="va">model</span>,</span>
+<span>  parameter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ate"</span>, <span class="st">"att"</span>, <span class="st">"atu"</span><span class="op">)</span>,</span>
 <span>  which.bound <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr"</span>, <span class="st">"upr"</span><span class="op">)</span>,</span>
 <span>  level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  combine.method <span class="op">=</span> <span class="st">"median"</span>,</span>
 <span>  rho2 <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  r2ya.dx <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  r2.rr <span class="op">=</span> <span class="va">r2ya.dx</span>,</span>
-<span>  bound.label <span class="op">=</span> <span class="st">"Manual"</span>,</span>
+<span>  cf.y <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cf.d <span class="op">=</span> <span class="va">cf.y</span>,</span>
+<span>  bound.label <span class="op">=</span> <span class="st">"Scenario"</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  group.number <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  threshold <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -127,16 +128,16 @@ Almost all parameters can be customized by the user."><!-- mathjax --><script sr
 <dd><p>degree of adversity. Default is <code>rho=1</code>, which assumes the maximum degree of adversity of confounding.</p></dd>
 
 
-<dt>r2ya.dx</dt>
+<dt>cf.y</dt>
 <dd><p>(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).</p></dd>
 
 
-<dt>r2.rr</dt>
+<dt>cf.d</dt>
 <dd><p>how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.</p></dd>
 
 
 <dt>bound.label</dt>
-<dd><p>text label for the manual bound provided via <code>r2ya.dx</code> and <code>r2.rr</code>.</p></dd>
+<dd><p>text label for the manual bound provided via <code>cf.y</code> and <code>cf.d</code>.</p></dd>
 
 
 <dt>group</dt>

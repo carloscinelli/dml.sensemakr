@@ -60,25 +60,19 @@ dml.401k.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
 summary(dml.401k.plm)
 ```
 
-```{r}
-# robustness values
-robustness_value(dml.401k.plm, alpha = 1) # RV point estimate
-robustness_value(dml.401k.plm, alpha = 0.05) # RV confidence bound
-```
 
 ```{r}
-# confidence bounds under posited scenario
-confidence_bounds(dml.401k.plm, cf.y = 0.04, cf.d = 0.03, level = 0.95)
-```
+# sensitivity analysis
+sens.401k <- sensemakr(dml.401k.plm, cf.y = 0.04, cf.d = 0.03,)
 
+# summary
+summary(sens.401k)
 
-```{r, fig.width=12}
-# sensitivity contour plots
-par(mfrow = c(1,2))
-ovb_contour_plot(dml.401k.plm, which.bound = "lwr", cf.y = 0.04, cf.d = 0.03, 
-                 bound.label = "Max match (3 years)", col.contour = "blue")
-ovb_contour_plot(dml.401k.plm, which.bound = "upr", cf.y = 0.04, cf.d = 0.03, 
-                 bound.label = "Max match (3 years)", col.contour = "blue")
+# contour plots
+oldpar <- par(mfrow = c(1,2))
+plot(sens.401k, which.bound = "lwr", bound.label = "Max match (3 years)", col.contour = "blue")
+plot(sens.401k, which.bound = "upr", bound.label = "Max match (3 years)", col.contour = "blue")
+par(oldpar)
 ```
 
 
@@ -126,38 +120,36 @@ ggplot(df, aes(x = groups, y = estimate)) + geom_line() +
 
 
 ```{r}
-# robustness values
-robustness_value(dml.401k.npm, alpha = 1) # RV point estimate
-robustness_value(dml.401k.npm, alpha = 0.05) # RV confidence bound
+# sensitivity analysis
+sens.401k.npm <- sensemakr(dml.401k.npm, cf.y = 0.04, cf.d = 0.03)
+
+# summary
+summary(sens.401k.npm)
+
+# sensitivity contour plots
+oldpar <- par(mfrow = c(1,2))
+plot(sens.401k.npm, which.bound = "lwr", bound.label = "Max match (3 years)", col.contour = "blue")
+plot(sens.401k.npm, which.bound = "upr", bound.label = "Max match (3 years)", col.contour = "blue")
+par(oldpar)
 ```
 
 ```{r}
-# bounds and confidence bounds 
-bds   <- confidence_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03, level = 0)
-bds   <- setNames(as.data.frame(bds), c("lwr.bound", "upr.bound"))
-cbds  <- confidence_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03, level = .95)
-cbds  <- setNames(as.data.frame(cbds), c("lwr.cbound", "upr.cbound"))
-cbind(bds, cbds)
+
 ```
 
 ```{r, fig.width=8}
 # confidence bounds plot
-df2   <- cbind(df, bds[group.names,], cbds[group.names, ])
+bds   <- confidence_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03, level = 0)
+bds   <- setNames(as.data.frame(bds), c("lwr.bound", "upr.bound"))
+cbds  <- confidence_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03, level = .95)
+cbds  <- setNames(as.data.frame(cbds), c("lwr.cbound", "upr.cbound"))
+df2   <- cbind(df, bds[-1,], cbds[-1, ])
 ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
   geom_ribbon(aes(ymin = lwr.bound, ymax = upr.bound),   alpha = 0.1, col = "red", fill = "red") +
   geom_ribbon(aes(ymin = lwr.cbound, ymax = upr.cbound), alpha = 0.1, col = "blue", fill = "blue") +
   theme_bw() + 
   xlab("Income Groups by Quartiles") + 
   ylab("ATE")
-```
-
-```{r, fig.width=12}
-# sensitivity contour plots
-par(mfrow = c(1,2))
-ovb_contour_plot(dml.401k.npm, which.bound = "lwr", cf.y = 0.04, cf.d = 0.03, 
-                 bound.label = "Max match (3 years)", col.contour = "blue")
-ovb_contour_plot(dml.401k.npm, which.bound = "upr", cf.y = 0.04, cf.d = 0.03, 
-                 bound.label = "Max match (3 years)", col.contour = "blue")
 ```
 
 ```{r}

@@ -74,7 +74,7 @@ The confint function extracts the standard errors."><!-- mathjax --><script src=
 <span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">object</span>, params <span class="op">=</span> <span class="cn">NULL</span>, level <span class="op">=</span> <span class="fl">0.95</span>, combine.method <span class="op">=</span> <span class="st">"median"</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for summary_dml</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"digits"</span><span class="op">)</span> <span class="op">-</span> <span class="fl">3L</span><span class="op">)</span>, interpret <span class="op">=</span> <span class="cn">T</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for dml</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span></span>
@@ -179,70 +179,78 @@ The confint function extracts the standard errors."><!-- mathjax --><script src=
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 2 folds, 1 reps </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (ranger, R2 = 28.662%), treatment (ranger, R2 = 11.281%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (ranger, R2 = 25.532%), treatment (ranger, R2 = 10.749%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     Estimate Std. Error t value   P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate   7694.9     1145.6  6.7168 1.858e-11 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all     8143       1229   6.628 3.41e-11 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Group Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value   P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  4023.34     816.74  4.9261 8.388e-07 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  2425.87    1244.01  1.9500 0.0511710 .  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  6047.21    1765.77  3.4247 0.0006155 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 18281.32    3950.13  4.6280 3.692e-06 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1   4782.1      914.6   5.228 1.71e-07 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2   2858.5     1222.4   2.338 0.019366 *  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3   7092.4     1980.3   3.581 0.000342 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4  17835.6     4224.2   4.222 2.42e-05 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Note: DML estimates combined using the median method.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Verbal interpretation of DML procedure:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- Average treatment effects were estimated using DML with 2-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Debiased Machine Learning</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 2 folds, 1 reps </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (ranger, R2 = 28.662%), treatment (ranger, R2 = 11.281%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (ranger, R2 = 25.532%), treatment (ranger, R2 = 10.749%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     Estimate Std. Error t value   P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate   7694.9     1145.6  6.7168 1.858e-11 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all     8143       1229   6.628 3.41e-11 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Group Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value   P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  4023.34     816.74  4.9261 8.388e-07 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  2425.87    1244.01  1.9500 0.0511710 .  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  6047.21    1765.77  3.4247 0.0006155 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 18281.32    3950.13  4.6280 3.692e-06 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1   4782.1      914.6   5.228 1.71e-07 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2   2858.5     1222.4   2.338 0.019366 *  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3   7092.4     1980.3   3.581 0.000342 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4  17835.6     4224.2   4.222 2.42e-05 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Note: DML estimates combined using the mean method.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Verbal interpretation of DML procedure:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- Average treatment effects were estimated using DML with 2-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">dml.401k</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       ate   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7694.922  4023.337  2425.868  6047.207 18281.321 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ate.all   gate.q1   gate.q2   gate.q3   gate.q4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8142.648  4782.077  2858.477  7092.441 17835.622 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       ate   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7694.922  4023.337  2425.868  6047.207 18281.321 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ate.all   gate.q1   gate.q2   gate.q3   gate.q4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8142.648  4782.077  2858.477  7092.441 17835.622 </span>
 <span class="r-in"><span><span class="fu">se</span><span class="op">(</span><span class="va">dml.401k</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       ate   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1145.6265  816.7364 1244.0074 1765.7708 3950.1346 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ate.all   gate.q1   gate.q2   gate.q3   gate.q4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1228.5995  914.6267 1222.4003 1980.3223 4224.2183 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               2.5 %    97.5 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate      5449.53514  9940.308</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  2422.56267  5624.111</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2   -12.34139  4864.078</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3  2586.36001  9508.054</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 10539.19972 26023.443</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             2.5 %    97.5 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all 5734.6374 10550.659</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1 2989.4417  6574.712</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  462.6164  5254.338</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3 3211.0806 10973.801</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 9556.3062 26114.938</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
