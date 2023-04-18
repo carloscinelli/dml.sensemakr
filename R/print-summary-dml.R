@@ -180,8 +180,10 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
     dreg.lib    <- x$info$dreg$method$library[[1]]
     cf.folds    <- x$info$cf.folds
     cf.reps     <- x$info$cf.reps
+    c.method    <- x$combine.method
+
     cat("\n\nVerbal interpretation of DML procedure:")
-    cat(paste0("\n\n-- Average treatment effects were estimated using DML with ",cf.folds,"-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure ", cf.reps ," times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses ", yreg.method, " from the R package ", yreg.lib,"; the treatment regression uses ", dreg.method," from the R package ", dreg.lib, "."))
+    cat(paste0("\n\n-- Average treatment effects were estimated using DML with ",cf.folds,"-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure ", cf.reps ," times. Estimates are combined using the ", c.method, " as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses ", yreg.method, " from the R package ", yreg.lib,"; the treatment regression uses ", dreg.method," from the R package ", dreg.lib, "."))
   }
 }
 
