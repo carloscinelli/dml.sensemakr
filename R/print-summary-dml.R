@@ -148,7 +148,7 @@ expand.cmat <- function(cmat){
 
 ##' @rdname summary.dml
 ##' @export
-print.summary_dml <- function(x, interpret = T, ...){
+print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), interpret = T, ...){
   cat("\n")
   cat("Debiased Machine Learning\n")
   cat("\n")
@@ -162,13 +162,13 @@ print.summary_dml <- function(x, interpret = T, ...){
   cat("\n")
 
   cat("Average Treatment Effect:", "\n\n")
-  print(x$main)
+  print(x$main, digits = digits)
 
   no.groups <- is.null(x$groups)
   if (!no.groups) {
     cat("\n")
     cat("Group Average Treatment Effect:", "\n\n")
-    print(x$groups)
+    print(x$groups, digits = digits)
     cat("\n")
   }
   cat("Note: DML estimates combined using the", x$combine.method, "method.")
@@ -208,11 +208,11 @@ print.dml <- function(x, digits = max(3L, getOption("digits") - 3L), combine.met
 
 
 #' @export
-print.cmat <- function(x, ...){
+print.cmat <- function(x, digits = max(3L, getOption("digits") - 3L), ...){
   colnames(x) <-  c("Estimate", "Std. Error", "t value", "P(>|t|)")
   # rownames(x) <-  toupper(rownames(x))
   # rownames(x) <- sapply(strsplit(rownames(x), split = "\\."), function(x) paste(x, collapse = " "))
-  printCoefmat(x, has.Pvalue = T, P.values = T, signif.stars = T, ...)
+  printCoefmat(x, has.Pvalue = T, P.values = T, signif.stars = T, digits = digits, ...)
 }
 
 # vcov.dml <- function(object, ...){

@@ -20,7 +20,7 @@ se(object, ...)
 
 \method{confint}{dml}(object, params = NULL, level = 0.95, combine.method = "median", ...)
 
-\method{print}{summary_dml}(x, interpret = F, ...)
+\method{print}{summary_dml}(x, digits = max(3L, getOption("digits") - 3L), interpret = T, ...)
 
 \method{print}{dml}(
   x,

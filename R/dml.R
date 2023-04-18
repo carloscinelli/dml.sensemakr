@@ -84,7 +84,7 @@
 ##' @export
 dml <- function(y, d, x,
                 model  = c("plm", "npm"),
-                target = c("ate", "att", "atu"),
+                target = "ate",
                 groups = NULL,
                 cf.folds = 5,
                 cf.reps  = 1,
@@ -101,7 +101,9 @@ dml <- function(y, d, x,
 
   # check arguments
   model   <- match.arg(model)
-  target  <- match.arg(target,several.ok = T)
+  target  <- match.arg(target,
+                       choices = c("ate", "att", "atu"),
+                       several.ok = T)
   # check if x is numeric but not a matrix and converts to matrix.
   # this is for the case where x is a single covariate
   if (is.numeric(x) && !is.matrix(x)) {
@@ -117,7 +119,7 @@ dml <- function(y, d, x,
     colnames(x) <- paste0("x", 1:ncol(x))
   }
 
-  if(!is.null(groups)){
+  if (!is.null(groups)) {
     groups  <- as.factor(groups)
   }
 

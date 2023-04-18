@@ -4,7 +4,7 @@
 ##' @param model an object of class \code{\link{dml}}.
 ##' @param benchmark_covariates a character vector with the names of the observed covariates that will be used for benchmarking.
 ##' @export
-dml_benchmark <- function(model, benchmark_covariates){
+dml_benchmark <- function(model, benchmark_covariates, target = "ate"){
   model.type <- model$info$model
   bench_fun <- switch(model.type,
                       npm = bench_npm,
@@ -34,6 +34,7 @@ summary.dml_benchmark <- function(object, combine.method = "mean", na.rm = T, ..
 
 
 bench_plm <- function(model, benchmark_covariates) {
+  if (is.null(model$results$main$all)) stop("Benchmarks implemented for ATE only. ATT/ATU coming soon.")
   x <- model$data$x
   which.not <- which(!benchmark_covariates %in% colnames(x))
   if (any(which.not)){
@@ -45,7 +46,7 @@ bench_plm <- function(model, benchmark_covariates) {
   resD   <- sapply(model$fits, function(x) model$data$d - x$preds$dhat)
   R2.Y <- (apply(resY.D, 2, function(x) max(1-var(x)/var(model$data$y),0)))
   R2.D <- (apply(resD, 2, function(x) max(1-var(x)/var(model$data$d),0)))
-  theta.short <- extract_estimate(model$results$main, "theta.s")
+  theta.short <- extract_estimate(model$results$main$all, "theta.s")
   benchmarks <- list()
   for (i in seq_along(benchmark_covariates)){
     covar <- benchmark_covariates[i]
@@ -64,7 +65,7 @@ bench_plm <- function(model, benchmark_covariates) {
     R2.Dwo <- (apply(resD.wo, 2, function(x) max(1-var(x)/var(model.wo$data$d),0)))
 
     ## Bias Decomposition
-    theta.short.wo <- extract_estimate(model.wo$results$main, "theta.s")
+    theta.short.wo <- extract_estimate(model.wo$results$main$all, "theta.s")
     Bias <-  theta.short.wo -theta.short
     V.g <- apply(resY.D.wo, 2, var) - apply(resY.D,2, var) # var( g - g_s)
     V.a <- apply(resD, 2, function(x) var(x/mean(x^2)))-
@@ -95,6 +96,7 @@ bench_plm <- function(model, benchmark_covariates) {
 
 bench_npm <- function(model, benchmark_covariates){
 
+  if (is.null(model$results$main$all)) stop("Benchmarks implemented for ATE only. ATT/ATU coming soon.")
   x <- model$data$x
   which.not <- which(!benchmark_covariates %in% colnames(x))
 
@@ -102,11 +104,11 @@ bench_npm <- function(model, benchmark_covariates){
     stop("Covariates not found: ", paste(benchmark_covariates[which.not], collapse = ", "), ".")
   }
 
-  nu.sq <- extract_estimate(model$results$main, param = "nu2.s")
+  nu.sq <- extract_estimate(model$results$main$all, param = "nu2.s")
   resY  <- sapply(model$fits, function(x)model$data$y-x$preds$yhat)
   R2.Y  <- apply(resY, 2, function(x) max(1-var(x)/var(model$data$y),0))
 
-  theta.short <- extract_estimate(model$results$main, "theta.s")
+  theta.short <- extract_estimate(model$results$main$all, "theta.s")
   benchmarks <- list()
   for (i in seq_along(benchmark_covariates)) {
     covar <- benchmark_covariates[i]
@@ -117,12 +119,12 @@ bench_npm <- function(model, benchmark_covariates){
     model.call["x"] <- call("xo")
     model.wo <- eval(model.call)
 
-    nu.sq.wo <- extract_estimate(model.wo$results$main, param = "nu2.s")
+    nu.sq.wo <- extract_estimate(model.wo$results$main$all, param = "nu2.s")
     resY.wo  <- sapply(model.wo$fits, function(x) model.wo$data$y - x$preds$yhat)
     R2.Y.wo  <- apply(resY.wo, 2, function(x) max(1-var(x)/var(model.wo$data$y),0))
 
     ## (Debiased) Bias Decomposition
-    theta.short.wo <- extract_estimate(model.wo$results$main, "theta.s")
+    theta.short.wo <- extract_estimate(model.wo$results$main$all, "theta.s")
     Bias <- theta.short.wo - theta.short
     V.g <- apply(resY.wo,2,var) - apply(resY,2,var)
     V.a <- nu.sq - nu.sq.wo
@@ -132,7 +134,7 @@ bench_npm <- function(model, benchmark_covariates){
 
     #(1- R^2_{a~a_s}) =  (Ea^2 - Ea_s^2)/ E a^2
 
-    Gain.Y = (R2.Y - R2.Y.wo)/(1 - R2.Y);   #
+    Gain.Y = pmax(0, (R2.Y - R2.Y.wo)/(1 - R2.Y))   #
     Gain.D = pmax(0, (nu.sq - nu.sq.wo)/nu.sq.wo)
 
      bench <- data.frame(gain.Y = Gain.Y,

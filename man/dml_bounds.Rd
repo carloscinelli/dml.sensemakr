@@ -8,7 +8,7 @@
 \alias{confidence_bounds.dml.bounds}
 \title{Bounds on the omitted variable bias for causal machine learning}
 \usage{
-dml_bounds(model, r2ya.dx, r2.rr, rho2 = 1)
+dml_bounds(model, cf.y, cf.d, rho2 = 1)
 
 confidence_bounds(model, ...)
 
@@ -18,8 +18,8 @@ confidence_bounds(model, ...)
   se.theta.s,
   se.S2,
   cov.theta.S2,
-  r2ya.dx,
-  r2.rr,
+  cf.y,
+  cf.d,
   rho2 = 1,
   combine.method = "median",
   level = 0.95
@@ -27,8 +27,8 @@ confidence_bounds(model, ...)
 
 \method{confidence_bounds}{dml}(
   model,
-  r2ya.dx,
-  r2.rr,
+  cf.y,
+  cf.d,
   rho2 = 1,
   level = 0.95,
   combine.method = "median",
@@ -37,8 +37,8 @@ confidence_bounds(model, ...)
 
 \method{confidence_bounds}{dml.bounds}(
   model,
-  r2ya.dx = NULL,
-  r2.rr = NULL,
+  cf.y = NULL,
+  cf.d = NULL,
   rho2 = NULL,
   level = 0.95,
   combine.method = "median",
@@ -49,9 +49,9 @@ confidence_bounds(model, ...)
 \arguments{
 \item{model}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
 
-\item{r2ya.dx}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
+\item{cf.y}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
 
-\item{r2.rr}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
+\item{cf.d}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
 
 \item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
 }

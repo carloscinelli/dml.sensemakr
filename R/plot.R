@@ -215,7 +215,7 @@ ovb_contour_plot <- function(model, ...){
 ##' @param which.bound show contours for the lower limit (\code{lwr}) or upper limit (\code{upr}) of confidence bounds?
 ##' @inheritParams dml_bounds
 ##' @inheritParams summary.dml
-##' @param bound.label text label for the manual bound provided via \code{r2ya.dx} and \code{r2.rr}.
+##' @param bound.label text label for the manual bound provided via \code{cf.y} and \code{cf.d}.
 ##' @param group contour plots for main analysis or group analysis? Default is \code{FALSE} (main analysis).
 ##' @param group.number if \code{group = TRUE}, provide the number (level) of the group.
 ##' @param threshold critical threshold of interest. Default is \code{0}.
@@ -248,9 +248,9 @@ ovb_contour_plot.dml <- function(model,
                                  level = 0.95,
                                  combine.method = "median",
                                  rho2 = 1,
-                                 r2ya.dx = NULL,
-                                 r2.rr = r2ya.dx,
-                                 bound.label = "Manual",
+                                 cf.y = NULL,
+                                 cf.d = cf.y,
+                                 bound.label = "Scenario",
                                  group = FALSE,
                                  group.number = 1,
                                  threshold = 0,
@@ -277,10 +277,10 @@ ovb_contour_plot.dml <- function(model,
 
   which.bound <- match.arg(which.bound)
 
-  sensemakr:::check_r2(r2dz.x = r2ya.dx, r2yz.dx = r2.rr)
+  sensemakr:::check_r2(r2dz.x = cf.y, r2yz.dx = cf.d)
 
-  if (length(r2ya.dx) != length(r2.rr)) {
-    stop("Lengths of r2ya.dx and r2.rr must match.")
+  if (length(cf.y) != length(cf.d)) {
+    stop("Lengths of cf.y and cf.d must match.")
   }
 
   if (lim.x > 1) {
@@ -330,7 +330,7 @@ ovb_contour_plot.dml <- function(model,
   cov.theta.S2 <- extract_estimate(results, "cov.theta.S2")
   x_grid <- seq(0, lim.x, by = lim.x/grid.number)
   y_grid <- seq(0, lim.y,  by = lim.y/grid.number)
-  vec_bounds <- Vectorize(confidence_bounds.numeric, vectorize.args = c("r2ya.dx", "r2.rr"))
+  vec_bounds <- Vectorize(confidence_bounds.numeric, vectorize.args = c("cf.y", "cf.d"))
 
   f <- function(x, y) {
     vec_bounds(theta.s = theta.s,S2 = S2,
@@ -340,8 +340,8 @@ ovb_contour_plot.dml <- function(model,
                combine.method = combine.method,
                level = level,
                rho2 = rho2,
-               r2.rr = x,
-               r2ya.dx = y)[which.bound, ]
+               cf.d = x,
+               cf.y = y)[which.bound, ]
   }
   z_grid <- outer(X = x_grid, Y = y_grid, FUN = f)
 
@@ -373,11 +373,11 @@ ovb_contour_plot.dml <- function(model,
               "\n(", round(plot_estimate, 0), ")"),
        cex = cex.label.text)
 
-  if (!is.null(r2ya.dx)){
-    bound_value <- f(x = r2.rr, y = r2ya.dx)
+  if (!is.null(cf.y)){
+    bound_value <- f(x = cf.d, y = cf.y)
 
-    sensemakr::add_bound_to_contour(r2dz.x = r2.rr,
-                                    r2yz.dx = r2ya.dx,
+    sensemakr::add_bound_to_contour(r2dz.x = cf.d,
+                                    r2yz.dx = cf.y,
                                     bound_value = bound_value,
                                     bound_label = bound.label,
                                     label.text = label.text,

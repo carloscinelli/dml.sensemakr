@@ -122,7 +122,7 @@ lasso.args <- list(method = "glmnet",
                    tuneGrid = expand.grid(alpha = 1, lambda = 0.002))
 
 # fit dml
-dml.glmnet <- dml(y, d, xl, model = "npm", reg = lasso.args)
+dml.glmnet <- dml(y, d, xl, model = "plm", reg = lasso.args)
 summary(dml.glmnet)
 ```
 

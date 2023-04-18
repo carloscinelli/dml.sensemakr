@@ -10,7 +10,7 @@ dml(
   d,
   x,
   model = c("plm", "npm"),
-  target = c("att", "ate", "atu"),
+  target = c("ate", "att", "atu"),
   groups = NULL,
   cf.folds = 5,
   cf.reps = 1,

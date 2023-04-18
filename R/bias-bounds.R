@@ -1,11 +1,11 @@
 
 # bounds functions --------------------------------------------------------
-bias.factor <- function(r2ya.dx = 0.03, r2.rr = 0.04, rho2 = 1){
-  sqrt(rho2*r2ya.dx*(r2.rr/(1 - r2.rr)))
+bias.factor <- function(cf.y = 0.03, cf.d = 0.04, rho2 = 1){
+  sqrt(rho2*cf.y*(cf.d/(1 - cf.d)))
 }
 
 
-bounds <- function(short.results, r2ya.dx = 0.04, r2.rr = 0.03, rho2 = 1){
+bounds <- function(short.results, cf.y = 0.04, cf.d = 0.03, rho2 = 1){
 
   # short estimates
   theta.s  <- short.results$estimates$theta.s
@@ -13,7 +13,7 @@ bounds <- function(short.results, r2ya.dx = 0.04, r2.rr = 0.03, rho2 = 1){
   nu2.s    <- short.results$estimates$nu2.s
 
   # bias bound
-  bf <- bias.factor(r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+  bf <- bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
   S  <- sqrt(sigma2.s*nu2.s)
   bias.bound <- S*bf
 
@@ -71,22 +71,22 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##' Bounds on the omitted variable bias for causal machine learning
 ##'
 ##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
-##' @param r2ya.dx (nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).
-##' @param r2.rr how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.
+##' @param cf.y (nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).
+##' @param cf.d how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.
 ##' @param rho2 degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.
 ##' @export
-dml_bounds <- function(model, r2ya.dx, r2.rr, rho2 = 1){
+dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 
   # bounds for
   out <- list()
-  out$info <- list(r2ya.dx = r2ya.dx,
-                     r2.rr = r2.rr,
+  out$info <- list(cf.y = cf.y,
+                     cf.d = cf.d,
                      rho2 = rho2)
 
   out$dml.fit <- model
 
   # main <- model$results$main
-  # bounds.results   <- lapply(main, bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+  # bounds.results   <- lapply(main, bounds, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
   # out$results$main <- bounds.results
   #
   # main.coefs <- extract_coefs(bounds.results)
@@ -95,7 +95,7 @@ dml_bounds <- function(model, r2ya.dx, r2.rr, rho2 = 1){
   if (!is.null(main)) {
     main.bounds <- lapply(main,
                             function(x) lapply(x,
-                                               bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2))
+                                               bounds, cf.y = cf.y, cf.d = cf.d, rho2 = rho2))
     out$results$main <- main.bounds
     out$coefs$main <- lapply(main.bounds, extract_coefs)
   }
@@ -104,7 +104,7 @@ dml_bounds <- function(model, r2ya.dx, r2.rr, rho2 = 1){
   if (!is.null(groups)) {
     groups.bounds <- lapply(groups,
                             function(x) lapply(x,
-                                               bounds, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2))
+                                               bounds, cf.y = cf.y, cf.d = cf.d, rho2 = rho2))
     out$results$groups <- groups.bounds
     out$coefs$groups <- lapply(groups.bounds, extract_coefs)
     }
@@ -130,11 +130,11 @@ confidence_bounds <- function(model, ...){
 confidence_bounds.numeric <- function(theta.s, S2,
                                       se.theta.s, se.S2,
                                       cov.theta.S2,
-                                      r2ya.dx, r2.rr,
+                                      cf.y, cf.d,
                                       rho2 = 1,
                                       combine.method = "median",
                                       level = 0.95){
-  k = bias.factor(r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+  k = bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
   se.m <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 - (k/sqrt(S2))*cov.theta.S2)
   se.p <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 + (k/sqrt(S2))*cov.theta.S2)
   theta.m <- theta.s - k*sqrt(S2)
@@ -151,12 +151,12 @@ confidence_bounds.numeric <- function(theta.s, S2,
 #' @export
 #' @rdname dml_bounds
 confidence_bounds.dml <- function(model,
-                                  r2ya.dx,
-                                  r2.rr,
+                                  cf.y,
+                                  cf.d,
                                   rho2 = 1,
                                   level = 0.95,
                                   combine.method = "median", ...){
-  object <- dml_bounds(model, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+  object <- dml_bounds(model, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
   confidence_bounds(object, level = level,combine.method = combine.method, ...)
 }
 
@@ -165,29 +165,29 @@ confidence_bounds.dml <- function(model,
 #' @export
 #' @rdname dml_bounds
 confidence_bounds.dml.bounds <- function(model,
-                                         r2ya.dx = NULL,
-                                         r2.rr = NULL,
+                                         cf.y = NULL,
+                                         cf.d = NULL,
                                          rho2 = NULL,
                                          level = 0.95,
                                          combine.method = "median",
                                          return = c("lwr", "upr"),
                                          ...){
 
-  if (!is.null(r2ya.dx) | !is.null(r2.rr) | !is.null(rho2)) {
+  if (!is.null(cf.y) | !is.null(cf.d) | !is.null(rho2)) {
 
-    if (is.null(r2ya.dx)) {
-      r2ya.dx <- model$info$r2ya.dx
+    if (is.null(cf.y)) {
+      cf.y <- model$info$cf.y
     }
 
-    if (is.null(r2.rr)) {
-      r2.rr <- model$info$r2.rr
+    if (is.null(cf.d)) {
+      cf.d <- model$info$cf.d
     }
 
     if (is.null(rho2)) {
       rho2 <- model$info$rho2
     }
 
-    new_bounds <- dml_bounds(model$dml.fit, r2ya.dx = r2ya.dx, r2.rr = r2.rr, rho2 = rho2)
+    new_bounds <- dml_bounds(model$dml.fit, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
     return(confidence_bounds(new_bounds, combine.method = combine.method, return = return))
 
   }
@@ -210,7 +210,7 @@ confidence_bounds.dml.bounds <- function(model,
 
 
 rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
-  (confidence_bounds(dml.fit,  r2ya.dx = rv,r2.rr = rv, level = 1 - alpha)[par,side] - theta)^2
+  (confidence_bounds(dml.fit,  cf.y = rv,cf.d = rv, level = 1 - alpha)[par,side] - theta)^2
 }
 
 
@@ -246,7 +246,7 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
   }
   return(out)
   # grid <- seq(0, 0.99,by = 0.001)
-  # values <- mapply(function(x,y) confidence_bounds(dml.fit, r2ya.dx= x, r2.rr = y), x = grid, y = grid)
+  # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
   # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
   # grid[rv.idx]
 }
@@ -269,7 +269,7 @@ robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, ...){
   }
   return(out)
   # grid <- seq(0, 0.99,by = 0.001)
-  # values <- mapply(function(x,y) confidence_bounds(dml.fit, r2ya.dx= x, r2.rr = y), x = grid, y = grid)
+  # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
   # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
   # grid[rv.idx]
 }
@@ -288,7 +288,7 @@ robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, ...){
 #   out <- optim(par = c(0.01), fn, lower=0, upper = 1, method = "Brent")$par
 #   return(out)
 #   # grid <- seq(0, 0.99,by = 0.001)
-#   # values <- mapply(function(x,y) confidence_bounds(dml.fit, r2ya.dx= x, r2.rr = y), x = grid, y = grid)
+#   # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
 #   # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
 #   # grid[rv.idx]
 # }

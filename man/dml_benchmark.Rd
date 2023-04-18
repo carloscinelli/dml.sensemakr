@@ -4,7 +4,7 @@
 \alias{dml_benchmark}
 \title{Benchmarks for the strength of latent variables using observed covariates}
 \usage{
-dml_benchmark(model, benchmark_covariates)
+dml_benchmark(model, benchmark_covariates, target = "ate")
 }
 \arguments{
 \item{model}{an object of class \code{\link{dml}}.}

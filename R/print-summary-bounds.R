@@ -48,15 +48,15 @@ summary.dml.bounds <- function(object, combine.method = "median", ...){
 }
 
 ##'@export
-print.summary_dml.bounds <- function(x, ...){
+print.summary_dml.bounds <- function(x, digits = 2, ...){
   cat("\n")
   cat("Debiased Machine Learning: Bounds on Omitted Variable Bias\n")
   cat("\n")
   # cat("Short Estimates and Bounds on Omitted Variable Bias\n")
   # cat("\n")
   cat("Sensitivity Parameters\n",
-      "","r2ya.dx =", paste0(x$info$r2ya.dx,"\n"),
-      "","r2rr =", paste0(x$info$r2.rr, "\n"),
+      "","cf.y =", paste0(x$info$cf.y,"\n"),
+      "","r2rr =", paste0(x$info$cf.d, "\n"),
       "", "rho =", paste0(x$info$rho,""), "\n")
   # cat("\nBounds on Average Treatment Effect:", "\n\n")
   # print()
@@ -65,7 +65,7 @@ print.summary_dml.bounds <- function(x, ...){
     cat("\n")
     for (i in seq_along(main)) {
       cat("\nBounds on Average Treatment Effect:", names(main)[i], "\n\n")
-      print(main[[i]])
+      print(main[[i]], digits = digits)
     }
   }
   groups <- x$groups
@@ -74,7 +74,7 @@ print.summary_dml.bounds <- function(x, ...){
     cat("\n")
     for (i in seq_along(groups)) {
       cat("\nBounds on Group Average Treatment Effect:","Group", names(groups)[i], "\n\n")
-      print(groups[[i]])
+      print(groups[[i]], digits = digits)
     }
   }
   cat("\nNote: DML estimates combined using the", x$combine.method, "method.")
@@ -134,9 +134,9 @@ confint.dml.bounds <- function(object, params = NULL, level = 0.95, combine.meth
   ses <- t(se(object, combine.method = combine.method))
   loop <- setNames(rownames(cf), rownames(cf))
   out <- lapply(loop , function(x)calc_confint(cf = cf[x,], params = params, ses = ses[x,], level = level))
-  if (length(out) == 1 ) {
-    out <- out[[1]]
-  }
+  # if (length(out) == 1 ) {
+  #   out <- out[[1]]
+  # }
   out
 }
 
@@ -150,10 +150,10 @@ print.confidence.bounds <- function(x, ...){
       paste0(attributes(x)$conf.levels["point"]*100, "%;"),
       "region =",
       paste0(attributes(x)$conf.levels["region"]*100, "%."))
-  cat("\nSensitivity parameters: r2ya.dx =",
-      paste0(attributes(x)$sens.param["r2ya.dx"], ";"),
-      "r2.rr =",
-      paste0(attributes(x)$sens.param["r2.rr"], ";"),
+  cat("\nSensitivity parameters: cf.y =",
+      paste0(attributes(x)$sens.param["cf.y"], ";"),
+      "cf.d =",
+      paste0(attributes(x)$sens.param["cf.d"], ";"),
       "rho2 =",
       paste0(attributes(x)$sens.param["rho2"], ".\n"))
 }

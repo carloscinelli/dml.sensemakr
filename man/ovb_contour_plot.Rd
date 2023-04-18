@@ -14,8 +14,8 @@ ovb_contour_plot(model, ...)
   level = 0.95,
   combine.method = "median",
   rho2 = 1,
-  r2ya.dx = NULL,
-  r2.rr = r2ya.dx,
+  cf.y = NULL,
+  cf.d = cf.y,
   bound.label = "Manual",
   group = FALSE,
   group.number = 1,
@@ -55,11 +55,11 @@ ovb_contour_plot(model, ...)
 
 \item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
 
-\item{r2ya.dx}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
+\item{cf.y}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
 
-\item{r2.rr}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
+\item{cf.d}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
 
-\item{bound.label}{text label for the manual bound provided via \code{r2ya.dx} and \code{r2.rr}.}
+\item{bound.label}{text label for the manual bound provided via \code{cf.y} and \code{cf.d}.}
 
 \item{group}{contour plots for main analysis or group analysis? Default is \code{FALSE} (main analysis).}
 
