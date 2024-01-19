@@ -130,7 +130,7 @@ calc_confint <- function(cf, ses, params=NULL, level) {
   a <- (1 - level)/2
   a <- c(a, 1 - a)
   fac <- qnorm(a)
-  pct <- stats:::format.perc(a, 3)
+  pct <- stats:::format_perc(a, 3)
   ci <- array(NA_real_, dim = c(length(params), 2L), dimnames = list(params, pct))
   ci[] <- cf[params] + ses[params] %o% fac
   ci
