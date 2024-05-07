@@ -117,7 +117,8 @@ confint.dml <- function(object, params = NULL, level = 0.95, combine.method = "m
   ses <- se(object, combine.method = combine.method)
   calc_confint(cf =cf, ses =ses,  params = params, level = level)
 }
-
+                   
+format.perc <- function (probs, digits) paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), "%")
 
 calc_confint <- function(cf, ses, params=NULL, level) {
   pnames <- names(ses)
@@ -130,7 +131,7 @@ calc_confint <- function(cf, ses, params=NULL, level) {
   a <- (1 - level)/2
   a <- c(a, 1 - a)
   fac <- qnorm(a)
-  pct <- stats:::format.perc(a, 3)
+  pct <- format.perc(a, 3)
   ci <- array(NA_real_, dim = c(length(params), 2L), dimnames = list(params, pct))
   ci[] <- cf[params] + ses[params] %o% fac
   ci
