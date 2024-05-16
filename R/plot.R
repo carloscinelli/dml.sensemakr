@@ -14,7 +14,7 @@ plot.dml <- function(x, combine.method = "median", level = 0.95, ...) {
 }
 
 ##' @export
-##' @param type type of plot for confidence bounds. Options are \code{confidence_bounds},
+##' @param type type of plot for confidence bounds. Options are \code{confidence_bounds}, and \code{all}.
 ##' @rdname plot.dml
 plot.dml.bounds <- function(x,
                             type = c("confidence_bounds","all"),
@@ -190,7 +190,7 @@ coef_plot <- function(estimate,
 }
 
 
-##' Contour plots of omitted variable bias for Debiased Machine Learning
+##' Contour plots of omitted variable bias for Causal Machine Learning
 ##'
 ##'@description Contour plots of omitted variable bias for sensitivity analysis. The main input is a \code{\link{dml}} model.
 ##'
@@ -273,7 +273,7 @@ ovb_contour_plot.dml <- function(model,
                                  cex.label.text = 0.7,
                                  label.bump.x = NULL,
                                  label.bump.y = NULL,
-                                 list.par = NULL){
+                                 list.par = NULL, ...){
 
   which.bound <- match.arg(which.bound)
 
@@ -410,7 +410,8 @@ contour_plot <- function(grid_values.x,
                          list.par = NULL){
 
   if(is.null(xlab)) xlab <- expression(paste("1-",R[alpha%~%alpha[s]]^2))
-  if(is.null(ylab)) ylab <- expression(paste(eta[Y%~%A~"|"~DX]^2))
+  if(is.null(ylab)) ylab <- expression(paste(R[y-g[s]%~%g-g[s]]^2))
+  # if(is.null(ylab)) ylab <- expression(paste(eta[Y%~%A~"|"~DX]^2))
 
   default_levels <- pretty(range(z_axis), nlevels)
   too_close      <- abs(default_levels - threshold) < min(diff(default_levels)) * 0.25

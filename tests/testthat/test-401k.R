@@ -24,18 +24,18 @@ test_that("Testing 401k PLM", {
   se(dml.401k.plm, combine.method = "mean")
   confint(dml.401k.plm)
   confint(dml.401k.plm, combine.method = "mean")
-  confidence_bounds(model = dml.401k.plm, r2ya.dx = 0.03, r2.rr = 0.04)
-  confidence_bounds(model = dml.401k.plm, r2ya.dx = 0.03, r2.rr = 0.04, rho = 0,
+  confidence_bounds(model = dml.401k.plm, cf.y = 0.03, cf.d = 0.04)
+  confidence_bounds(model = dml.401k.plm, cf.y = 0.03, cf.d = 0.04, rho = 0,
                     combine.method = "mean",
                     level = 0.975)
   confint(dml.401k.plm, combine.method = "mean")
   ovb_contour_plot(dml.401k.plm)
-  ovb_contour_plot(dml.401k.plm, r2ya.dx = 0.03, r2.rr = 0.04, rho2 = 1,
+  ovb_contour_plot(dml.401k.plm, cf.y = 0.03, cf.d = 0.04, rho2 = 1,
                    which.bound = "lwr",
                    bound.label = "Max Match (3x years)",
                    col.contour = "blue")
   dml_benchmark(dml.401k.plm, benchmark_covariates = c("inc"))
-  bounds <- dml_bounds(model = dml.401k.plm,  r2ya.dx = 0.03, r2.rr = 0.04, rho2 = 1)
+  bounds <- dml_bounds(model = dml.401k.plm,  cf.y = 0.03, cf.d = 0.04, rho2 = 1)
   plot(bounds, type = "all")
 })
 

@@ -297,13 +297,13 @@ The function dml.gate is a convenience function that adds groups to a dml object
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4.157224e-02 6.083497e-02 6.751708e-09 3.543867e-02 4.887655e-02 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Confidence Bounds</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.03</span>, r2.rr <span class="op">=</span> <span class="fl">0.04</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k</span>, cf.y <span class="op">=</span> <span class="fl">0.03</span>, cf.d <span class="op">=</span> <span class="fl">0.04</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in dml_bounds(model, cf.y = cf.y, cf.d = cf.d, rho2 = rho2):</span> argument "cf.y" is missing, with no default</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Contour Plots</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k</span>, r2ya.dx <span class="op">=</span> <span class="fl">0.03</span>, r2.rr <span class="op">=</span> <span class="fl">0.04</span>,</span></span>
+<span class="r-in"><span><span class="fu"><a href="ovb_contour_plot.html">ovb_contour_plot</a></span><span class="op">(</span><span class="va">dml.401k</span>, cf.y <span class="op">=</span> <span class="fl">0.03</span>, cf.d <span class="op">=</span> <span class="fl">0.04</span>,</span></span>
 <span class="r-in"><span>                bound.label <span class="op">=</span> <span class="st">"Max Match (3x years)"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ovb_contour_plot.dml(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04,     bound.label = "Max Match (3x years)"):</span> unused arguments (r2ya.dx = 0.03, r2.rr = 0.04)</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in ovb_contour_plot.dml(dml.401k, cf.y = 0.03, cf.d = 0.04,     bound.label = "Max Match (3x years)"):</span> unused arguments (cf.y = 0.03, cf.d = 0.04)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

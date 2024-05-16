@@ -73,10 +73,10 @@
 ##'robustness_value(dml.401k, alpha = 0.05)
 ##'
 ##'### Confidence Bounds
-##'confidence_bounds(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04, level = 0.95)
+##'confidence_bounds(dml.401k, cf.y = 0.03, cf.d = 0.04, level = 0.95)
 ##'
 ##'### Contour Plots
-##'ovb_contour_plot(dml.401k, r2ya.dx = 0.03, r2.rr = 0.04,
+##'ovb_contour_plot(dml.401k, cf.y = 0.03, cf.d = 0.04,
 ##'                 bound.label = "Max Match (3x years)")
 ##'
 ##' @importFrom caret train

@@ -24,7 +24,7 @@
 
 \item{...}{arguments passed to other methods.}
 
-\item{type}{type of plot for confidence bounds. Options are \code{confidence_bounds},}
+\item{type}{type of plot for confidence bounds. Options are \code{confidence_bounds}, and \code{all}.}
 }
 \description{
 Coefficient plots for DML and bounds

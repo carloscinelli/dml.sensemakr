@@ -1,21 +1,61 @@
+##' Sensitivity Analysis for Causal Machine Learning
+##' @description
+##' This function performs sensitivity analysis of causal effect estimates as discussed in Chernozhukov et al (2023).
+##' The main input is an object of class \code{\link{dml}}. It returns an object of class \code{dml.sensemakr} with several pre-computed sensitivity statistics for reporting. After running \code{sensemakr} you may directly use the \code{plot}, \code{print} and \code{summary} methods in the returned object.
+##'
+##' @returns An object of class \code{dml.sensemakr}, containing sensitivity analysis results.
+##'
 ##' @export
 sensemakr <- sensemakr::sensemakr
 
-
+##' @param model a model created with the function \code{\link{dml}}.
+##' @param benchmark_covariates  character vector of the names of covariates that will be used to bound the plausible strength of the latent variables.
+##' @param cf.y (optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2023). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.
+##' @param cf.d (optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2023). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.
+##' @param bound_label label to bounds provided manually in \code{cf.y} and \code{cf.d}.
+##' @param theta null hypothesis.
+##' @param alpha significance level.
+##'
+##' @examples
+##' # loads package
+##' library(dml.sensemakr)
+##'
+##' # loads data
+##' data("pension")
+##'
+##' # set treatment, outcome and covariates
+##' y <- pension$net_tfa  # net total financial assets
+##' d <- pension$e401     # 401K eligibility
+##' x <- model.matrix(~ -1 + age + inc  + educ+ fsize + marr + twoearn + pira + hown, data = pension)
+##'
+##' # run DML (nonparametric model)
+##' dml.401k <- dml(y, d, x, model = "npm")
+##'
+##' # sensitivity analysis
+##' sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
+##'
+##' # summary
+##' summary(sens.401k)
+##'
+##' # contout plots
+##' plot(sens.401k)
+##'
 ##'@exportS3Method sensemakr::sensemakr dml
 ##'@exportS3Method dml.sensemakr::sensemakr dml
+##' @rdname sensemakr
 sensemakr.dml <- function(model,
                           benchmark_covariates = NULL,
-                          cf.y = 0.03, cf.d = cf.y,
+                          cf.y = NULL, cf.d = cf.y,
                           rho2 = 1,
                           bound_label = "Confounding Scenario",
-                          theta = 0, alpha = 0.05){
+                          theta = 0, alpha = 0.05, ...){
 
   out <- list()
 
   out$info <- list(cf.y = cf.y,
                    cf.d = cf.d,
                    rho2 = rho2,
+                   bound.label = bound_label,
                    theta = theta,
                    alpha = alpha)
 
@@ -46,6 +86,16 @@ sensemakr.dml <- function(model,
 
 }
 
+##' Sensitivity analysis print and summary methods for \code{dml.sensemakr}
+##'
+##' @description
+##' The \code{print} and \code{summary} methods provide verbal descriptions of the sensitivity analysis results
+##' obtained with the function \code{\link{sensemakr}}.
+##'
+##' @param ... arguments passed to other methods.
+##' @param object an object of class \code{\link{sensemakr}}.
+##' @param x an object of class \code{\link{sensemakr}}.
+##' @param digits minimal number of \emph{significant} digits.
 ##' @export
 print.dml.sensemakr <- function(x,
                                 digits = 2,
@@ -72,6 +122,7 @@ print.dml.sensemakr <- function(x,
 }
 
 ##' @export
+##' @rdname print.dml.sensemakr
 summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") - 3L), ...) {
   cat("==== Original Analysis ====\n")
   print(summary(object$model), digits = digits, ...)
@@ -120,6 +171,12 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
   }
 }
 
+##' Sensitivity analysis plots for dml.sensemakr
+##'
+##' This function provides the contour plots of the sensitivity analysis results obtained with the function \code{\link{sensemakr}} for IV. It is basically a dispatcher to the core plot function \code{\link{ovb_contour_plot}}.
+##'
+##' @param x an object of class \code{dml.sensemakr} created with the \code{\link{sensemakr}} function.
+##' @inheritParams ovb_contour_plot
 ##' @export
 plot.dml.sensemakr <- function(model,
                                parameter = c("ate", "att", "atu"),
@@ -134,5 +191,6 @@ plot.dml.sensemakr <- function(model,
                    rho2 = model$info$rho2,
                    cf.y = model$info$cf.y,
                    cf.d = model$info$cf.d,
+                   bound.label = model$info$bound.label,
                    combine.method = combine.method, ...)
 }

@@ -20,7 +20,8 @@ LazyData: true
 RoxygenNote: 7.2.3
 Imports:
     caret,
-    sensemakr
+    sensemakr,
+    ggplot2
 Depends: 
     R (>= 2.10)
 Suggests: 

@@ -92,6 +92,7 @@ nnet.args     <- list(method = "nnet",
 dml.nnet <- dml(y, d, x, model = "npm", reg = nnet.args)
 summary(dml.nnet)
 ```
+
 ## Lasso with Polynomial Expansion
 
 Template for using lasso with a polynomial expansion of the covariates `x`.

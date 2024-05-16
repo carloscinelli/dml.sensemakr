@@ -3,7 +3,7 @@
 \name{ovb_contour_plot}
 \alias{ovb_contour_plot}
 \alias{ovb_contour_plot.dml}
-\title{Contour plots of omitted variable bias for Debiased Machine Learning}
+\title{Contour plots of omitted variable bias for Causal Machine Learning}
 \usage{
 ovb_contour_plot(model, ...)
 
@@ -39,7 +39,8 @@ ovb_contour_plot(model, ...)
   cex.label.text = 0.7,
   label.bump.x = NULL,
   label.bump.y = NULL,
-  list.par = NULL
+  list.par = NULL,
+  ...
 )
 }
 \arguments{
