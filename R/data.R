@@ -6,7 +6,7 @@
 #' @docType data
 #'
 #' @usage data('pension')
-#' @format A data.frame with 3010 observations and 34 variables:
+#' @format A data.frame with 9915 observations and 44 variables, among them:
 #' \itemize{
 #'  \item \strong{net_tfa:} net total financial assets
 #'  \item \strong{e401:} =1 if employer offers 401(k)

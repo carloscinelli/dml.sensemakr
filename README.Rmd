@@ -69,7 +69,7 @@ dml.401k <- dml(y, d, x, model = "npm")
 summary(dml.401k)
 
 # sensitivity analysis
-sens.401k <- sensemakr(dml.401k, cf.y = 0.03, cf.d = 0.04)
+sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
 
 # summary
 summary(sens.401k)
