@@ -97,13 +97,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 27.684%), treatment (ranger, R2 = 11.417%)
+#>  ML Method: outcome (ranger, R2 = 27.265%), treatment (ranger, R2 = 11.601%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8305       1151   7.217 5.33e-13 ***
+#> ate.all     8074       1179   6.847 7.52e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -113,7 +113,7 @@ summary(dml.401k)
 #> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.
 
 # sensitivity analysis
-sens.401k <- sensemakr(dml.401k, cf.y = 0.03, cf.d = 0.04)
+sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
 
 # summary
 summary(sens.401k)
@@ -123,13 +123,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 27.684%), treatment (ranger, R2 = 11.417%)
+#>  ML Method: outcome (ranger, R2 = 27.265%), treatment (ranger, R2 = 11.601%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8305       1151   7.217 5.33e-13 ***
+#> ate.all     8074       1179   6.847 7.52e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -145,7 +145,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 6.3342  4.8512
+#> ate.all 6.1758  4.6604
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -157,10 +157,10 @@ summary(sens.401k)
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1883.244 14790.218
+#> ate.all  1639.135 14570.986
 #> 
 #> Confidence level: point = 95%; region = 90%.
-#> Sensitivity parameters: cf.y = 0.03; cf.d = 0.04; rho2 = 1.
+#> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
 #> 
 #> Verbal interpretation of confidence bounds:
 #> 
