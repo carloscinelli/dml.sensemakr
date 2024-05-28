@@ -17,7 +17,7 @@ ate.npm <- function(y, d, parameter = "all",
                     yhat1, yhat0, dhat,
                     trim = 0.02){
   # trim propensity score
-  dhat.t       <- trim.ps(dhat, trim = 0.02)
+  dhat.t       <- trim.ps(dhat, trim = trim)
 
   # l
   l            <- switch(parameter, all = 1, treat = d/mean(d), untr = (1-d)/(1-mean(d)))
