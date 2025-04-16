@@ -23,7 +23,7 @@ ate.npm <- function(y, d, parameter = "all",
   l            <- switch(parameter, all = 1, treat = d/mean(d), untr = (1-d)/(1-mean(d)))
 
   # lbar = E[l|X]
-  lbar         <- switch(parameter, all = 1, treat = dhat/mean(d), untr = (1-dhat)/(1-mean(d)))
+  lbar         <- switch(parameter, all = 1, treat = dhat.t/mean(d), untr = (1-dhat.t)/(1-mean(d)))
 
 
   # ate
