@@ -293,7 +293,7 @@ dml <- function(y, d, x,
   out$coefs$main$all   <- combine.cross.fits(results)
 
   if (model == "npm") {
-    out$results$main <- ate.att.atu.npm(out, target = target)
+    out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
     out$coefs$main <- lapply(out$results$main, combine.cross.fits)
   }
 
