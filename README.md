@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-small.png" align="right" />
+# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
 
 <!-- badges: start -->
 
@@ -98,13 +98,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 27.393%), treatment (ranger, R2 = 11.596%)
+#>  ML Method: outcome (ranger, R2 = 26.712%), treatment (ranger, R2 = 11.449%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
-#>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     7641       1178   6.487 8.76e-11 ***
+#>         Estimate Std. Error t value P(>|t|)    
+#> ate.all     7729       1182   6.541 6.1e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -124,13 +124,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 27.393%), treatment (ranger, R2 = 11.596%)
+#>  ML Method: outcome (ranger, R2 = 26.712%), treatment (ranger, R2 = 11.449%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
-#>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     7641       1178   6.487 8.76e-11 ***
+#>         Estimate Std. Error t value P(>|t|)    
+#> ate.all     7729       1182   6.541 6.1e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -146,7 +146,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 5.8052  4.2958
+#> ate.all 5.8868  4.3509
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -158,7 +158,7 @@ summary(sens.401k)
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1152.842 14162.405
+#> ate.all  1230.061 14225.587
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.

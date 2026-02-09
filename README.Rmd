@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-small.png" align="right" />
+# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
 
 <!-- badges: start -->
 <!-- badges: end -->
