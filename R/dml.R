@@ -31,7 +31,7 @@
 ##'  \item{\code{results}}{A \code{list} with the results (influence functions and estimates) for each repetition.}
 ##'  \item{\code{coefs}}{A \code{list} with the estimates and standard errors for each repetition.}
 ##' }
-##' @references Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##' @references Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
 ##' @examples
 ##'# loads package
 ##'library(dml.sensemakr)

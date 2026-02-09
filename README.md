@@ -1,16 +1,17 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dml.sensemakr
+# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-small.png" align="right" />
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 `dml.sensemakr` implements a general suite of sensitivity analysis tools
 for Causal Machine Learning as discussed in [Chernozhukov, V., Cinelli,
-C., Newey, W., Sharma A., and Syrgkanis, V. (2021). “Long Story Short:
-Omitted Variable Bias in Causal Machine
-Learning.”](https://www.nber.org/papers/w30302)
+C., Newey, W., Sharma A., and Syrgkanis, V. (2026). “Long Story Short:
+Omitted Variable Bias in Causal Machine Learning.” *Review of Economics
+and Statistics*.](https://doi.org/10.1162/REST.a.1705)
 
 # Development version
 
@@ -28,8 +29,8 @@ CRAN version coming soon.
 
 # Details
 
-For theoretical details [please see the working
-paper.](https://www.nber.org/papers/w30302)
+For theoretical details [please see the
+paper.](https://doi.org/10.1162/REST.a.1705)
 
 For a primer on Debiased Machine Learning, [please check Chernozukohv et
 al (2018).](https://academic.oup.com/ectj/article/21/1/C1/5056401)
@@ -97,13 +98,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 27.265%), treatment (ranger, R2 = 11.601%)
+#>  ML Method: outcome (ranger, R2 = 26.795%), treatment (ranger, R2 = 11.641%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8074       1179   6.847 7.52e-12 ***
+#> ate.all     8121       1158   7.014 2.32e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -123,13 +124,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 27.265%), treatment (ranger, R2 = 11.601%)
+#>  ML Method: outcome (ranger, R2 = 26.795%), treatment (ranger, R2 = 11.641%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8074       1179   6.847 7.52e-12 ***
+#> ate.all     8121       1158   7.014 2.32e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -145,19 +146,19 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 6.1758  4.6604
+#> ate.all 6.1254  4.6473
 #> 
 #> Verbal interpretation of robustness values:
 #> 
 #> -- Robustness Value for the Bound (RV): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the estimated bounds include 0. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so.
 #> 
-#> -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. 
+#> -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. 
 #> 
 #>  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1639.135 14570.986
+#> ate.all  1647.779 14642.378
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
@@ -179,51 +180,99 @@ plot(sens.401k)
 <img src="man/figures/README-basic-usage-1.png" width="100%" style="display: block; margin: auto;" />
 
 <!-- ### Use DML to estimate the ATE -->
+
 <!-- ```{r} -->
+
 <!-- ``` -->
+
 <!-- ### Explore results -->
+
 <!-- ```{r} -->
+
 <!-- ``` -->
+
 <!-- ### Extract coefs, se, confidence intervals -->
+
 <!-- ```{r} -->
+
 <!-- # coef median method (default) -->
+
 <!-- coef(dml.401k, combine.method = "median") -->
+
 <!-- # se median method (default) -->
+
 <!-- se(dml.401k, combine.method = "median") -->
+
 <!-- # confint median method -->
+
 <!-- confint(dml.401k, combine.method = "median") -->
+
 <!-- ``` -->
+
 <!-- ### Coefficients Plot -->
+
 <!-- ```{r} -->
+
 <!-- plot(dml.401k) -->
+
 <!-- ``` -->
+
 <!-- ### You can add groups after the model is fit -->
+
 <!-- ```{r} -->
+
 <!-- ## compute GATE by married -->
+
 <!-- g2 <- ifelse(pension$marr, "married", "not.married") -->
+
 <!-- dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2) -->
+
 <!-- summary(dml.401k.g2) -->
+
 <!-- coef(dml.401k.g2) -->
+
 <!-- confint(dml.401k.g2) -->
+
 <!-- plot(dml.401k.g2) -->
+
 <!-- ``` -->
+
 <!-- ## Sensitivity Analysis -->
+
 <!-- ### Robustness Values -->
+
 <!-- ```{r} -->
+
 <!-- ``` -->
+
 <!-- ### Confidence Bounds -->
+
 <!-- ```{r} -->
+
 <!-- ``` -->
+
 <!-- ### Contour Plots -->
+
 <!-- ```{r, fig.width=12} -->
+
 <!-- ``` -->
+
 <!-- ### Further results -->
+
 <!-- ```{r} -->
+
 <!-- bounds.401k <- dml_bounds(dml.401k, cf.y = 0.03, cf.d = 0.04) -->
+
 <!-- bounds.401k -->
+
 <!-- ``` -->
+
 <!-- ```{r} -->
+
 <!-- coef(bounds.401k) -->
+
 <!-- se(bounds.401k) -->
+
 <!-- confint(bounds.401k) -->
+
 <!-- ``` -->

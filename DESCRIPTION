@@ -14,8 +14,8 @@ Author: Carlos Cinelli [aut, cre],
   Juejue Wang [aut]
 Maintainer: Carlos Cinelli <carloscinelli@hotmail.com>
 Description: Implements a suite of sensitivity analysis tools 
-  for Debiased Machine Learning as discussed in Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). 
-  "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+  for Debiased Machine Learning as discussed in Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026).
+  "Long Story Short: Omitted Variable Bias in Causal Machine Learning." Review of Economics and Statistics. <doi:10.1162/REST.a.1705>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

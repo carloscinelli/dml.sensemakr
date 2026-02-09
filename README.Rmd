@@ -14,12 +14,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-# dml.sensemakr
+# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-small.png" align="right" />
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-`dml.sensemakr` implements a general suite of sensitivity analysis tools for Causal Machine Learning as discussed in [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."](https://www.nber.org/papers/w30302)
+`dml.sensemakr` implements a general suite of sensitivity analysis tools for Causal Machine Learning as discussed in [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." *Review of Economics and Statistics*.](https://doi.org/10.1162/REST.a.1705)
 
 
 # Development version
@@ -38,7 +38,7 @@ CRAN version coming soon.
 
 # Details
 
-For theoretical details [please see the working paper.](https://www.nber.org/papers/w30302) 
+For theoretical details [please see the paper.](https://doi.org/10.1162/REST.a.1705) 
 
 For a primer on Debiased Machine Learning, 
 [please check Chernozukohv et al (2018).](https://academic.oup.com/ectj/article/21/1/C1/5056401) 
