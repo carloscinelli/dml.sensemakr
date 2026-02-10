@@ -1,5 +1,5 @@
 ---
-title: "Sensitivity Analysis for the Pennsylvania Reemployment Bonus Experiment"
+title: "dml-bonus"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{dml-bonus}
@@ -8,86 +8,40 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-NOT_CRAN <- identical(tolower(Sys.getenv("NOT_CRAN")), "true")
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  fig.align = 'center',
-  dpi = 300,
-  fig.width = 12,
-  fig.height = 6,
-  eval = NOT_CRAN
+  comment = "#>"
 )
 ```
 
-```{r setup, include = FALSE}
+```{r setup}
 library(dml.sensemakr)
 ```
 
-## Introduction
 
-In this vignette, we demonstrate sensitivity analysis for debiased machine learning using the Pennsylvania Reemployment Bonus experiment data. The experiment randomly assigned unemployment insurance (UI) claimants to a treatment group that received a cash bonus for finding employment quickly.
-
-The main question is: does the reemployment bonus reduce unemployment duration?
-
-## Load Data
+Vignette under construction.
 
 ```{r}
-# loads package
-library(dml.sensemakr)
-
-# loads data
 data("Penn")
-
-# outcome: log unemployment duration
 y <- Penn[, "inuidur1"]
-
-# treatment: assignment to bonus group
 d <- Penn[, "tg"]
+x <- model.matrix(~ -1 + female + black + othrace + dep + q2 + q3 + q4 + q5 + q6 + agelt35 +
+                    agegt54 + durable + lusd + husd, data = Penn)
 
-# covariates
-x <- model.matrix(~ -1 + female + black + othrace + dep +
-                     q2 + q3 + q4 + q5 + q6 +
-                     agelt35 + agegt54 +
-                     durable + lusd + husd, data = Penn)
 ```
-
-## Partially Linear Model
-
-We estimate the average treatment effect (ATE) of the reemployment bonus on log unemployment duration using the partially linear model (PLM) with random forests (the default).
 
 ```{r}
-# run DML (partially linear model)
-dml.bonus <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
-
-# results under conditional ignorability
-summary(dml.bonus)
+# ranger
+dml.ranger <- dml(y, d, x, model = "plm")
+summary(dml.ranger)
 ```
-
-## Sensitivity Analysis
-
-Even though the treatment was randomized, we can still examine how robust these results are to potential violations of the identification assumptions.
 
 ```{r}
-# sensitivity analysis
-sens.bonus <- sensemakr(dml.bonus, cf.y = 0.03, cf.d = 0.03)
-
-# summary
-summary(sens.bonus)
+# Neural Net Args
+nnet.args    <- list(method = "nnet",
+                     tuneGrid = data.frame(size = 2, decay = 0.02),
+                     maxit = 1000, maxNWts = 10000)
+# nnet
+dml.ranger <- dml(y, d, x, model = "plm", reg = nnet.args)
+summary(dml.ranger)
 ```
-
-## Contour Plots
-
-The contour plots show how the confidence bounds change as a function of the sensitivity parameters `cf.y` (confounding with the outcome) and `cf.d` (confounding with the treatment).
-
-```{r, fig.width = 12, fig.height = 6}
-# contour plots
-oldpar <- par(mfrow = c(1, 2))
-plot(sens.bonus, which.bound = "lwr", bound.label = "Scenario")
-plot(sens.bonus, which.bound = "upr", bound.label = "Scenario")
-par(oldpar)
-```
-
-## Interpretation
-
-The robustness values indicate the minimum strength of association that omitted variables would need to have with both the outcome and the treatment in order to change the qualitative conclusions of the study. Higher robustness values indicate more robust findings.

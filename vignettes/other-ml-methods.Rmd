@@ -8,19 +8,15 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-NOT_CRAN <- identical(tolower(Sys.getenv("NOT_CRAN")), "true")
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = NOT_CRAN
+  comment = "#>"
 )
 ```
 
 ```{r setup, include=FALSE}
-if (NOT_CRAN) {
-  library(gbm)
-  library(dml.sensemakr)
-}
+library(gbm)
+library(dml.sensemakr)
 ```
 
 Currently, `dml.sensemakr` uses `caret` for handling machine learning (ML) methods. The default ML method is the random forest implementation provided by the package `ranger`. This is not only fast, but also seems to provide good results with minimal to no tuning. However, researchers can use any ML method they prefer, by just changing the `reg` argument of the `dml()` function.  In this vignette we provide a few examples illustrating how to use different ML methods. 
