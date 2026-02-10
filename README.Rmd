@@ -78,8 +78,19 @@ sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
 # summary
 summary(sens.401k)
 
-# contout plots
+# contour plots
 plot(sens.401k)
+```
+
+Benchmark covariates can be used to assess the plausible strength of omitted variables:
+
+```{r benchmarks, fig.align='center', collapse=T, dpi=300, message=FALSE, results='hide'}
+# sensitivity analysis with benchmarks
+sens.bench <- sensemakr(dml.401k,
+                        benchmark_covariates = c("inc", "age", "educ", "marr"))
+
+# contour plot with benchmark overlay
+plot(sens.bench)
 ```
 
 <!-- ### Use DML to estimate the ATE -->
