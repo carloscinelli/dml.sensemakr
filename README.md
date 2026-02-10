@@ -107,13 +107,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.996%), treatment (ranger, R2 = 11.476%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.879%), treatment (ranger, R2 = 11.18%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     7887       1169   6.747 1.51e-11 ***
+#> ate.all     8121       1157   7.017 2.27e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -133,13 +133,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.996%), treatment (ranger, R2 = 11.476%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.879%), treatment (ranger, R2 = 11.18%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     7887       1169   6.747 1.51e-11 ***
+#> ate.all     8121       1157   7.017 2.27e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -155,7 +155,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 5.9797  4.4684
+#> ate.all 6.2003  4.6919
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -167,7 +167,7 @@ summary(sens.401k)
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1398.323 14399.146
+#> ate.all  1694.969 14584.645
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
