@@ -18,6 +18,9 @@
 
 \item{object}{an object of class \code{\link{sensemakr}}.}
 }
+\value{
+For \code{print}: the object, invisibly. For \code{summary}: the summary is printed to the console.
+}
 \description{
 The \code{print} and \code{summary} methods provide verbal descriptions of the sensitivity analysis results
 obtained with the function \code{\link{sensemakr}}.

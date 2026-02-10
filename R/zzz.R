@@ -1,3 +1,11 @@
+#' @importFrom graphics contour par points text
+#' @importFrom stats coef confint median optim pnorm predict printCoefmat qnorm setNames var
+#' @importFrom utils capture.output
+NULL
+
+# Suppress R CMD check NOTE for ggplot2 NSE variables used in aes()
+utils::globalVariables(c("coefficient"))
+
 .onAttach <-
   function(libname, pkgname) {
     packageStartupMessage("See details in:")

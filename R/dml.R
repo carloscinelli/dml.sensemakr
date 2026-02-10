@@ -6,22 +6,22 @@
 ##' @param d \code{\link{numeric}} vector with the treatment. If the treatment is binary, it needs to be encoded as as: zero = absence of treatment, one = presence of treatment.
 ##' @param x \code{\link{numeric}} vector or \code{\link{matrix}} with covariates. We suggest constructing \code{x} using \code{\link{model.matrix}}.
 ##' @param model specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.
-##' @param target specifies the target causal quantity of interest. Current available option is \code{ate} (ATE - average treatment effect). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, the ATE is only available for binary treatments. Other options (eg., ACD for the nonparametric model, ATT) will be available soon.
+##' @param target specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.
 ##' @param groups a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.
-##' @param cf.folds number of cross-fitting folds. Default is \code{2}.
+##' @param cf.folds number of cross-fitting folds. Default is \code{5}.
 ##' @param cf.reps number of cross-fitting repetitions. Default is \code{1}.
 ##' @param cf.seed optional integer. A random seed for reproducibility of fold assignments.
 ##' @param ps.trim trims propensity scores lower than \code{ps.trim} and greater than \code{1-ps.trim}, in order to obtain more stable estimates. Alternatively, a named list with elements \code{lower} and \code{upper} specifying the lower and upper bounds for trimming. This is only relevant for the case of a binary treatment and when \code{model = "npm"}.
-##' @param reg details of the machine learning method to be used for estimating the nuisance parameters (e.g, regression functions of the treatment and the outcome). Currently, this should be specified using the same arguments as \code{\link{caret}}'s \code{\link{train}} function. The default is random forest using \code{\link{ranger}}. The default method is fast and usually works well for many applications.
+##' @param reg details of the machine learning method to be used for estimating the nuisance parameters (e.g, regression functions of the treatment and the outcome). Currently, this should be specified using the same arguments as \code{caret}'s \code{\link[caret]{train}} function. The default is random forest using \code{ranger}. The default method is fast and usually works well for many applications.
 ##' @param yreg same as \code{reg}, but specifies arguments for the outcome regression alone. Default is the same value of \code{reg}. Alternatively, a named list with elements \code{yreg0} and \code{yreg1} specifying separate methods for each.
 ##' @param dreg same as \code{reg}, but specifies arguments for the treatment regression alone. Default is the same value of \code{reg}.
-##' @param dirty.tuning should the tuning of the machine learning method happen within each cross-fit fold ("clean"), or using all the data ("dirty")? Default is dirty tuning (\code{dirty.tuning = T}). As long as the number of choices for the tuning parameters is not too big, dirty tuning is faster and should not affect the asymptotic guarantees of DML.
+##' @param dirty.tuning should the tuning of the machine learning method happen within each cross-fit fold ("clean"), or using all the data ("dirty")? Default is dirty tuning (\code{dirty.tuning = TRUE}). As long as the number of choices for the tuning parameters is not too big, dirty tuning is faster and should not affect the asymptotic guarantees of DML.
 ##' @param save.models should the fitted models of each iterated be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.
 ##' @param y.class when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
 ##' @param d.class when \code{d} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
 ##' @param verbose if \code{TRUE} (default) prints steps of the fitting procedure.
-##' @param warning should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.
-##' @return
+##' @param warnings should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.
+##' @returns
 ##' An object of class \code{dml} with the results of the DML procedure. The object is a \code{\link{list}} containing:
 ##' \describe{
 ##'  \item{\code{data}}{A \code{list} with the data used.}
@@ -105,7 +105,7 @@ dml <- function(y, d, x,
   model   <- match.arg(model)
   target  <- match.arg(target,
                        choices = c("ate", "att", "atu"),
-                       several.ok = T)
+                       several.ok = TRUE)
   # check if x is numeric but not a matrix and converts to matrix.
   # this is for the case where x is a single covariate
   if (is.numeric(x) && !is.matrix(x)) {
@@ -125,8 +125,8 @@ dml <- function(y, d, x,
   var_names <- list()
   for (name in colnames(x)) {
     if ((length(unique(x[,name])) == 1) && (name != "(Intercept)")) {
-      cat("Warning: variable '", name,
-          "' show no variation.\n", sep = "")
+      warning("Variable '", name,
+              "' shows no variation.", call. = FALSE)
     }
     prefix <- sub("[0-9]+$", "", name)
     var_names[[prefix]] <- unique(c(var_names[[prefix]], name))
@@ -136,8 +136,8 @@ dml <- function(y, d, x,
     factor_cols <- factor_var[[var_name]]
     rowsums <- rowSums(x[, factor_cols, drop = FALSE])
     if (all(rowsums == 1)) {
-      cat("Warning: The reference category for the variable '", var_name,
-          "' contains no observations.\n", sep = "")
+      warning("The reference category for the variable '", var_name,
+              "' contains no observations.", call. = FALSE)
     }
   }
 
@@ -288,8 +288,8 @@ dml <- function(y, d, x,
 
     if (model == "npm") {
       if (verbose) cat("- Tuning Model for Y (non-parametric).\n")
-      yreg0 <- tune_model(x = x[d == d0, ,drop = F], y = ytil0, args = yreg0)
-      yreg1 <- tune_model(x = x[d == d1, ,drop = F], y = ytil1, args = yreg1)
+      yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
+      yreg1 <- tune_model(x = x[d == d1, ,drop = FALSE], y = ytil1, args = yreg1)
       yreg <- list(yreg0 = yreg0, yreg1 = yreg1)
       if (verbose) {
         cat("-- Best Tune:\n")
@@ -403,8 +403,10 @@ dml <- function(y, d, x,
 
 }
 
-##' @description The function \code{dml.gate} is a convenience function that adds groups to a \code{dml} object after the model is fit.
+##' @description The function \code{dml_gate} is a convenience function that adds groups to a \code{dml} object after the model is fit.
 ##'
+##' @param dml.fit an object of class \code{\link{dml}}.
+##' @param ... arguments passed to other methods.
 ##' @rdname dml
 ##' @export
 dml_gate <- function(dml.fit, groups,...){
@@ -434,7 +436,7 @@ num <- function(v){
 tune_model <- function(x, y, args) {
   original.args  <- c(list(x = x, y = y), args)
   best.model     <- silent.do.call(what = "train", args = original.args)
-  args$trControl <- trainControl(method = "none", classProbs = T)
+  args$trControl <- trainControl(method = "none", classProbs = TRUE)
   args$tuneGrid  <- best.model$bestTune
   return(args)
 }
@@ -509,7 +511,7 @@ caretArgs <- function(reg){
     reg$preProcess <- "range"
   }
   attr(reg$method, "name") <- reg_name
-  reg$trControl$classProbs <- T
+  reg$trControl$classProbs <- TRUE
   return(reg)
 }
 

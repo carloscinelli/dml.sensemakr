@@ -64,12 +64,12 @@ cross.fitting <- function(y, d, x,
         sdd <- 1
       }
 
-      args.dx  <- c(list(x = x[ -Id[[b]], ,drop = F],  y = dtil ), dreg)
+      args.dx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE],  y = dtil ), dreg)
       model.dx <- silent.do.call(what = "train", args = args.dx, warnings = warnings)
       metric.d <- model.dx$metric
 
       # predictions
-      dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])*sdd + mud
+      dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = FALSE])*sdd + mud
 
       # y model for plm
       if (is.numeric(y)) {
@@ -89,7 +89,7 @@ cross.fitting <- function(y, d, x,
         warning("Only one method should be specified for yreg when using 'plm'; setting 'yreg' to 'yreg0'.")
       }
 
-      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = F], y = ytil ), yreg)
+      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE], y = ytil ), yreg)
       model.yx <- silent.do.call(what = "train", args = args.yx, warnings = warnings)
       metric.y <- model.yx$metric
 
@@ -100,7 +100,7 @@ cross.fitting <- function(y, d, x,
 
 
       # predictions for plm
-      yhat[Id[[b]]]    <- safe.predict(model.yx, x[Id[[b]], ,drop = F])*sdy + muy #predict the left-out fold
+      yhat[Id[[b]]]    <- safe.predict(model.yx, x[Id[[b]], ,drop = FALSE])*sdy + muy #predict the left-out fold
     }
 
 
@@ -119,12 +119,12 @@ cross.fitting <- function(y, d, x,
       }
 
       # d model
-      args.dx  <- c(list(x = x[ -Id[[b]], ,drop = F],  y = dtil ), dreg)
+      args.dx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE],  y = dtil ), dreg)
       model.dx <- silent.do.call(what = "train", args = args.dx, warnings = warnings)
       metric.d <- model.dx$metric
 
       # predictions
-      dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = F])*sdd + mud
+      dhat[Id[[b]]]  <-  safe.predict(model.dx, newdata =   x[ Id[[b]], ,drop = FALSE])*sdd + mud
 
       # y model for npm
       if (is.numeric(y)) {
@@ -145,14 +145,14 @@ cross.fitting <- function(y, d, x,
       }
 
       args.y0x  <- c(
-        list(x = x[ -Id[[b]], ,drop = F][dtil == d0, ,drop = F],
+        list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d0, ,drop = FALSE],
              y = ytil0), yreg0)
       model.y0x <-
         silent.do.call(what = "train", args = args.y0x, warnings = warnings)
       metric.y0 <- model.y0x$metric
 
       args.y1x  <- c(
-        list(x = x[ -Id[[b]], ,drop = F][dtil == d1, ,drop = F],
+        list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d1, ,drop = FALSE],
              y = ytil1), yreg1)
       model.y1x <-
         silent.do.call(what = "train", args = args.y1x, warnings = warnings)
@@ -168,14 +168,14 @@ cross.fitting <- function(y, d, x,
       }
 
       if (all(target == "att")) {
-        yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = F])*sdy0 + muy0
-        yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = F])*sdy1 + muy1
+        yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
+        yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = FALSE])*sdy1 + muy1
       } else if (all(target == "atu")) {
-        yhat0[Id[[b]]][num(d[Id[[b]]]) == 0] <- safe.predict(model.y0x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 0], ,drop = F])*sdy0 + muy0
-        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = F])*sdy1 + muy1
+        yhat0[Id[[b]]][num(d[Id[[b]]]) == 0] <- safe.predict(model.y0x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 0], ,drop = FALSE])*sdy0 + muy0
+        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
       } else {
-        yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = F])*sdy0 + muy0
-        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = F])*sdy1 + muy1
+        yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
+        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
       }
 
       yhat[Id[[b]]][num(d[Id[[b]]]) == 0] <- yhat0[Id[[b]]][num(d[Id[[b]]]) == 0]
@@ -223,7 +223,7 @@ cross.fitting <- function(y, d, x,
 }
 
 # function to suppress irrelevant caret warnings
-silent.do.call <- function(..., warnings = F) {
+silent.do.call <- function(..., warnings = FALSE) {
   if(warnings){
     out <- do.call(...)
   } else {

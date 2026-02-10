@@ -1,9 +1,25 @@
 
+##' Print, summary, coef, se, and confint methods for DML bounds
+##'
+##' @description Methods for objects of class \code{dml.bounds} created with \code{\link{dml_bounds}}.
+##' @param x an object of class \code{dml.bounds} or \code{summary_dml.bounds}.
+##' @param object an object of class \code{dml.bounds}.
+##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
+##' @param digits number of significant digits to print.
+##' @param ... arguments passed to other methods.
+##' @param parm character vector with the names of parameters.
+##' @param level confidence level. Default is \code{0.95}.
+##' @returns For \code{print} and \code{summary}: the object, printed to console. For \code{coef}: a matrix of coefficient estimates. For \code{se}: a matrix of standard errors. For \code{confint}: a list of confidence interval matrices.
+##' @name print.dml.bounds
+NULL
+
+#'@rdname print.dml.bounds
 #'@export
 print.dml.bounds <- function(x, ...){
   print(summary(x,...))
 }
 
+#'@rdname print.dml.bounds
 #'@export
 summary.dml.bounds <- function(object, combine.method = "median", ...){
 
@@ -47,6 +63,7 @@ summary.dml.bounds <- function(object, combine.method = "median", ...){
   return(out)
 }
 
+##'@rdname print.dml.bounds
 ##'@export
 print.summary_dml.bounds <- function(x, digits = 2, ...){
   cat("\n")
@@ -80,10 +97,11 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   cat("\nNote: DML estimates combined using the", x$combine.method, "method.")
 }
 
+#' @rdname print.dml.bounds
 #' @export
 coef.dml.bounds <- function(object, combine.method = "median", ...){
   # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "estimate"]))
-  if (!is.null(object$coef$main)) {
+  if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     ate <- do.call("rbind", ate)
     rownames(ate) <- paste0("ate.", rownames(ate))
@@ -91,7 +109,7 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
     ate = NULL
   }
 
-  if (!is.null(object$coef$groups)) {
+  if (!is.null(object$coefs$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     gate <- do.call("rbind", gate)
     rownames(gate) <- paste0("gate.", rownames(gate))
@@ -102,22 +120,18 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
   t(rbind(ate = ate, gate = gate))
 }
 
-#' @export
-se <- function(object, ...){
-  UseMethod("se")
-}
-
+#' @rdname print.dml.bounds
 #' @export
 se.dml.bounds <- function(object, combine.method = "median", ...){
   # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "se"]))
-  if (!is.null(object$coef$main)) {
+  if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "se"]))
     ate <- do.call("rbind", ate)
     rownames(ate) <- paste0("ate.", rownames(ate))
   } else{
     ate = NULL
   }
-  if (!is.null(object$coef$groups)) {
+  if (!is.null(object$coefs$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "se"]))
     gate <- do.call("rbind", gate)
     rownames(gate) <- paste0("gate.", rownames(gate))
@@ -128,12 +142,13 @@ se.dml.bounds <- function(object, combine.method = "median", ...){
 }
 
 
+#' @rdname print.dml.bounds
 #' @export
-confint.dml.bounds <- function(object, params = NULL, level = 0.95, combine.method = "median", ...){
+confint.dml.bounds <- function(object, parm = NULL, level = 0.95, combine.method = "median", ...){
   cf  <- t(coef(object, combine.method = combine.method))
   ses <- t(se(object, combine.method = combine.method))
   loop <- setNames(rownames(cf), rownames(cf))
-  out <- lapply(loop , function(x)calc_confint(cf = cf[x,], params = params, ses = ses[x,], level = level))
+  out <- lapply(loop , function(x)calc_confint(cf = cf[x,], parm = parm, ses = ses[x,], level = level))
   # if (length(out) == 1 ) {
   #   out <- out[[1]]
   # }
@@ -143,6 +158,7 @@ confint.dml.bounds <- function(object, params = NULL, level = 0.95, combine.meth
 
 
 
+#'@rdname print.dml.bounds
 #'@export
 print.confidence.bounds <- function(x, ...){
    print.table(x)

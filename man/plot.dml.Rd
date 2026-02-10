@@ -16,7 +16,7 @@
 )
 }
 \arguments{
-\item{x}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
+\item{x}{an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.}
 
 \item{combine.method}{method to combine the results of each repetition of the DML fit. Options are \code{mean} and \code{median}. Default is \code{median}.}
 
@@ -25,6 +25,9 @@
 \item{...}{arguments passed to other methods.}
 
 \item{type}{type of plot for confidence bounds. Options are \code{confidence_bounds}, and \code{all}.}
+}
+\value{
+For \code{plot.dml}: a \code{ggplot} object. For \code{plot.dml.bounds}: a \code{ggplot} object.
 }
 \description{
 Coefficient plots for DML and bounds

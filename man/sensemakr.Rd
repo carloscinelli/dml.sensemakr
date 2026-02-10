@@ -22,11 +22,15 @@ sensemakr(model, ...)
 \arguments{
 \item{model}{a model created with the function \code{\link{dml}}.}
 
+\item{...}{arguments passed to other methods.}
+
 \item{benchmark_covariates}{character vector of the names of covariates that will be used to bound the plausible strength of the latent variables.}
 
-\item{cf.y}{(optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2023). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.}
+\item{cf.y}{(optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2026). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.}
 
-\item{cf.d}{(optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2023). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.}
+\item{cf.d}{(optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2026). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.}
+
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.}
 
 \item{bound_label}{label to bounds provided manually in \code{cf.y} and \code{cf.d}.}
 
@@ -38,7 +42,7 @@ sensemakr(model, ...)
 An object of class \code{dml.sensemakr}, containing sensitivity analysis results.
 }
 \description{
-This function performs sensitivity analysis of causal effect estimates as discussed in Chernozhukov et al (2023).
+This function performs sensitivity analysis of causal effect estimates as discussed in Chernozhukov et al (2026).
 The main input is an object of class \code{\link{dml}}. It returns an object of class \code{dml.sensemakr} with several pre-computed sensitivity statistics for reporting. After running \code{sensemakr} you may directly use the \code{plot}, \code{print} and \code{summary} methods in the returned object.
 }
 \examples{
@@ -62,7 +66,7 @@ sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
 # summary
 summary(sens.401k)
 
-# contout plots
+# contour plots
 plot(sens.401k)
 
 }

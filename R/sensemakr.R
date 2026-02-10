@@ -1,6 +1,6 @@
 ##' Sensitivity Analysis for Causal Machine Learning
 ##' @description
-##' This function performs sensitivity analysis of causal effect estimates as discussed in Chernozhukov et al (2023).
+##' This function performs sensitivity analysis of causal effect estimates as discussed in Chernozhukov et al (2026).
 ##' The main input is an object of class \code{\link{dml}}. It returns an object of class \code{dml.sensemakr} with several pre-computed sensitivity statistics for reporting. After running \code{sensemakr} you may directly use the \code{plot}, \code{print} and \code{summary} methods in the returned object.
 ##'
 ##' @returns An object of class \code{dml.sensemakr}, containing sensitivity analysis results.
@@ -11,9 +11,11 @@ sensemakr <- function(model, ...) {
 }
 
 ##' @param model a model created with the function \code{\link{dml}}.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.
+##' @param ... arguments passed to other methods.
 ##' @param benchmark_covariates  character vector of the names of covariates that will be used to bound the plausible strength of the latent variables.
-##' @param cf.y (optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2023). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.
-##' @param cf.d (optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2023). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.
+##' @param cf.y (optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2026). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.
+##' @param cf.d (optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2026). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.
 ##' @param bound_label label to bounds provided manually in \code{cf.y} and \code{cf.d}.
 ##' @param theta null hypothesis.
 ##' @param alpha significance level.
@@ -39,7 +41,7 @@ sensemakr <- function(model, ...) {
 ##' # summary
 ##' summary(sens.401k)
 ##'
-##' # contout plots
+##' # contour plots
 ##' plot(sens.401k)
 ##'
 ##' @method sensemakr dml
@@ -99,6 +101,7 @@ sensemakr.dml <- function(model,
 ##' @param object an object of class \code{\link{sensemakr}}.
 ##' @param x an object of class \code{\link{sensemakr}}.
 ##' @param digits minimal number of \emph{significant} digits.
+##' @returns For \code{print}: the object, invisibly. For \code{summary}: the summary is printed to the console.
 ##' @export
 print.dml.sensemakr <- function(x,
                                 digits = 2,
@@ -195,35 +198,37 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
 
 ##' Sensitivity analysis plots for dml.sensemakr
 ##'
-##' This function provides the contour plots of the sensitivity analysis results obtained with the function \code{\link{sensemakr}} for IV. It is basically a dispatcher to the core plot function \code{\link{ovb_contour_plot}}.
+##' This function provides the contour plots of the sensitivity analysis results obtained with the function \code{\link{sensemakr}} for DML. It is basically a dispatcher to the core plot function \code{\link{ovb_contour_plot}}.
 ##'
 ##' @param x an object of class \code{dml.sensemakr} created with the \code{\link{sensemakr}} function.
+##' @param parameter the target parameter to plot. Options are \code{"ate"}, \code{"att"}, and \code{"atu"}.
 ##' @inheritParams ovb_contour_plot
+##' @returns No return value, called for side effects (plotting).
 ##' @export
-plot.dml.sensemakr <- function(model,
+plot.dml.sensemakr <- function(x,
                                parameter = c("ate", "att", "atu"),
                                which.bound = c("lwr", "upr"),
                                level = 0.95,
                                combine.method = "median",
                                ...){
   if (!"bound.label" %in% names(list(...))) {
-    ovb_contour_plot(model$model,
+    ovb_contour_plot(x$model,
                      parameter = parameter,
                      which.bound = which.bound,
                      level = level,
-                     rho2 = model$info$rho2,
-                     cf.y = model$info$cf.y,
-                     cf.d = model$info$cf.d,
-                     bound.label = model$info$bound.label,
+                     rho2 = x$info$rho2,
+                     cf.y = x$info$cf.y,
+                     cf.d = x$info$cf.d,
+                     bound.label = x$info$bound.label,
                      combine.method = combine.method, ...)
   } else {
-    ovb_contour_plot(model$model,
+    ovb_contour_plot(x$model,
                      parameter = parameter,
                      which.bound = which.bound,
                      level = level,
-                     rho2 = model$info$rho2,
-                     cf.y = model$info$cf.y,
-                     cf.d = model$info$cf.d,
+                     rho2 = x$info$rho2,
+                     cf.y = x$info$cf.y,
+                     cf.d = x$info$cf.d,
                      combine.method = combine.method, ...)
   }
 
