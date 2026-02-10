@@ -71,26 +71,20 @@ dml.401k <- dml(y, d, x, model = "npm")
 
 # summary of results with median method (default)
 summary(dml.401k)
+```
 
-# sensitivity analysis
-sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
+```{r sensitivity-fit, collapse=T, dpi=300, results='hide'}
+# sensitivity analysis with benchmark covariates
+sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03,
+                       benchmark_covariates = c("twoearn", "pira", "inc"))
+```
 
+```{r sensitivity-results, fig.align='center', collapse=T, dpi=300}
 # summary
 summary(sens.401k)
 
-# contour plots
-plot(sens.401k)
-```
-
-Benchmark covariates can be used to assess the plausible strength of omitted variables:
-
-```{r benchmarks, fig.align='center', collapse=T, dpi=300, message=FALSE, results='hide'}
-# sensitivity analysis with benchmarks
-sens.bench <- sensemakr(dml.401k,
-                        benchmark_covariates = c("inc", "age", "educ", "marr"))
-
-# contour plot with benchmark overlay
-plot(sens.bench)
+# contour plot with benchmarks
+plot(sens.401k, lim.x = 0.2)
 ```
 
 <!-- ### Use DML to estimate the ATE -->
