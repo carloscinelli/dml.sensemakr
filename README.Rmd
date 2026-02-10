@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
+# dml.sensemakr: Sensitivity Analysis Tools for Causal ML <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
 
 <!-- badges: start -->
 <!-- [![CRAN status](https://www.r-pkg.org/badges/version/dml.sensemakr)](https://CRAN.R-project.org/package=dml.sensemakr) -->

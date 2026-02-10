@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dml.sensemakr <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
+# dml.sensemakr: Sensitivity Analysis Tools for Causal ML <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
 
 <!-- badges: start -->
 
@@ -107,13 +107,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.929%), treatment (ranger, R2 = 11.655%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.996%), treatment (ranger, R2 = 11.476%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8129       1175   6.916 4.65e-12 ***
+#> ate.all     7887       1169   6.747 1.51e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -133,13 +133,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.929%), treatment (ranger, R2 = 11.655%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.996%), treatment (ranger, R2 = 11.476%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8129       1175   6.916 4.65e-12 ***
+#> ate.all     7887       1169   6.747 1.51e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -155,7 +155,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 6.1597  4.6489
+#> ate.all 5.9797  4.4684
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -167,7 +167,7 @@ summary(sens.401k)
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1645.263 14662.418
+#> ate.all  1398.323 14399.146
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
