@@ -5,8 +5,10 @@
 ##' @param benchmark_covariates a character vector with the names of the observed covariates that will be used for benchmarking.
 ##' @param target character. The target parameter. Default is \code{"ate"}.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
+##' @param seed optional integer seed for reproducibility. Since benchmarks refit the model without each covariate, setting a seed ensures identical results across runs.
 ##' @export
-dml_benchmark <- function(model, benchmark_covariates, target = "ate"){
+dml_benchmark <- function(model, benchmark_covariates, target = "ate", seed = NULL){
+  if (!is.null(seed)) set.seed(seed)
   model.type <- model$info$model
   # bench_fun <- switch(model.type,
   #                     npm = bench_npm,

@@ -17,6 +17,7 @@ sensemakr <- function(model, ...) {
 ##' @param cf.y (optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2026). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.
 ##' @param cf.d (optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2026). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.
 ##' @param bound_label label to bounds provided manually in \code{cf.y} and \code{cf.d}.
+##' @param benchmark_seed optional integer seed for reproducibility of benchmarks. Since benchmarks refit the model without each covariate, setting a seed ensures identical results across runs.
 ##' @param theta null hypothesis.
 ##' @param alpha significance level.
 ##'
@@ -53,6 +54,7 @@ sensemakr.dml <- function(model,
                           cf.y = NULL, cf.d = cf.y,
                           rho2 = 1,
                           bound_label = "Confounding Scenario",
+                          benchmark_seed = NULL,
                           theta = 0, alpha = 0.05, ...){
 
   out <- list()
@@ -84,7 +86,7 @@ sensemakr.dml <- function(model,
   # benchmarks
   # if (!is.null(benchmark_covariates) & !is.null(model$results$main$all)) {
   if (!is.null(benchmark_covariates) & !is.null(model$results$main[[1]])) {
-    bench.bounds <- dml_benchmark(model = model, benchmark_covariates = benchmark_covariates)
+    bench.bounds <- dml_benchmark(model = model, benchmark_covariates = benchmark_covariates, seed = benchmark_seed)
     out$bench.bounds <- bench.bounds
   }
 

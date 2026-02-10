@@ -77,7 +77,8 @@ summary(dml.401k)
 ```{r sensitivity-fit, collapse=T, dpi=300, results='hide'}
 # sensitivity analysis with benchmark covariates
 sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03,
-                       benchmark_covariates = c("twoearn", "pira", "inc"))
+                       benchmark_covariates = c("twoearn", "pira", "inc"),
+                       benchmark_seed = 2)
 ```
 
 ```{r sensitivity-results, fig.align='center', collapse=T, dpi=300}

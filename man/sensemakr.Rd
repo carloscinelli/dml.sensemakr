@@ -16,6 +16,7 @@ sensemakr(model, ...)
   cf.d = cf.y,
   rho2 = 1,
   bound_label = "Confounding Scenario",
+  benchmark_seed = NULL,
   theta = 0,
   alpha = 0.05,
   ...
@@ -35,6 +36,8 @@ sensemakr(model, ...)
 \item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.}
 
 \item{bound_label}{label to bounds provided manually in \code{cf.y} and \code{cf.d}.}
+
+\item{benchmark_seed}{optional integer seed for reproducibility of benchmarks. Since benchmarks refit the model without each covariate, setting a seed ensures identical results across runs.}
 
 \item{theta}{null hypothesis.}
 

@@ -76,7 +76,7 @@ par(oldpar)
 ## Benchmarks
 
 ```{r plm-bench}
-bench.plm <- dml_benchmark(dml.401k.plm, benchmark_covariates = c("inc", "pira", "twoearn"))
+bench.plm <- dml_benchmark(dml.401k.plm, benchmark_covariates = c("inc", "pira", "twoearn"), seed = 2)
 bench.plm
 ```
 
@@ -86,10 +86,11 @@ bench.plm
 # benchmarks at 1x for all covariates
 sens.401k.bench <- sensemakr(dml.401k.plm, cf.y = 0.04, cf.d = 0.03,
                               bound_label = "Max match (3 years)",
-                              benchmark_covariates = c("inc", "pira", "twoearn"))
+                              benchmark_covariates = c("inc", "pira", "twoearn"),
+                              benchmark_seed = 2)
 
 # 1/4 x Income benchmark (only income)
-bench.inc <- dml_benchmark(dml.401k.plm, benchmark_covariates = "inc")
+bench.inc <- dml_benchmark(dml.401k.plm, benchmark_covariates = "inc", seed = 2)
 
 oldpar <- par(mfrow = c(1,2))
 
@@ -173,6 +174,6 @@ ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
 ## NPM Benchmarks
 
 ```{r npm-bench}
-bench.npm <- dml_benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira", "twoearn"))
+bench.npm <- dml_benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira", "twoearn"), seed = 2)
 bench.npm
 ```
