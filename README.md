@@ -5,6 +5,12 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/dml.sensemakr)](https://CRAN.R-project.org/package=dml.sensemakr)
+[![Downloads](https://cranlogs.r-pkg.org/badges/dml.sensemakr)](https://cran.r-project.org/package=dml.sensemakr)
+[![R-CMD-check](https://github.com/carloscinelli/dml.sensemakr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/carloscinelli/dml.sensemakr/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/carloscinelli/dml.sensemakr/graph/badge.svg)](https://app.codecov.io/gh/carloscinelli/dml.sensemakr)
 <!-- badges: end -->
 
 `dml.sensemakr` implements a general suite of sensitivity analysis tools
@@ -48,8 +54,8 @@ Some presentations that may be useful:
 # loads package
 library(dml.sensemakr)
 #> See details in:
-#> - Chernozhukov, V. Cinelli, C. Newey, W. Sharma, A. Syrgkanis, V. (2021). Long Story Short: Omitted Variable Bias in Causal Machine Learning. National Bureau of Economic Research, Working Paper Series, 30302.
-#> - Available at: http://www.nber.org/papers/w30302
+#> - Chernozhukov, V. Cinelli, C. Newey, W. Sharma, A. Syrgkanis, V. (2026). Long Story Short: Omitted Variable Bias in Causal Machine Learning. Review of Economics and Statistics.
+#> - Available at: https://doi.org/10.1162/REST.a.1705
 
 ## loads data
 data("pension")
@@ -66,7 +72,7 @@ dml.401k <- dml(y, d, x, model = "npm")
 #>  Model: Nonparametric 
 #>  Target: ate 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger), treatment (ranger)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
 #>  Tuning: dirty 
 #> 
 #> 
@@ -82,7 +88,9 @@ dml.401k <- dml(y, d, x, model = "npm")
 #> - Tuning Model for Y (non-parametric).
 #> -- Best Tune:
 #>   mtry min.node.size splitrule
-#> 1    3             5  variance
+#> 1    2             5  variance
+#>   mtry min.node.size splitrule
+#> 1    2             5  variance
 #> 
 #> 
 #> ======================================
@@ -98,20 +106,20 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 26.712%), treatment (ranger, R2 = 11.449%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.022%), treatment (ranger, R2 = 11.667%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
-#>         Estimate Std. Error t value P(>|t|)    
-#> ate.all     7729       1182   6.541 6.1e-11 ***
+#>         Estimate Std. Error t value  P(>|t|)    
+#> ate.all     8208       1169   7.021 2.21e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
 #> 
 #> Verbal interpretation of DML procedure:
 #> 
-#> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.
+#> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.
 
 # sensitivity analysis
 sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03)
@@ -124,20 +132,20 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (ranger, R2 = 26.712%), treatment (ranger, R2 = 11.449%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.022%), treatment (ranger, R2 = 11.667%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
-#>         Estimate Std. Error t value P(>|t|)    
-#> ate.all     7729       1182   6.541 6.1e-11 ***
+#>         Estimate Std. Error t value  P(>|t|)    
+#> ate.all     8208       1169   7.021 2.21e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
 #> 
 #> Verbal interpretation of DML procedure:
 #> 
-#> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.
+#> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.
 #> 
 #> ==== Sensitivity Analysis ====
 #> 
@@ -146,19 +154,19 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 5.8868  4.3509
+#> ate.all 6.1346  4.6377
 #> 
 #> Verbal interpretation of robustness values:
 #> 
 #> -- Robustness Value for the Bound (RV): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the estimated bounds include 0. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so.
 #> 
-#> -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. 
+#> -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. 
 #> 
 #>  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1230.061 14225.587
+#> ate.all  1658.375 14791.225
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
