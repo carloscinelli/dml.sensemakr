@@ -84,7 +84,7 @@ sens.401k <- sensemakr(dml.401k, cf.y = 0.04, cf.d = 0.03,
 summary(sens.401k)
 
 # contour plot with benchmarks
-plot(sens.401k, lim.x = 0.2)
+plot(sens.401k, lim.x = 0.18)
 ```
 
 <!-- ### Use DML to estimate the ATE -->

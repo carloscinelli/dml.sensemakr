@@ -105,13 +105,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.398%), treatment (ranger, R2 = 11.431%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.104%), treatment (ranger, R2 = 11.523%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8058       1148   7.016 2.28e-12 ***
+#> ate.all     8268       1161    7.12 1.08e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -136,13 +136,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.398%), treatment (ranger, R2 = 11.431%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.104%), treatment (ranger, R2 = 11.523%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8058       1148   7.016 2.28e-12 ***
+#> ate.all     8268       1161    7.12 1.08e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -158,7 +158,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 6.1279  4.6334
+#> ate.all 6.2288  4.7312
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -170,7 +170,7 @@ summary(sens.401k)
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1622.475 14523.284
+#> ate.all  1773.695 14797.656
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
@@ -179,10 +179,10 @@ summary(sens.401k)
 #> 
 #> -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.
 #> Benchmark Statistic for Sensitivity Scenario:
-#>          gain.Y   gain.D    rho theta.s theta.sj  delta
-#> twoearn 0.01202 0.000000 0.0000    8058     7327 -730.9
-#> pira    0.07442 0.003543 0.1785    8058     8427  368.6
-#> inc     0.15608 0.137449 0.2275    8058    12039 3980.2
+#>          gain.Y   gain.D     rho theta.s theta.sj  delta
+#> twoearn 0.04763 0.005716 -0.4279    8268     7363 -904.8
+#> pira    0.05495 0.000000  0.0000    8268     8477  209.0
+#> inc     0.15289 0.157558  0.1787    8268    11582 3313.8
 #> 
 #> Verbal interpretation of Benchmark Statistic:
 #> 
@@ -197,7 +197,7 @@ summary(sens.401k)
 #>    ATE: cf.d measures the percentage gains in the average precision on the treatment regression.
 
 # contour plot with benchmarks
-plot(sens.401k, lim.x = 0.2)
+plot(sens.401k, lim.x = 0.18)
 ```
 
 <img src="man/figures/README-sensitivity-results-1.png" width="100%" style="display: block; margin: auto;" />
