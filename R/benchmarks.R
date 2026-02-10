@@ -10,6 +10,7 @@ dml_benchmark <- function(model, benchmark_covariates, target = "ate"){
   #                     npm = bench_npm,
   #                     plm = bench_plm)
   bench <- bench_fun(model = model, benchmark_covariates = benchmark_covariates)
+  bench$model <- model
   class(bench) <- "dml_benchmark"
   return(bench)
 }
