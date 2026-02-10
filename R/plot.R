@@ -443,6 +443,16 @@ contour_plot <- function(grid_values.x,
   if(is.null(ylab)) ylab <- expression(paste(R[y-g[s]%~%g-g[s]]^2))
   # if(is.null(ylab)) ylab <- expression(paste(eta[Y%~%A~"|"~DX]^2))
 
+  # Guard against degenerate z values (NaN/Inf/no variation)
+  z_finite <- z_axis[is.finite(z_axis)]
+  if (length(z_finite) == 0 || diff(range(z_finite)) == 0) {
+    warning("Contour plot could not be drawn: z values are degenerate.")
+    plot(range(grid_values.x), range(grid_values.y), type = "n",
+         xlab = xlab, ylab = ylab, cex.lab = cex.lab,
+         cex.axis = cex.axis, cex.main = cex.main, asp = asp)
+    return(invisible(NULL))
+  }
+
   default_levels <- pretty(range(z_axis), nlevels)
   too_close      <- abs(default_levels - threshold) < min(diff(default_levels)) * 0.25
   line_color     <- ifelse(too_close, "transparent", col.contour)

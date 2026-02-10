@@ -30,6 +30,7 @@ Suggests:
     gbm,
     glmnet,
     gam,
+    mgcv,
     nnet,
     ranger,
     hdm,

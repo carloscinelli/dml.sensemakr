@@ -114,5 +114,5 @@ test_that("coef_plot returns a ggplot object", {
 })
 
 test_that("ovb_contour_plot does not error", {
-  expect_silent(ovb_contour_plot(setup_npm$fit))
+  expect_no_error(ovb_contour_plot(setup_npm$fit))
 })
