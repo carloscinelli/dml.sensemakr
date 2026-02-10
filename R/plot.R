@@ -420,6 +420,71 @@ ovb_contour_plot.dml <- function(model,
 }
 
 
+##' @export
+add_bound_to_contour <- function(model, ...) {
+  if (inherits(model, "dml")) {
+    add_bound_to_contour.dml(model, ...)
+  } else {
+    sensemakr::add_bound_to_contour(model, ...)
+  }
+}
+
+##' Add bound to an existing contour plot
+##'
+##' @description
+##' This method allows you to easily add sensitivity bounds to an existing contour plot created with \code{\link{ovb_contour_plot}}.
+##' It computes the bound value automatically from the \code{\link{dml}} model, so you only need to provide \code{cf.y} and \code{cf.d}.
+##'
+##' @param model an object of class \code{\link{dml}}.
+##' @param cf.y partial R2 of omitted variables with the outcome.
+##' @param cf.d strength of confounding in the Riesz representer.
+##' @param rho2 degree of adversity. Default is 1.
+##' @param which.bound which bound was used for the contour plot: \code{"lwr"} or \code{"upr"}.
+##' @param bound_label text label for the bound.
+##' @param level confidence level. Default is 0.95.
+##' @param combine.method method for combining cross-fitting estimates.
+##' @param ... additional arguments passed to \code{sensemakr::add_bound_to_contour}.
+##' @exportS3Method sensemakr::add_bound_to_contour dml
+##' @exportS3Method dml.sensemakr::add_bound_to_contour dml
+add_bound_to_contour.dml <- function(model,
+                                     cf.y,
+                                     cf.d = cf.y,
+                                     rho2 = 1,
+                                     which.bound = c("lwr", "upr"),
+                                     bound_label = "Scenario",
+                                     level = 0.95,
+                                     combine.method = "median",
+                                     label.bump.x = 0.01,
+                                     label.bump.y = 0.01,
+                                     ...){
+  which.bound <- match.arg(which.bound)
+  results <- model$results$main[[1]]
+
+  theta.s <- extract_estimate(results, "theta.s")
+  S2 <- extract_estimate(results, "S2")
+  se.theta.s <- extract_estimate(results, "se.theta.s")
+  se.S2 <- extract_estimate(results, "se.S2")
+  cov.theta.S2 <- extract_estimate(results, "cov.theta.S2")
+
+  bound_value <- confidence_bounds.numeric(
+    theta.s = theta.s, S2 = S2,
+    se.theta.s = se.theta.s, se.S2 = se.S2,
+    cov.theta.S2 = cov.theta.S2,
+    combine.method = combine.method,
+    level = level, rho2 = rho2,
+    cf.d = cf.d, cf.y = cf.y
+  )[which.bound]
+
+  sensemakr::add_bound_to_contour(r2dz.x = cf.d,
+                                  r2yz.dx = cf.y,
+                                  bound_value = bound_value,
+                                  bound_label = bound_label,
+                                  label.bump.x = label.bump.x,
+                                  label.bump.y = label.bump.y,
+                                  ...)
+}
+
+
 contour_plot <- function(grid_values.x,
                          grid_values.y,
                          z_axis,
