@@ -5,7 +5,7 @@
 \alias{ovb_contour_plot.dml}
 \title{Contour plots of omitted variable bias for Causal Machine Learning}
 \usage{
-ovb_contour_plot(model, ...)
+ovb_contour_plot(...)
 
 \method{ovb_contour_plot}{dml}(
   model,
@@ -44,15 +44,17 @@ ovb_contour_plot(model, ...)
 )
 }
 \arguments{
+\item{...}{arguments passed to other methods.}
+
 \item{model}{an object of class \code{\link{dml}}.}
 
-\item{...}{arguments passed to other methods.}
+\item{parameter}{the target parameter to plot. Options are \code{"ate"}, \code{"att"}, and \code{"atu"}.}
 
 \item{which.bound}{show contours for the lower limit (\code{lwr}) or upper limit (\code{upr}) of confidence bounds?}
 
 \item{level}{confidence level. Default is \code{0.95}.}
 
-\item{combine.method}{method to combine the results of each repetition of the DML fit. Options are \code{mean} and \code{median}. Default is \code{median}.}
+\item{combine.method}{method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.}
 
 \item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
 
@@ -108,12 +110,15 @@ ovb_contour_plot(model, ...)
 
 \item{list.par}{arguments to be passed to \code{\link{par}}. It needs to be a named list.}
 }
+\value{
+No return value, called for side effects (creates a contour plot).
+}
 \description{
 Contour plots of omitted variable bias for sensitivity analysis. The main input is a \code{\link{dml}} model.
 
 The vertical axis shows the partial R2 of the omitted variables with the outcome, i.e, the maximum proportion of the residual variation of the outcome that could be explained by latent variables.
 
-The horizontal axis shows the proportion of variation in the long Riesz Representer which is not explained by the short Riesz Representer (RR). This indicates how much variation in the RR is created by latent variables. In the partial linear model, this quantity paralels the sensitivity parameter for the outcome, and simply equals the partial R2 of latent variables with the treatment, i.e, the maximum proportion of the residual variation of the treatment that could be explained by latent variables. In the non-parametric model with a binary treatment, the interpretation is analagous, but instead of gains in variance, it stands for the gains in precision (1/variance).
+The horizontal axis shows the proportion of variation in the long Riesz Representer which is not explained by the short Riesz Representer (RR). This indicates how much variation in the RR is created by latent variables. In the partial linear model, this quantity parallels the sensitivity parameter for the outcome, and simply equals the partial R2 of latent variables with the treatment, i.e, the maximum proportion of the residual variation of the treatment that could be explained by latent variables. In the non-parametric model with a binary treatment, the interpretation is analogous, but instead of gains in variance, it stands for the gains in precision (1/variance).
 
 The contour levels represent the lower (upper) limit of the confidence bound for the target of interest, considering omitted variables with the postulated strength.
 

@@ -76,10 +76,14 @@ get_bounds <- function(bounds, combine.method = "mean"){
 
 ##' Bounds on the omitted variable bias for causal machine learning
 ##'
-##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param model an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.
 ##' @param cf.y (nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).
 ##' @param cf.d how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.
 ##' @param rho2 degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.
+##' @param ... arguments passed to other methods.
+##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
+##' @param level confidence level. Default is \code{0.95}.
+##' @returns For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
 ##' @export
 dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 
@@ -125,12 +129,18 @@ dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 #'
 #' @rdname dml_bounds
 #' @export
-confidence_bounds <- function(model, ...){
+confidence_bounds <- function(...){
   UseMethod("confidence_bounds")
 }
 
 
 
+##' @param theta.s short estimate of the target parameter (used as the first argument for the numeric method).
+##' @param S2 estimated variance product (sigma2 * nu2).
+##' @param se.theta.s standard error of the short estimate.
+##' @param se.S2 standard error of S2.
+##' @param cov.theta.S2 covariance of theta.s and S2.
+##' @param return character vector specifying which bounds to return. Options are \code{"lwr"} and \code{"upr"}.
 #' @export
 #' @rdname dml_bounds
 confidence_bounds.numeric <- function(theta.s, S2,
@@ -139,7 +149,7 @@ confidence_bounds.numeric <- function(theta.s, S2,
                                       cf.y, cf.d,
                                       rho2 = 1,
                                       combine.method = "median",
-                                      level = 0.95){
+                                      level = 0.95, ...){
   k = bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
   se.m <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 - (k/sqrt(S2))*cov.theta.S2)
   se.p <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 + (k/sqrt(S2))*cov.theta.S2)
@@ -207,7 +217,7 @@ confidence_bounds.dml.bounds <- function(model,
   } else {
     out <- rbind(ate = c(lwr = confs["theta.m",1], upr = confs["theta.p",2]))
   }
-  out <- out[, return, drop = F]
+  out <- out[, return, drop = FALSE]
   attr(out, "conf.levels") <- c(point = level, region = level2)
   attr(out, "sens.param")  <- model$info
   class(out) <- c("confidence.bounds", "matrix")
@@ -228,22 +238,23 @@ rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
 ##' The robustness value describes the minimum strength of association (parameterized in terms of  R2) that omitted variables would need to have both with the outcome and with the Riesz Representer so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
 ##'
 ##'
+##' @returns A named numeric vector of robustness values.
 ##' @export
 robustness_value <- sensemakr::robustness_value
 
 ##' @rdname robustness_value
-##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param model an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.
 ##' @param theta the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).
 ##' @param alpha significance level. Default is \code{alpha = 0.05}.
 ##' @inheritParams summary.dml
-##'@exportS3Method sensemakr::robustness_value dml
-##'@exportS3Method dml.sensemakr::robustness_value dml
+##' @exportS3Method sensemakr::robustness_value dml
 robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
   conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA,nrow(conf)), rownames(conf))
   for (i in 1:nrow(conf)) {
     if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
+      next
     }
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
     fn <- function(rv) rv_fun(rv, dml.fit = model, par = names(out)[i],
@@ -258,15 +269,15 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
 }
 
 ##' @rdname robustness_value
-##'@exportS3Method sensemakr::robustness_value dml.bounds
-##'@exportS3Method dml.sensemakr::robustness_value dml.bounds
+##' @exportS3Method sensemakr::robustness_value dml.bounds
 robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, ...){
   model <- model$dml.fit
   conf <- confint(model, level = 1 - alpha,...)
-  out <- setNames(rep(NA,length(conf)), names(conf))
+  out <- setNames(rep(NA, nrow(conf)), rownames(conf))
   for (i in 1:nrow(conf)) {
     if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
+      next
     }
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
     fn <- function(rv) rv_fun(rv, dml.fit = model, par = names(out)[i],

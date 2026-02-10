@@ -37,6 +37,7 @@
 ##' se(dml.401k)
 ##' confint(dml.401k, combine.method = "mean")
 ##'
+##' @returns For \code{summary}: an object of class \code{summary_dml}. For \code{coef}: a named numeric vector of coefficients. For \code{se}: a named numeric vector of standard errors. For \code{confint}: a matrix with confidence intervals. For \code{print}: the input object, invisibly.
 ##' @export
 summary.dml <- function(object, combine.method = "median", ...){
 
@@ -110,37 +111,38 @@ se.dml <- function(object, combine.method = "median", ...){
 ##' @rdname summary.dml
 ##' @description  The \code{confint} function extracts the standard errors.
 ##' @param level confidence level. Default is \code{0.95}.
-##' @param params character vector with the names of parameters.
+##' @param parm character vector with the names of parameters.
+##' @param interpret logical. Should a verbal interpretation of the DML procedure be printed? Default is \code{TRUE}.
 ##' @export
-confint.dml <- function(object, params = NULL, level = 0.95, combine.method = "median", ...){
+confint.dml <- function(object, parm = NULL, level = 0.95, combine.method = "median", ...){
   cf  <- coef(object, combine.method = combine.method)
   ses <- se(object, combine.method = combine.method)
-  calc_confint(cf =cf, ses =ses,  params = params, level = level)
+  calc_confint(cf =cf, ses =ses,  parm = parm, level = level)
 }
 
-format.perc <- function (probs, digits) paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), "%")
+format_perc <- function (probs, digits) paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), "%")
 
-calc_confint <- function(cf, ses, params=NULL, level) {
+calc_confint <- function(cf, ses, parm=NULL, level) {
   pnames <- names(ses)
   if (is.matrix(cf))
     cf <- setNames(as.vector(cf), pnames)
-  if (is.null(params))
-    params <- pnames
-  else if (is.numeric(params))
-    params <- pnames[params]
+  if (is.null(parm))
+    parm <- pnames
+  else if (is.numeric(parm))
+    parm <- pnames[parm]
   a <- (1 - level)/2
   a <- c(a, 1 - a)
   fac <- qnorm(a)
-  pct <- format.perc(a, 3)
-  ci <- array(NA_real_, dim = c(length(params), 2L), dimnames = list(params, pct))
-  ci[] <- cf[params] + ses[params] %o% fac
+  pct <- format_perc(a, 3)
+  ci <- array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm, pct))
+  ci[] <- cf[parm] + ses[parm] %o% fac
   ci
 }
 
 
 expand.cmat <- function(cmat){
   cmat <- cbind(cmat, cmat[, 1]/cmat[, 2])
-  cmat <- cbind(cmat, 2*pnorm(abs(cmat[, 3]), lower.tail = F))
+  cmat <- cbind(cmat, 2*pnorm(abs(cmat[, 3]), lower.tail = FALSE))
   colnames(cmat) <-  c("estimate", "se", "t.value", "p.value")
   class(cmat) <- "cmat"
   return(cmat)
@@ -149,7 +151,7 @@ expand.cmat <- function(cmat){
 
 ##' @rdname summary.dml
 ##' @export
-print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), interpret = T, ...){
+print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), interpret = TRUE, ...){
   cat("\n")
   cat("Debiased Machine Learning\n")
   cat("\n")
@@ -216,7 +218,7 @@ print.cmat <- function(x, digits = max(3L, getOption("digits") - 3L), ...){
   colnames(x) <-  c("Estimate", "Std. Error", "t value", "P(>|t|)")
   # rownames(x) <-  toupper(rownames(x))
   # rownames(x) <- sapply(strsplit(rownames(x), split = "\\."), function(x) paste(x, collapse = " "))
-  printCoefmat(x, has.Pvalue = T, P.values = T, signif.stars = T, digits = digits, ...)
+  printCoefmat(x, has.Pvalue = TRUE, P.values = TRUE, signif.stars = TRUE, digits = digits, ...)
 }
 
 # vcov.dml <- function(object, ...){

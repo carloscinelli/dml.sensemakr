@@ -10,7 +10,7 @@
 \usage{
 dml_bounds(model, cf.y, cf.d, rho2 = 1)
 
-confidence_bounds(model, ...)
+confidence_bounds(...)
 
 \method{confidence_bounds}{numeric}(
   theta.s,
@@ -22,7 +22,8 @@ confidence_bounds(model, ...)
   cf.d,
   rho2 = 1,
   combine.method = "median",
-  level = 0.95
+  level = 0.95,
+  ...
 )
 
 \method{confidence_bounds}{dml}(
@@ -47,13 +48,34 @@ confidence_bounds(model, ...)
 )
 }
 \arguments{
-\item{model}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
+\item{model}{an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.}
 
 \item{cf.y}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
 
 \item{cf.d}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
 
 \item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
+
+\item{...}{arguments passed to other methods.}
+
+\item{theta.s}{short estimate of the target parameter (used as the first argument for the numeric method).}
+
+\item{S2}{estimated variance product (sigma2 * nu2).}
+
+\item{se.theta.s}{standard error of the short estimate.}
+
+\item{se.S2}{standard error of S2.}
+
+\item{cov.theta.S2}{covariance of theta.s and S2.}
+
+\item{combine.method}{method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.}
+
+\item{level}{confidence level. Default is \code{0.95}.}
+
+\item{return}{character vector specifying which bounds to return. Options are \code{"lwr"} and \code{"upr"}.}
+}
+\value{
+For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
 }
 \description{
 Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.

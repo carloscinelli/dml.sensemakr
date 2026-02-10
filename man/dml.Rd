@@ -38,11 +38,11 @@ dml_gate(dml.fit, groups, ...)
 
 \item{model}{specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.}
 
-\item{target}{specifies the target causal quantity of interest. Current available option is \code{ate} (ATE - average treatment effect). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, the ATE is only available for binary treatments. Other options (eg., ACD for the nonparametric model, ATT) will be available soon.}
+\item{target}{specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.}
 
 \item{groups}{a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.}
 
-\item{cf.folds}{number of cross-fitting folds. Default is \code{2}.}
+\item{cf.folds}{number of cross-fitting folds. Default is \code{5}.}
 
 \item{cf.reps}{number of cross-fitting repetitions. Default is \code{1}.}
 
@@ -50,13 +50,13 @@ dml_gate(dml.fit, groups, ...)
 
 \item{ps.trim}{trims propensity scores lower than \code{ps.trim} and greater than \code{1-ps.trim}, in order to obtain more stable estimates. Alternatively, a named list with elements \code{lower} and \code{upper} specifying the lower and upper bounds for trimming. This is only relevant for the case of a binary treatment and when \code{model = "npm"}.}
 
-\item{reg}{details of the machine learning method to be used for estimating the nuisance parameters (e.g, regression functions of the treatment and the outcome). Currently, this should be specified using the same arguments as \code{\link{caret}}'s \code{\link{train}} function. The default is random forest using \code{\link{ranger}}. The default method is fast and usually works well for many applications.}
+\item{reg}{details of the machine learning method to be used for estimating the nuisance parameters (e.g, regression functions of the treatment and the outcome). Currently, this should be specified using the same arguments as \code{caret}'s \code{\link[caret]{train}} function. The default is random forest using \code{ranger}. The default method is fast and usually works well for many applications.}
 
 \item{yreg}{same as \code{reg}, but specifies arguments for the outcome regression alone. Default is the same value of \code{reg}. Alternatively, a named list with elements \code{yreg0} and \code{yreg1} specifying separate methods for each.}
 
 \item{dreg}{same as \code{reg}, but specifies arguments for the treatment regression alone. Default is the same value of \code{reg}.}
 
-\item{dirty.tuning}{should the tuning of the machine learning method happen within each cross-fit fold ("clean"), or using all the data ("dirty")? Default is dirty tuning (\code{dirty.tuning = T}). As long as the number of choices for the tuning parameters is not too big, dirty tuning is faster and should not affect the asymptotic guarantees of DML.}
+\item{dirty.tuning}{should the tuning of the machine learning method happen within each cross-fit fold ("clean"), or using all the data ("dirty")? Default is dirty tuning (\code{dirty.tuning = TRUE}). As long as the number of choices for the tuning parameters is not too big, dirty tuning is faster and should not affect the asymptotic guarantees of DML.}
 
 \item{save.models}{should the fitted models of each iterated be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.}
 
@@ -66,7 +66,11 @@ dml_gate(dml.fit, groups, ...)
 
 \item{verbose}{if \code{TRUE} (default) prints steps of the fitting procedure.}
 
-\item{warning}{should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.}
+\item{warnings}{should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.}
+
+\item{dml.fit}{an object of class \code{\link{dml}}.}
+
+\item{...}{arguments passed to other methods.}
 }
 \value{
 An object of class \code{dml} with the results of the DML procedure. The object is a \code{\link{list}} containing:
@@ -82,7 +86,7 @@ An object of class \code{dml} with the results of the DML procedure. The object 
 \description{
 Estimates a target parameter of interest, such as an average treatment effect (ATE), using Debiased Machine #Learning (DML).
 
-The function \code{dml.gate} is a convenience function that adds groups to a \code{dml} object after the model is fit.
+The function \code{dml_gate} is a convenience function that adds groups to a \code{dml} object after the model is fit.
 }
 \examples{
 # loads package
@@ -134,5 +138,5 @@ ovb_contour_plot(dml.401k, cf.y = 0.03, cf.d = 0.04,
 
 }
 \references{
-Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2021). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
 }

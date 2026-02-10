@@ -10,6 +10,11 @@ dml_benchmark(model, benchmark_covariates, target = "ate")
 \item{model}{an object of class \code{\link{dml}}.}
 
 \item{benchmark_covariates}{a character vector with the names of the observed covariates that will be used for benchmarking.}
+
+\item{target}{character. The target parameter. Default is \code{"ate"}.}
+}
+\value{
+An object of class \code{dml_benchmark} containing benchmark results.
 }
 \description{
 Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.

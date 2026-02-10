@@ -3,6 +3,8 @@
 ##' Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
 ##' @param model an object of class \code{\link{dml}}.
 ##' @param benchmark_covariates a character vector with the names of the observed covariates that will be used for benchmarking.
+##' @param target character. The target parameter. Default is \code{"ate"}.
+##' @returns An object of class \code{dml_benchmark} containing benchmark results.
 ##' @export
 dml_benchmark <- function(model, benchmark_covariates, target = "ate"){
   model.type <- model$info$model
@@ -15,6 +17,8 @@ dml_benchmark <- function(model, benchmark_covariates, target = "ate"){
   return(bench)
 }
 
+##' Print and summary methods for DML benchmarks
+##' @description Print and summary methods for benchmark results.
 ##' @param x an object of class \code{\link{dml_benchmark}}.
 ##' @param digits minimal number of significant digits.
 ##' @rdname summary.dml_benchmark
@@ -25,9 +29,13 @@ print.dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L),
 }
 
 ##' @param object an object of class \code{\link{dml_benchmark}}.
+##' @param combine.method method to combine results. Default is \code{"mean"}.
+##' @param na.rm logical. Should NA values be removed? Default is \code{TRUE}.
+##' @param ... arguments passed to other methods.
+##' @returns For \code{print}: the object, printed to console. For \code{summary}: the object with aggregated benchmarks.
 ##' @rdname summary.dml_benchmark
 ##' @export
-summary.dml_benchmark <- function(object, combine.method = "mean", na.rm = T, ...){
+summary.dml_benchmark <- function(object, combine.method = "mean", na.rm = TRUE, ...){
   comb_fun <- get(combine.method)
   out <- object
   out$benchmarks <- t(sapply(object$benchmarks, function(x) apply(x,2, comb_fun, na.rm = na.rm)))

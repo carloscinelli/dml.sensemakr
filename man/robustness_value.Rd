@@ -15,11 +15,14 @@ robustness_value(...)
 \arguments{
 \item{...}{arguments passed to other methods.}
 
-\item{model}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
+\item{model}{an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.}
 
 \item{theta}{the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).}
 
 \item{alpha}{significance level. Default is \code{alpha = 0.05}.}
+}
+\value{
+A named numeric vector of robustness values.
 }
 \description{
 This function computes the robustness value of a target parameter estimated via debiased machine learning.

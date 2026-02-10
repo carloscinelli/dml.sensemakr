@@ -5,7 +5,7 @@
 \title{Sensitivity analysis plots for dml.sensemakr}
 \usage{
 \method{plot}{dml.sensemakr}(
-  model,
+  x,
   parameter = c("ate", "att", "atu"),
   which.bound = c("lwr", "upr"),
   level = 0.95,
@@ -14,18 +14,21 @@
 )
 }
 \arguments{
-\item{model}{an object of class \code{\link{dml}}.}
+\item{x}{an object of class \code{dml.sensemakr} created with the \code{\link{sensemakr}} function.}
+
+\item{parameter}{the target parameter to plot. Options are \code{"ate"}, \code{"att"}, and \code{"atu"}.}
 
 \item{which.bound}{show contours for the lower limit (\code{lwr}) or upper limit (\code{upr}) of confidence bounds?}
 
 \item{level}{confidence level. Default is \code{0.95}.}
 
-\item{combine.method}{method to combine the results of each repetition of the DML fit. Options are \code{mean} and \code{median}. Default is \code{median}.}
+\item{combine.method}{method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.}
 
 \item{...}{arguments passed to other methods.}
-
-\item{x}{an object of class \code{dml.sensemakr} created with the \code{\link{sensemakr}} function.}
+}
+\value{
+No return value, called for side effects (plotting).
 }
 \description{
-This function provides the contour plots of the sensitivity analysis results obtained with the function \code{\link{sensemakr}} for IV. It is basically a dispatcher to the core plot function \code{\link{ovb_contour_plot}}.
+This function provides the contour plots of the sensitivity analysis results obtained with the function \code{\link{sensemakr}} for DML. It is basically a dispatcher to the core plot function \code{\link{ovb_contour_plot}}.
 }

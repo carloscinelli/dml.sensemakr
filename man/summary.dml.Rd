@@ -18,9 +18,9 @@ se(object, ...)
 
 \method{se}{dml}(object, combine.method = "median", ...)
 
-\method{confint}{dml}(object, params = NULL, level = 0.95, combine.method = "median", ...)
+\method{confint}{dml}(object, parm = NULL, level = 0.95, combine.method = "median", ...)
 
-\method{print}{summary_dml}(x, digits = max(3L, getOption("digits") - 3L), interpret = T, ...)
+\method{print}{summary_dml}(x, digits = max(3L, getOption("digits") - 3L), interpret = TRUE, ...)
 
 \method{print}{dml}(
   x,
@@ -36,13 +36,18 @@ se(object, ...)
 
 \item{...}{arguments passed to other methods.}
 
-\item{params}{character vector with the names of parameters.}
+\item{parm}{character vector with the names of parameters.}
 
 \item{level}{confidence level. Default is \code{0.95}.}
 
 \item{x}{an object of class \code{\link{dml}}.}
 
 \item{digits}{minimal number of significant digits.}
+
+\item{interpret}{logical. Should a verbal interpretation of the DML procedure be printed? Default is \code{TRUE}.}
+}
+\value{
+For \code{summary}: an object of class \code{summary_dml}. For \code{coef}: a named numeric vector of coefficients. For \code{se}: a named numeric vector of standard errors. For \code{confint}: a matrix with confidence intervals. For \code{print}: the input object, invisibly.
 }
 \description{
 The \code{print} and \code{summary} methods provide descriptions of the results obtained with the function \code{\link{dml}}.

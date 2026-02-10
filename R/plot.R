@@ -1,7 +1,8 @@
 ##' Coefficient plots for DML and bounds
 ##'
 ##' @inheritParams print.dml
-##' @param x an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param x an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.
+##' @returns For \code{plot.dml}: a \code{ggplot} object. For \code{plot.dml.bounds}: a \code{ggplot} object.
 ##' @import ggplot2
 ##' @export
 plot.dml <- function(x, combine.method = "median", level = 0.95, ...) {
@@ -28,6 +29,7 @@ plot.dml.bounds <- function(x,
   }
 }
 
+#' @keywords internal
 plot.bounds2 <- function(x, combine.method = "median", level = 0.95, ...){
   coef_plot(estimate = coef(x)["theta.s", ],
              labels =  names(coef(x)["theta.s", ]),
@@ -37,6 +39,7 @@ plot.bounds2 <- function(x, combine.method = "median", level = 0.95, ...){
              upr2 = confidence_bounds(x)[,"upr"], ...)
 }
 
+#' @keywords internal
 plot.bounds1 <- function(x, combine.method = "median", level = 0.95,...){
   estimate <- coef(x, combine.method = combine.method)
   conf <- confint(x, combine.method = combine.method, level = level)
@@ -78,6 +81,31 @@ plot.bounds1 <- function(x, combine.method = "median", level = 0.95,...){
 # }
 
 
+##' Coefficient plot
+##'
+##' @description Creates a coefficient plot with estimates and confidence intervals using ggplot2.
+##'
+##' @param estimate numeric vector of point estimates.
+##' @param lwr1 numeric vector of lower bounds for the first interval.
+##' @param upr1 numeric vector of upper bounds for the first interval.
+##' @param labels optional character vector of labels for each coefficient.
+##' @param lwr2 optional numeric vector of lower bounds for the second interval.
+##' @param upr2 optional numeric vector of upper bounds for the second interval.
+##' @param text logical. Should text labels be added? Default is \code{TRUE}.
+##' @param text.size numeric. Size of text labels. Default is \code{3}.
+##' @param round integer. Number of digits to round displayed values. Default is \code{2}.
+##' @param coord.flip logical. Should the plot coordinates be flipped? Default is \code{FALSE}.
+##' @param title optional character string for the plot title.
+##' @param legends character vector of legend labels. Default is \code{c("Estimate", "Bounds", "Conf. Bounds")}.
+##' @param h0 numeric. Value for the null hypothesis line. Default is \code{0}. Set to \code{NULL} to suppress.
+##' @param h0.color character. Color of the null hypothesis line. Default is \code{"darkorange"}.
+##' @param bar.type character. Type of interval display: \code{"error_bar"} or \code{"linerange"}.
+##' @param err.width numeric. Width of error bars. Default is \code{0.1}.
+##' @param xlab character. X-axis label. Default is \code{"Parameter"}.
+##' @param ylab character. Y-axis label. Default is \code{"Value"}.
+##' @param lwd numeric vector of line widths.
+##' @param colors character vector of colors.
+##' @returns A \code{ggplot} object.
 ##' @export
 coef_plot <- function(estimate,
                       lwr1, upr1,
@@ -196,7 +224,7 @@ coef_plot <- function(estimate,
 ##'
 ##' The vertical axis shows the partial R2 of the omitted variables with the outcome, i.e, the maximum proportion of the residual variation of the outcome that could be explained by latent variables.
 ##'
-##' The horizontal axis shows the proportion of variation in the long Riesz Representer which is not explained by the short Riesz Representer (RR). This indicates how much variation in the RR is created by latent variables. In the partial linear model, this quantity paralels the sensitivity parameter for the outcome, and simply equals the partial R2 of latent variables with the treatment, i.e, the maximum proportion of the residual variation of the treatment that could be explained by latent variables. In the non-parametric model with a binary treatment, the interpretation is analagous, but instead of gains in variance, it stands for the gains in precision (1/variance).
+##' The horizontal axis shows the proportion of variation in the long Riesz Representer which is not explained by the short Riesz Representer (RR). This indicates how much variation in the RR is created by latent variables. In the partial linear model, this quantity parallels the sensitivity parameter for the outcome, and simply equals the partial R2 of latent variables with the treatment, i.e, the maximum proportion of the residual variation of the treatment that could be explained by latent variables. In the non-parametric model with a binary treatment, the interpretation is analogous, but instead of gains in variance, it stands for the gains in precision (1/variance).
 ##'
 ##' The contour levels represent the lower (upper) limit of the confidence bound for the target of interest, considering omitted variables with the postulated strength.
 ##'
@@ -204,14 +232,16 @@ coef_plot <- function(estimate,
 ##'
 ##'  Almost all parameters can be customized by the user.
 ##'
+##' @returns No return value, called for side effects (creates a contour plot).
 ##' @export
-ovb_contour_plot <- function(model, ...){
+ovb_contour_plot <- function(...){
   UseMethod("ovb_contour_plot")
 }
 
 
 ##' @rdname ovb_contour_plot
 ##' @param model an object of class \code{\link{dml}}.
+##' @param parameter the target parameter to plot. Options are \code{"ate"}, \code{"att"}, and \code{"atu"}.
 ##' @param which.bound show contours for the lower limit (\code{lwr}) or upper limit (\code{upr}) of confidence bounds?
 ##' @inheritParams dml_bounds
 ##' @inheritParams summary.dml
@@ -240,8 +270,8 @@ ovb_contour_plot <- function(model, ...){
 ##' @param label.bump.x bump on the x coordinate of label text.
 ##' @param label.bump.y bump on the y coordinate of label text.
 ##' @param round number of digits to show in contours and bound values
+##' @export
 ##' @exportS3Method sensemakr::ovb_contour_plot dml
-##' @exportS3Method dml.sensemakr::ovb_contour_plot dml
 ovb_contour_plot.dml <- function(model,
                                  parameter = c("ate", "att", "atu"),
                                  which.bound = c("lwr", "upr"),
@@ -280,7 +310,7 @@ ovb_contour_plot.dml <- function(model,
 
   which.bound <- match.arg(which.bound)
 
-  sensemakr:::check_r2(r2dz.x = cf.y, r2yz.dx = cf.d)
+  check_r2(cf.y = cf.y, cf.d = cf.d)
 
   if (length(cf.y) != length(cf.d)) {
     stop("Lengths of cf.y and cf.d must match.")
@@ -591,6 +621,16 @@ contour_plot <- function(grid_values.x,
   if(is.null(ylab)) ylab <- expression(paste(R[y-g[s]%~%g-g[s]]^2))
   # if(is.null(ylab)) ylab <- expression(paste(eta[Y%~%A~"|"~DX]^2))
 
+  # Guard against degenerate z values (NaN/Inf/no variation)
+  z_finite <- z_axis[is.finite(z_axis)]
+  if (length(z_finite) == 0 || diff(range(z_finite)) == 0) {
+    warning("Contour plot could not be drawn: z values are degenerate.")
+    plot(range(grid_values.x), range(grid_values.y), type = "n",
+         xlab = xlab, ylab = ylab, cex.lab = cex.lab,
+         cex.axis = cex.axis, cex.main = cex.main, asp = asp)
+    return(invisible(NULL))
+  }
+
   default_levels <- pretty(range(z_axis), nlevels)
   too_close      <- abs(default_levels - threshold) < min(diff(default_levels)) * 0.25
   line_color     <- ifelse(too_close, "transparent", col.contour)
@@ -630,4 +670,12 @@ contour_plot <- function(grid_values.x,
           cex.axis = cex.axis,
           cex.main = cex.main,
           asp = asp)
+}
+
+# Internal helper to validate R2 sensitivity parameters
+check_r2 <- function(cf.y, cf.d) {
+  if (!is.null(cf.y) && any(!is.numeric(cf.y) | cf.y < 0 | cf.y > 1))
+    stop("cf.y must be numeric values in [0, 1]")
+  if (!is.null(cf.d) && any(!is.numeric(cf.d) | cf.d < 0 | cf.d > 1))
+    stop("cf.d must be numeric values in [0, 1]")
 }

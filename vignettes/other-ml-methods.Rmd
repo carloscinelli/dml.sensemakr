@@ -10,15 +10,11 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  cache = T,
   comment = "#>"
 )
 ```
 
 ```{r setup, include=FALSE}
-if (!requireNamespace("gbm", quietly = TRUE)) {
-  install.packages("gbm")
-}
 library(gbm)
 library(dml.sensemakr)
 ```
