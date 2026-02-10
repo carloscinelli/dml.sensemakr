@@ -17,8 +17,8 @@ knitr::opts_chunk$set(
 # dml.sensemakr <img src="man/figures/dml-sensemakr-logo-sm.png" align="right" />
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version/dml.sensemakr)](https://CRAN.R-project.org/package=dml.sensemakr)
-[![Downloads](https://cranlogs.r-pkg.org/badges/dml.sensemakr)](https://cran.r-project.org/package=dml.sensemakr)
+<!-- [![CRAN status](https://www.r-pkg.org/badges/version/dml.sensemakr)](https://CRAN.R-project.org/package=dml.sensemakr) -->
+<!-- [![Downloads](https://cranlogs.r-pkg.org/badges/dml.sensemakr)](https://cran.r-project.org/package=dml.sensemakr) -->
 [![R-CMD-check](https://github.com/carloscinelli/dml.sensemakr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/carloscinelli/dml.sensemakr/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/carloscinelli/dml.sensemakr/graph/badge.svg)](https://app.codecov.io/gh/carloscinelli/dml.sensemakr)
 <!-- badges: end -->
