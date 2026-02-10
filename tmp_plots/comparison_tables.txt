@@ -1,0 +1,1416 @@
+================================================================
+  COMPARISON: Original Manual Code vs New Automated Code
+================================================================
+
+Naive estimate: 19559.34 
+
+===== FITTING PLM (set.seed(1)) =====
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+PLM Summary:
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.474%), treatment (ranger, R2 = 11.599%)
+ Tuning: dirty 
+
+Average Treatment Effect: 
+
+        Estimate Std. Error t value  P(>|t|)    
+ate.all     9114       1329   6.858 6.97e-12 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Note: DML estimates combined using the median method.
+
+Verbal interpretation of DML procedure:
+
+-- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.
+PLM confint:
+           2.5 %   97.5 %
+ate.all 6509.356 11718.58
+
+PLM robustness_value:
+   ate.all 
+0.05567365 
+
+PLM confidence_bounds (level=0):
+              lwr       upr
+ate.all  4918.185 13310.705
+
+Confidence level: point = 0%; region = 0%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+PLM confidence_bounds (level=0.95):
+              lwr       upr
+ate.all  2701.122 15592.339
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+PLM dml_bounds:
+
+Debiased Machine Learning: Bounds on Omitted Variable Bias
+
+Sensitivity Parameters
+  cf.y = 0.04
+  r2rr = 0.03
+  rho = 1 
+
+
+Bounds on Average Treatment Effect: all 
+
+               Estimate Std. Error t value P(>|t|)    
+Short Estimate     9114       1329     6.9   7e-12 ***
+|Bias| Bound       4201        312    13.4  <2e-16 ***
+Lower Bound        4918       1348     3.6   3e-04 ***
+Upper Bound       13311       1387     9.6  <2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Note: DML estimates combined using the median method.
+PLM sensemakr summary:
+==== Original Analysis ====
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.474%), treatment (ranger, R2 = 11.599%)
+ Tuning: dirty 
+
+Average Treatment Effect: 
+
+        Estimate Std. Error t value  P(>|t|)    
+ate.all     9114       1329   6.858 6.97e-12 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Note: DML estimates combined using the median method.
+
+Verbal interpretation of DML procedure:
+
+-- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.
+
+==== Sensitivity Analysis ====
+
+Null hypothesis: theta = 0 
+Signif. level: alpha = 0.05 
+
+Robustness Values:
+        RV (%) RVa (%)
+ate.all 7.3658  5.5674
+
+Verbal interpretation of robustness values:
+
+-- Robustness Value for the Bound (RV): omitted variables that explain more than RV% of the residual variation both of the treatment (cf.d) and of the outcome (cf.y) are sufficiently strong to make the estimated bounds include 0. Conversely, omitted variables that do not explain more than RV% of the residual variation of both the treatment and the outcome are not sufficiently strong to do so.
+
+-- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation both of the treatment (cf.d) and of the outcome (cf.y) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of both the treatment and the outcome are not sufficiently strong to do so.
+
+Confidence Bounds for Sensitivity Scenario:
+              lwr       upr
+ate.all  2701.122 15592.340
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+Verbal interpretation of confidence bounds:
+
+-- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.
+
+===== FITTING NPM (set.seed(1)) =====
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+NPM Summary:
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.572%), treatment (ranger, R2 = 11.48%)
+ Tuning: dirty 
+
+Average Treatment Effect: 
+
+        Estimate Std. Error t value P(>|t|)    
+ate.all     8198       1260   6.508 7.6e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Group Average Treatment Effect: 
+
+        Estimate Std. Error t value  P(>|t|)    
+gate.q1   4646.2      844.3   5.503 3.74e-08 ***
+gate.q2   2729.4     1335.9   2.043 0.041037 *  
+gate.q3   6854.3     1848.0   3.709 0.000208 ***
+gate.q4  18406.6     4241.4   4.340 1.43e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Note: DML estimates combined using the median method.
+
+Verbal interpretation of DML procedure:
+
+-- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.
+NPM confint:
+             2.5 %    97.5 %
+ate.all  5729.1488 10666.784
+gate.q1  2991.3715  6301.118
+gate.q2   111.1304  5347.702
+gate.q3  3232.3461 10476.282
+gate.q4 10093.7233 26719.572
+
+NPM robustness_value:
+    ate.all     gate.q1     gate.q2     gate.q3     gate.q4 
+0.045088442 0.077437563 0.007519101 0.036156269 0.056354947 
+
+NPM sensemakr summary:
+==== Original Analysis ====
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.572%), treatment (ranger, R2 = 11.48%)
+ Tuning: dirty 
+
+Average Treatment Effect: 
+
+        Estimate Std. Error t value P(>|t|)    
+ate.all     8198       1260   6.508 7.6e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Group Average Treatment Effect: 
+
+        Estimate Std. Error t value  P(>|t|)    
+gate.q1   4646.2      844.3   5.503 3.74e-08 ***
+gate.q2   2729.4     1335.9   2.043 0.041037 *  
+gate.q3   6854.3     1848.0   3.709 0.000208 ***
+gate.q4  18406.6     4241.4   4.340 1.43e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Note: DML estimates combined using the median method.
+
+Verbal interpretation of DML procedure:
+
+-- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.
+
+==== Sensitivity Analysis ====
+
+Null hypothesis: theta = 0 
+Signif. level: alpha = 0.05 
+
+Robustness Values:
+         RV (%) RVa (%)
+ate.all  6.1340  4.5088
+gate.q1 10.9583  7.7438
+gate.q2  4.4622  0.7519
+gate.q3  6.9154  3.6156
+gate.q4  9.0668  5.6355
+
+Verbal interpretation of robustness values:
+
+-- Robustness Value for the Bound (RV): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the estimated bounds include 0. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so.
+
+-- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation of the outcome (cf.y) and generate an additional RV% of variation on the Riesz Representer (cf.d) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of the outcome nor generate an additional RV% of variation on the Riesz Representer are not sufficiently strong to do so. 
+
+ The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.
+
+Confidence Bounds for Sensitivity Scenario:
+               lwr        upr
+ate.all  1484.4409 14870.9776
+gate.q1  1853.6528  7464.5271
+gate.q2 -2007.3546  6776.9514
+gate.q3   177.3894 13273.5282
+gate.q4  4563.0923 32287.8301
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+Verbal interpretation of confidence bounds:
+
+-- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.
+
+Interpretation of sensitivity parameters:
+
+-- cf.y: percentage of the residual variation of the outcome explained by latent variables.
+-- cf.d: percentage gains in the variation of the Riesz Representer generated by latent variables:
+   ATE: cf.d measures the percentage gains in the average precision on the treatment regression.
+-- For Group Average Treatment Effects (GATE), parameters are conditional on the relevant group.
+NPM dml_bounds:
+
+Debiased Machine Learning: Bounds on Omitted Variable Bias
+
+Sensitivity Parameters
+  cf.y = 0.04
+  r2rr = 0.03
+  rho = 1 
+
+
+Bounds on Average Treatment Effect: all 
+
+               Estimate Std. Error t value P(>|t|)    
+Short Estimate     8198       1260     6.5   8e-11 ***
+|Bias| Bound       4529        353    12.8  <2e-16 ***
+Lower Bound        3644       1313     2.8   0.006 ** 
+Upper Bound       12752       1288     9.9  <2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+
+Bounds on Group Average Treatment Effect: Group q1 
+
+               Estimate Std. Error t value P(>|t|)    
+Short Estimate     4646        844     5.5   4e-08 ***
+|Bias| Bound       1416        118    12.0  <2e-16 ***
+Lower Bound        3239        842     3.8   1e-04 ***
+Upper Bound        6054        858     7.1   2e-12 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Bounds on Group Average Treatment Effect: Group q2 
+
+               Estimate Std. Error t value P(>|t|)    
+Short Estimate     2729       1336     2.0    0.04 *  
+|Bias| Bound       2103        437     4.8   2e-06 ***
+Lower Bound         626       1601     0.4    0.70    
+Upper Bound        4832       1182     4.1   4e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Bounds on Group Average Treatment Effect: Group q3 
+
+               Estimate Std. Error t value P(>|t|)    
+Short Estimate     6854       1848     3.7   2e-04 ***
+|Bias| Bound       3349        569     5.9   4e-09 ***
+Lower Bound        3491       2014     1.7    0.08 .  
+Upper Bound       10218       1858     5.5   4e-08 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Bounds on Group Average Treatment Effect: Group q4 
+
+               Estimate Std. Error t value P(>|t|)    
+Short Estimate    18407       4241     4.3   1e-05 ***
+|Bias| Bound       6729        635    10.6  <2e-16 ***
+Lower Bound       11598       4277     2.7   0.007 ** 
+Upper Bound       25216       4300     5.9   4e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Note: DML estimates combined using the median method.
+NPM confidence_bounds (level=0):
+               lwr        upr
+ate.all  3643.6525 12752.2803
+gate.q1  3239.0366  6053.4532
+gate.q2   626.5348  4832.2971
+gate.q3  3490.8067 10217.8217
+gate.q4 11597.5773 25215.7178
+
+Confidence level: point = 0%; region = 0%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+NPM confidence_bounds (level=0.95):
+               lwr        upr
+ate.all  1484.4409 14870.9776
+gate.q1  1853.6528  7464.5271
+gate.q2 -2007.3546  6776.9514
+gate.q3   177.3894 13273.5282
+gate.q4  4563.0923 32287.8301
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+
+================================================================
+  BENCHMARK COMPARISON
+================================================================
+
+===== PLM BENCHMARKS (set.seed(2), as in original) =====
+
+=== Computing benchmarks using covariate: inc  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: pira  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: twoearn  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+Original benchmark summary:
+            gain.Y      gain.D        rho  theta.s  theta.sj     delta
+inc     0.14154316 0.048800672  0.3285978 9096.423 12273.600 3177.1764
+pira    0.04135577 0.007368372  0.1514505 9096.423  9378.461  282.0380
+twoearn 0.04096337 0.010171006 -0.2895580 9096.423  8447.618 -648.8052
+
+===== PLM BENCHMARKS (no seed, as in new vignette via sensemakr) =====
+
+=== Computing benchmarks using covariate: inc  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: pira  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: twoearn  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+New benchmark summary:
+            gain.Y      gain.D        rho  theta.s  theta.sj     delta
+inc     0.14878605 0.049594033  0.3394782 9096.423 12489.806 3393.3833
+pira    0.04927605 0.005837454  0.1323291 9096.423  9288.175  191.7515
+twoearn 0.02496904 0.008597549 -0.4486577 9096.423  8487.828 -608.5951
+
+===== PLM BENCHMARK DIFF (new - original) =====
+              gain.Y        gain.D         rho theta.s  theta.sj     delta
+inc      0.007242888  0.0007933608  0.01088035       0 216.20695 216.20695
+pira     0.007920279 -0.0015309184 -0.01912143       0 -90.28648 -90.28648
+twoearn -0.015994328 -0.0015734561 -0.15909971       0  40.21003  40.21003
+Max absolute diff: 216.207 
+
+===== NPM BENCHMARKS (set.seed(2), as in original) =====
+
+=== Computing benchmarks using covariate: inc  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: pira  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: twoearn  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+Original benchmark summary:
+            gain.Y       gain.D       rho  theta.s  theta.sj     delta
+inc     0.13146652 0.1279972685 0.2346847 8131.222 11784.239 3653.0172
+pira    0.03464687 0.0001823283 0.1695299 8131.222  8387.919  256.6975
+twoearn 0.01752245 0.0000000000 0.0000000 8131.222  7501.800 -629.4224
+
+===== NPM BENCHMARKS (no seed, as in new vignette) =====
+
+=== Computing benchmarks using covariate: inc  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: pira  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: twoearn  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+New benchmark summary:
+             gain.Y      gain.D        rho  theta.s  theta.sj     delta
+inc     0.130685510 0.129458085  0.2342605 8131.222 11785.154 3653.9322
+pira    0.037248852 0.000000000  0.0000000 8131.222  8395.207  263.9848
+twoearn 0.009081021 0.007814895 -0.2553112 8131.222  7408.583 -722.6388
+
+===== NPM BENCHMARK DIFF (new - original) =====
+               gain.Y        gain.D           rho theta.s    theta.sj
+inc     -0.0007810083  0.0014608160 -0.0004241889       0   0.9149984
+pira     0.0026019850 -0.0001823283 -0.1695298811       0   7.2872622
+twoearn -0.0084414310  0.0078148949 -0.2553112028       0 -93.2163263
+              delta
+inc       0.9149984
+pira      7.2872622
+twoearn -93.2163263
+Max absolute diff: 93.21633 
+
+
+================================================================
+  CONTOUR PLOT NUMERIC VALUES: Manual vs Automated
+================================================================
+
+
+=== Computing benchmarks using covariate: inc  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: pira  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: twoearn  ===
+
+Debiased Machine Learning
+
+ Model: Partially Linear 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (partially linear).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+===== PLM: Benchmark coordinates (gain.Y, gain.D) =====
+These are the r2yz.dx / r2dz.x values used in original code:
+
+  pira: gain.Y = 0.041356, gain.D = 0.007368
+  twoearn: gain.Y = 0.040963, gain.D = 0.010171
+  inc: gain.Y = 0.141543, gain.D = 0.048801
+
+===== PLM: Manual bound_value (original code) vs automated =====
+
+-- Max Match (cf.y=0.04, cf.d=0.03, rho2=1) --
+  Manual bound_value:
+              lwr       upr
+ate.all  2701.122 15592.339
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+-- 1x pira --
+  Manual bound_value:
+              lwr       upr
+ate.all  4838.902 13422.569
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0413557688587526; cf.d = 0.00736837221691205; rho2 = 1.
+
+-- 1x twoearn --
+  Manual bound_value:
+              lwr       upr
+ate.all  4478.742 13788.782
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0409633715949629; cf.d = 0.0101710055736142; rho2 = 1.
+
+-- 1x inc --
+  Manual bound_value:
+              lwr       upr
+ate.all -3468.091 21878.078
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.141543162697392; cf.d = 0.0488006724213428; rho2 = 1.
+
+-- 1/4 x inc --
+  Manual bound_value:
+             lwr      upr
+ate.all  4431.87 13836.44
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0353857906743481; cf.d = 0.0122001681053357; rho2 = 1.
+
+-- rho2 = (1/2)^2 versions --
+  Max Match (rho2=0.25):
+              lwr       upr
+ate.all  4831.063 13430.541
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 0.25.
+  1x pira (rho2=0.25):
+              lwr       upr
+ate.all  5887.258 12357.018
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0413557688587526; cf.d = 0.00736837221691205; rho2 = 0.25.
+  1x twoearn (rho2=0.25):
+              lwr       upr
+ate.all  5708.569 12538.488
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0409633715949629; cf.d = 0.0101710055736142; rho2 = 0.25.
+  1x inc (rho2=0.25):
+              lwr       upr
+ate.all  1799.776 16514.404
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.141543162697392; cf.d = 0.0488006724213428; rho2 = 0.25.
+  1/4x inc (rho2=0.25):
+             lwr      upr
+ate.all  5685.33 12562.09
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0353857906743481; cf.d = 0.0122001681053357; rho2 = 0.25.
+
+
+===== NPM: Benchmark coordinates (gain.Y, gain.D) =====
+
+=== Computing benchmarks using covariate: inc  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: pira  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+
+=== Computing benchmarks using covariate: twoearn  ===
+
+Debiased Machine Learning
+
+ Model: Nonparametric 
+ Target: ate 
+ Cross-Fitting: 5 folds, 5 reps 
+ ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)
+ Tuning: dirty 
+
+
+====================================
+Tuning parameters using all the data
+====================================
+
+- Tuning Model for D.
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+
+- Tuning Model for Y (non-parametric).
+-- Best Tune:
+  mtry min.node.size splitrule
+1    2             5  variance
+  mtry min.node.size splitrule
+1    2             5  variance
+
+
+======================================
+Repeating 5-fold cross-fitting 5 times
+======================================
+
+-- Rep 1 -- Folds: 1  2  3  4  5  
+
+-- Rep 2 -- Folds: 1  2  3  4  5  
+
+-- Rep 3 -- Folds: 1  2  3  4  5  
+
+-- Rep 4 -- Folds: 1  2  3  4  5  
+
+-- Rep 5 -- Folds: 1  2  3  4  5  
+
+  pira: gain.Y = 0.034647, gain.D = 0.000182
+  twoearn: gain.Y = 0.017522, gain.D = 0.000000
+  inc: gain.Y = 0.131467, gain.D = 0.127997
+
+===== NPM: Manual bound_value =====
+  Max Match:
+               lwr        upr
+ate.all  1484.4409 14870.9776
+gate.q1  1853.6528  7464.5271
+gate.q2 -2007.3546  6776.9514
+gate.q3   177.3894 13273.5282
+gate.q4  4563.0923 32287.8301
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+  1x pira:
+               lwr        upr
+ate.all  5799.2042 10593.2677
+gate.q1  3158.0081  6136.8714
+gate.q2   355.9106  5052.0537
+gate.q3  3564.3066 10125.8151
+gate.q4 10946.8564 25873.6884
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0346468671614775; cf.d = 0.000182328259941143; rho2 = 1.
+  1x twoearn:
+               lwr        upr
+ate.all  6126.0694 10269.8634
+gate.q1  3257.4313  6035.0585
+gate.q2   532.0814  4926.7505
+gate.q3  3814.6628  9893.9657
+gate.q4 11430.2216 25383.0735
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0175224520243067; cf.d = 0; rho2 = 1.
+  1x inc:
+               lwr        upr
+ate.all -12914.142  29046.839
+gate.q1  -2437.651  11853.648
+gate.q2  -9955.383  13628.252
+gate.q3 -11551.924  24529.144
+gate.q4 -16610.209  53398.255
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.131466518001236; cf.d = 0.127997268504313; rho2 = 1.
+  1/4x inc:
+               lwr        upr
+ate.all  1782.0556 14577.0465
+gate.q1  1942.6905  7373.2938
+gate.q2 -1843.9948  6653.8204
+gate.q3   413.5397 13052.5506
+gate.q4  5001.4565 31851.8479
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0328666295003089; cf.d = 0.0319993171260784; rho2 = 1.
+  Max Match (rho2=0.25):
+               lwr        upr
+ate.all  3828.4763 12550.1445
+gate.q1  2558.9316  6746.5285
+gate.q2  -720.2395  5824.2710
+gate.q3  2030.8894 11547.2323
+gate.q4  8032.4368 28831.4485
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 0.25.
+  1x inc (rho2=0.25):
+               lwr        upr
+ate.all -3195.6662 19502.8592
+gate.q1   459.3876  8891.9047
+gate.q2 -4584.0609  8820.6884
+gate.q3 -3580.3091 16816.5945
+gate.q4 -2309.0880 39125.7377
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.131466518001236; cf.d = 0.127997268504313; rho2 = 0.25.
+  1/4x inc (rho2=0.25):
+               lwr        upr
+ate.all  3973.9683 12405.6020
+gate.q1  2603.0373  6701.6656
+gate.q2  -640.3619  5766.3369
+gate.q3  2145.3948 11441.1549
+gate.q4  8247.1126 28613.6080
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.0328666295003089; cf.d = 0.0319993171260784; rho2 = 0.25.
+
+
+===== GATE DATA =====
+Coefficients:
+  gate.q1   gate.q2   gate.q3   gate.q4 
+ 4646.245  2729.416  6854.314 18406.648 
+
+Confidence intervals:
+             2.5 %    97.5 %
+gate.q1  2991.3715  6301.118
+gate.q2   111.1304  5347.702
+gate.q3  3232.3461 10476.282
+gate.q4 10093.7233 26719.572
+
+GATE bounds (level=0):
+               lwr        upr
+ate.all  3643.6525 12752.2803
+gate.q1  3239.0366  6053.4532
+gate.q2   626.5348  4832.2971
+gate.q3  3490.8067 10217.8217
+gate.q4 11597.5773 25215.7178
+
+Confidence level: point = 0%; region = 0%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
+
+GATE confidence bounds (level=0.95):
+               lwr        upr
+ate.all  1484.4409 14870.9776
+gate.q1  1853.6528  7464.5271
+gate.q2 -2007.3546  6776.9514
+gate.q3   177.3894 13273.5282
+gate.q4  4563.0923 32287.8301
+
+Confidence level: point = 95%; region = 90%.
+Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
