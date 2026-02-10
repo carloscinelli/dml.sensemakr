@@ -17,6 +17,7 @@ add_bound_to_contour.dml_benchmark(
   cex.label.text = 0.7,
   round = 0,
   label.text = TRUE,
+  bound_label = NULL,
   ...
 )
 }
@@ -35,15 +36,17 @@ add_bound_to_contour.dml_benchmark(
 
 \item{combine.method}{method for combining cross-fitting estimates.}
 
-\item{label.bump.x}{bump on the x coordinate of label text.}
+\item{label.bump.x}{bump on the x coordinate of label text. Can be a scalar (same for all points) or a vector of length equal to the total number of benchmark points (n_covariates * n_multipliers), ordered by covariate then multiplier.}
 
-\item{label.bump.y}{bump on the y coordinate of label text.}
+\item{label.bump.y}{bump on the y coordinate of label text. Can be a scalar or vector, same as \code{label.bump.x}.}
 
 \item{cex.label.text}{magnification for label text.}
 
 \item{round}{number of digits to show in bound values.}
 
 \item{label.text}{should label texts be plotted? Default is \code{TRUE}.}
+
+\item{bound_label}{optional character vector of custom labels. If \code{NULL} (default), labels are generated automatically. Can be a vector of length equal to the total number of benchmark points.}
 
 \item{...}{additional arguments passed to \code{sensemakr::add_bound_to_contour}.}
 

@@ -422,29 +422,17 @@ ovb_contour_plot.dml <- function(model,
 
   # auto-overlay benchmark bounds (cross product of covariates x multipliers)
   if (!is.null(benchmarks)) {
-    bench_summary <- summary(benchmarks)
-    for (i in seq_len(nrow(bench_summary))) {
-      covar_name <- rownames(bench_summary)[i]
-      gain.Y <- bench_summary[i, "gain.Y"]
-      gain.D <- bench_summary[i, "gain.D"]
-
-      for (j in seq_along(kd)) {
-        scaled.cf.d <- gain.D * kd[j]
-        scaled.cf.y <- gain.Y * ky[j]
-        bound_label_j <- label_maker(covar_name, kd[j], ky[j])
-        bound_value_j <- f(x = scaled.cf.d, y = scaled.cf.y)
-
-        sensemakr::add_bound_to_contour(r2dz.x = scaled.cf.d,
-                                        r2yz.dx = scaled.cf.y,
-                                        bound_value = bound_value_j,
-                                        bound_label = bound_label_j,
-                                        label.text = label.text,
-                                        label.bump.x = label.bump.x,
-                                        label.bump.y = label.bump.y,
-                                        cex.label.text = cex.label.text,
-                                        round = round)
-      }
-    }
+    add_bound_to_contour.dml_benchmark(benchmarks,
+                                       kd = kd, ky = ky,
+                                       rho2 = rho2,
+                                       which.bound = which.bound,
+                                       level = level,
+                                       combine.method = combine.method,
+                                       label.bump.x = label.bump.x,
+                                       label.bump.y = label.bump.y,
+                                       cex.label.text = cex.label.text,
+                                       round = round,
+                                       label.text = label.text)
   }
 
 }
@@ -531,11 +519,12 @@ add_bound_to_contour.dml <- function(model,
 ##' @param which.bound which bound was used for the contour plot: \code{"lwr"} or \code{"upr"}.
 ##' @param level confidence level. Default is 0.95.
 ##' @param combine.method method for combining cross-fitting estimates.
-##' @param label.bump.x bump on the x coordinate of label text.
-##' @param label.bump.y bump on the y coordinate of label text.
+##' @param label.bump.x bump on the x coordinate of label text. Can be a scalar (same for all points) or a vector of length equal to the total number of benchmark points (n_covariates * n_multipliers), ordered by covariate then multiplier.
+##' @param label.bump.y bump on the y coordinate of label text. Can be a scalar or vector, same as \code{label.bump.x}.
 ##' @param cex.label.text magnification for label text.
 ##' @param round number of digits to show in bound values.
 ##' @param label.text should label texts be plotted? Default is \code{TRUE}.
+##' @param bound_label optional character vector of custom labels. If \code{NULL} (default), labels are generated automatically. Can be a vector of length equal to the total number of benchmark points.
 ##' @param ... additional arguments passed to \code{sensemakr::add_bound_to_contour}.
 ##' @exportS3Method sensemakr::add_bound_to_contour dml_benchmark
 add_bound_to_contour.dml_benchmark <- function(benchmarks,
@@ -550,6 +539,7 @@ add_bound_to_contour.dml_benchmark <- function(benchmarks,
                                                cex.label.text = 0.7,
                                                round = 0,
                                                label.text = TRUE,
+                                               bound_label = NULL,
                                                ...){
   which.bound <- match.arg(which.bound)
   model <- benchmarks$model
@@ -572,24 +562,43 @@ add_bound_to_contour.dml_benchmark <- function(benchmarks,
   }
 
   bench_summary <- summary(benchmarks)
-  for (i in seq_len(nrow(bench_summary))) {
+  n_covariates <- nrow(bench_summary)
+  n_multipliers <- length(kd)
+  n_points <- n_covariates * n_multipliers
+
+  # recycle scalar bumps to vector
+  label.bump.x <- rep_len(label.bump.x, n_points)
+  label.bump.y <- rep_len(label.bump.y, n_points)
+
+  # recycle or generate labels
+  if (!is.null(bound_label)) {
+    bound_label <- rep_len(bound_label, n_points)
+  }
+
+  idx <- 0L
+  for (i in seq_len(n_covariates)) {
     covar_name <- rownames(bench_summary)[i]
     gain.Y <- bench_summary[i, "gain.Y"]
     gain.D <- bench_summary[i, "gain.D"]
 
     for (j in seq_along(kd)) {
+      idx <- idx + 1L
       scaled.cf.d <- gain.D * kd[j]
       scaled.cf.y <- gain.Y * ky[j]
-      bound_label_j <- label_maker(covar_name, kd[j], ky[j])
+      if (is.null(bound_label)) {
+        bl <- label_maker(covar_name, kd[j], ky[j])
+      } else {
+        bl <- bound_label[idx]
+      }
       bound_value_j <- f(x = scaled.cf.d, y = scaled.cf.y)
 
       sensemakr::add_bound_to_contour(r2dz.x = scaled.cf.d,
                                       r2yz.dx = scaled.cf.y,
                                       bound_value = bound_value_j,
-                                      bound_label = bound_label_j,
+                                      bound_label = bl,
                                       label.text = label.text,
-                                      label.bump.x = label.bump.x,
-                                      label.bump.y = label.bump.y,
+                                      label.bump.x = label.bump.x[idx],
+                                      label.bump.y = label.bump.y[idx],
                                       cex.label.text = cex.label.text,
                                       round = round,
                                       ...)

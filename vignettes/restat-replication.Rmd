@@ -83,24 +83,45 @@ bench.plm
 ## Contour Plots with Benchmarks
 
 ```{r plm-contour-bench, fig.height=6}
-# benchmarks at 1x for all covariates
-sens.401k.bench <- sensemakr(dml.401k.plm, cf.y = 0.04, cf.d = 0.03,
-                              bound_label = "Max match (3 years)",
-                              benchmark_covariates = c("inc", "pira", "twoearn"),
-                              benchmark_seed = 2)
+# sensitivity analysis (no benchmark_covariates — we overlay manually for fine control)
+sens.401k <- sensemakr(dml.401k.plm, cf.y = NULL)
 
 # 1/4 x Income benchmark (only income)
 bench.inc <- dml_benchmark(dml.401k.plm, benchmark_covariates = "inc", seed = 2)
 
 oldpar <- par(mfrow = c(1,2))
 
-# lower bound
-plot(sens.401k.bench, which.bound = "lwr", lim.x = 0.18, col.contour = "blue")
-add_bound_to_contour(bench.inc, kd = 1/4, which.bound = "lwr")
+# --- PLM lower bound, rho2 = 1 ---
+plot(sens.401k, which.bound = "lwr", lim.x = 0.16, col.contour = "blue",
+     label.bump.x = 0.015, label.bump.y = 0.003)
+add_bound_to_contour(dml.401k.plm, cf.y = 0.04, cf.d = 0.03,
+                     bound_label = "Max Match",
+                     label.bump.x = 0.015, label.bump.y = 0.003,
+                     point.pch = 25, point.bg = "red")
+add_bound_to_contour(bench.plm, which.bound = "lwr",
+                     bound_label = c("1 x Income", "1 x Part. in IRA", "1 x Two Earners"),
+                     label.bump.x = c(0.01, 0.01, 0.02),
+                     label.bump.y = c(0.009, 0.009, -0.002))
+add_bound_to_contour(bench.inc, kd = 1/4, which.bound = "lwr",
+                     bound_label = "1/4 x Income",
+                     label.bump.x = 0.015, label.bump.y = -0.005)
 
-# upper bound
-plot(sens.401k.bench, which.bound = "upr", lim.x = 0.18, col.contour = "blue")
-add_bound_to_contour(bench.inc, kd = 1/4, which.bound = "upr")
+# --- PLM lower bound, rho2 = (1/2)^2 ---
+rho2 <- (1/2)^2
+sens.401k.rho2 <- sensemakr(dml.401k.plm, cf.y = NULL, rho2 = rho2)
+plot(sens.401k.rho2, which.bound = "lwr", lim.x = 0.16, col.contour = "blue",
+     label.bump.x = 0.015, label.bump.y = 0.003)
+add_bound_to_contour(dml.401k.plm, cf.y = 0.04, cf.d = 0.03, rho2 = rho2,
+                     bound_label = "Max Match",
+                     label.bump.x = 0.015, label.bump.y = 0.003,
+                     point.pch = 25, point.bg = "red")
+add_bound_to_contour(bench.plm, which.bound = "lwr", rho2 = rho2,
+                     bound_label = c("1 x Income", "1 x Part. in IRA", "1 x Two Earners"),
+                     label.bump.x = c(0.01, 0.01, 0.02),
+                     label.bump.y = c(0.009, 0.009, -0.002))
+add_bound_to_contour(bench.inc, kd = 1/4, which.bound = "lwr", rho2 = rho2,
+                     bound_label = "1/4 x Income",
+                     label.bump.x = 0.015, label.bump.y = -0.005)
 
 par(oldpar)
 ```
@@ -176,4 +197,50 @@ ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
 ```{r npm-bench}
 bench.npm <- dml_benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira", "twoearn"), seed = 2)
 bench.npm
+```
+
+## NPM Contour Plots with Benchmarks
+
+```{r npm-contour-bench, fig.height=6}
+# sensitivity analysis (no benchmark_covariates — manual overlay)
+sens.npm <- sensemakr(dml.401k.npm, cf.y = NULL)
+
+# 1/4 x Income benchmark (only income)
+bench.npm.inc <- dml_benchmark(dml.401k.npm, benchmark_covariates = "inc", seed = 2)
+
+oldpar <- par(mfrow = c(1,2))
+
+# --- NPM lower bound, rho2 = 1 ---
+plot(sens.npm, which.bound = "lwr", lim.x = 0.16, col.contour = "blue",
+     label.bump.x = 0.015, label.bump.y = 0.003)
+add_bound_to_contour(dml.401k.npm, cf.y = 0.04, cf.d = 0.03,
+                     bound_label = "Max Match",
+                     label.bump.x = 0.015, label.bump.y = 0.003,
+                     point.pch = 25, point.bg = "red")
+add_bound_to_contour(bench.npm, which.bound = "lwr",
+                     bound_label = c("1 x Income", "1 x Part. in IRA", "1 x Two Earners"),
+                     label.bump.x = c(-0.01, 0.005, 0.02),
+                     label.bump.y = c(0.009, 0.009, 0.005))
+add_bound_to_contour(bench.npm.inc, kd = 1/4, which.bound = "lwr",
+                     bound_label = "1/4 x Income",
+                     label.bump.x = 0.015, label.bump.y = 0.00)
+
+# --- NPM lower bound, rho2 = (1/2)^2 ---
+rho2 <- (1/2)^2
+sens.npm.rho2 <- sensemakr(dml.401k.npm, cf.y = NULL, rho2 = rho2)
+plot(sens.npm.rho2, which.bound = "lwr", lim.x = 0.16, col.contour = "blue",
+     label.bump.x = 0.015, label.bump.y = 0.003)
+add_bound_to_contour(dml.401k.npm, cf.y = 0.04, cf.d = 0.03, rho2 = rho2,
+                     bound_label = "Max Match",
+                     label.bump.x = 0.015, label.bump.y = 0.003,
+                     point.pch = 25, point.bg = "red")
+add_bound_to_contour(bench.npm, which.bound = "lwr", rho2 = rho2,
+                     bound_label = c("1 x Income", "1 x Part. in IRA", "1 x Two Earners"),
+                     label.bump.x = c(-0.01, 0.01, 0.02),
+                     label.bump.y = c(0.009, 0.009, 0.005))
+add_bound_to_contour(bench.npm.inc, kd = 1/4, which.bound = "lwr", rho2 = rho2,
+                     bound_label = "1/4 x Income",
+                     label.bump.x = 0.015, label.bump.y = 0.00)
+
+par(oldpar)
 ```
