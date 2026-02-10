@@ -1,48 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bonus.html</loc>
-  </url>
-  <url>
-    <loc>/articles/dml-401k.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/other-ml-methods.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dml.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dml_benchmark.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dml_bounds.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ovb_contour_plot.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.dml.html</loc>
-  </url>
-  <url>
-    <loc>/reference/robustness_value.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summary.dml.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/articles/bonus.html</loc></url>
+<url><loc>/articles/dml-401k.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/other-ml-methods.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/Penn.html</loc></url>
+<url><loc>/reference/coef_plot.html</loc></url>
+<url><loc>/reference/dml.html</loc></url>
+<url><loc>/reference/dml_benchmark.html</loc></url>
+<url><loc>/reference/dml_bounds.html</loc></url>
+<url><loc>/reference/gasdemand.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/ovb_contour_plot.html</loc></url>
+<url><loc>/reference/pension.html</loc></url>
+<url><loc>/reference/plot.dml.html</loc></url>
+<url><loc>/reference/plot.dml.sensemakr.html</loc></url>
+<url><loc>/reference/print.dml.bounds.html</loc></url>
+<url><loc>/reference/print.dml.sensemakr.html</loc></url>
+<url><loc>/reference/robustness_value.html</loc></url>
+<url><loc>/reference/sensemakr.html</loc></url>
+<url><loc>/reference/summary.dml.html</loc></url>
+<url><loc>/reference/summary.dml_benchmark.html</loc></url>
 </urlset>
+
