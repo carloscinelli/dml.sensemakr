@@ -67,6 +67,7 @@ d <- pension$e401     # 401K eligibility
 x <- model.matrix(~ -1 + age + inc  + educ+ fsize + marr + twoearn + pira + hown, data = pension)
 
 # run DML (nonparametric model)
+set.seed(1)
 dml.401k <- dml(y, d, x, model = "npm")
 
 # summary of results with median method (default)

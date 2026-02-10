@@ -1,0 +1,203 @@
+---
+title: "Replication: Long Story Short (RESTAT 2026)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{restat-replication}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = 'center',
+  dpi = 300,
+  fig.width = 12,
+  fig.height = 6
+)
+```
+
+```{r setup, include = FALSE}
+library(dml.sensemakr)
+library(ggplot2)
+```
+
+This vignette replicates the main empirical results of [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." *Review of Economics and Statistics*.](https://doi.org/10.1162/REST.a.1705)
+
+The application examines the effect of 401(k) eligibility on net financial assets using the `pension` dataset. We show both the Partially Linear Model (PLM) and Nonparametric Model (NPM) analyses.
+
+# Load Data
+
+```{r}
+library(dml.sensemakr)
+
+## loads data
+data("pension")
+y <- pension$net_tfa # net total financial assets
+d <- pension$e401    # 401K eligibility
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown, data = pension)
+```
+
+# Naive Estimate
+
+```{r}
+mean(y[d==1]) - mean(y[d==0])
+```
+
+
+# Partially Linear Model
+
+## DML Estimation
+
+```{r plm-fit}
+# run DML with partially linear model
+set.seed(1)
+dml.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
+
+# results under conditional ignorability
+summary(dml.plm)
+```
+
+
+## Sensitivity Analysis with Benchmarks
+
+We use `sensemakr()` with `benchmark_covariates` to simultaneously compute sensitivity bounds and benchmark covariate strengths. The benchmarks `twoearn` (two earners), `pira` (participation in IRA), and `inc` (income) are the same ones used in the paper.
+
+```{r plm-sensitivity}
+sens.plm <- sensemakr(dml.plm, cf.y = 0.04, cf.d = 0.03,
+                      benchmark_covariates = c("twoearn", "pira", "inc"))
+summary(sens.plm)
+```
+
+## Contour Plots (Figure 1)
+
+Contour plots show how the lower and upper confidence bounds change as a function of the sensitivity parameters. Benchmark covariates are overlaid automatically.
+
+```{r plm-contour, fig.height=6}
+oldpar <- par(mfrow = c(1,2))
+plot(sens.plm, which.bound = "lwr", lim.x = 0.18)
+plot(sens.plm, which.bound = "upr", lim.x = 0.18)
+par(oldpar)
+```
+
+## Contour Plots with Multipliers (Figure 2)
+
+We can show multiples of each benchmark's strength using `kd` (and `ky`). Here we show both full strength (`1x`) and a quarter of it (`1/4x`).
+
+```{r plm-contour-k, fig.height=6}
+sens.plm.k <- sensemakr(dml.plm, cf.y = 0.04, cf.d = 0.03,
+                         benchmark_covariates = c("twoearn", "pira", "inc"),
+                         kd = c(1, 1/4))
+
+oldpar <- par(mfrow = c(1,2))
+plot(sens.plm.k, which.bound = "lwr", lim.x = 0.18)
+plot(sens.plm.k, which.bound = "upr", lim.x = 0.18)
+par(oldpar)
+```
+
+## Relaxing $\rho^2$ (Figure 3)
+
+Setting `rho2 < 1` relaxes the worst-case assumption on the correlation between the bias components. With $\rho^2 = (1/2)^2 = 0.25$, bounds become tighter.
+
+```{r plm-contour-rho2, fig.height=6}
+sens.plm.rho <- sensemakr(dml.plm, cf.y = 0.04, cf.d = 0.03,
+                           benchmark_covariates = c("twoearn", "pira", "inc"),
+                           rho2 = (1/2)^2)
+
+oldpar <- par(mfrow = c(1,2))
+plot(sens.plm.rho, which.bound = "lwr", lim.x = 0.18)
+plot(sens.plm.rho, which.bound = "upr", lim.x = 0.18)
+par(oldpar)
+```
+
+## Manual Benchmark Overlay
+
+You can also compute benchmarks separately with `dml_benchmark()` and add them to a contour plot step by step using `add_bound_to_contour()`:
+
+```{r plm-manual, fig.height=6}
+bench.plm <- dml_benchmark(dml.plm, benchmark_covariates = c("twoearn", "pira", "inc"))
+bench.plm
+
+ovb_contour_plot(dml.plm, which.bound = "lwr", lim.x = 0.18)
+add_bound_to_contour(bench.plm, kd = c(1, 1/4))
+```
+
+
+# Nonparametric Model
+
+## DML Estimation with GATE
+
+```{r npm-fit}
+# compute income quartiles for GATE analysis
+g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25, .5, .75, 1), na.rm = TRUE),
+          labels = c("q1", "q2", "q3", "q4"), include.lowest = TRUE)
+
+# run DML with nonparametric model
+set.seed(1)
+dml.npm <- dml(y, d, x, groups = g1, model = "npm", cf.folds = 5, cf.reps = 5)
+
+# results under conditional ignorability
+summary(dml.npm)
+```
+
+## GATE Plot under Conditional Ignorability
+
+```{r npm-gate, fig.width=8, fig.height=5}
+library(ggplot2)
+
+group.names <- paste0("gate.q", 1:4)
+df   <- data.frame(groups = 1:4, estimate = coef(dml.npm)[group.names])
+cis  <- confint(dml.npm)[group.names, ]
+cis  <- setNames(as.data.frame(cis), c("lwr.ci", "upr.ci"))
+df   <- cbind(df, cis)
+
+ggplot(df, aes(x = groups, y = estimate)) + geom_line() +
+  geom_ribbon(aes(ymin = lwr.ci, ymax = upr.ci), alpha = 0.1, col = "blue", fill = "blue") +
+  theme_bw() +
+  xlab("Income Groups by Quartiles") +
+  ylab("ATE")
+```
+
+## Sensitivity Analysis with Benchmarks
+
+```{r npm-sensitivity}
+sens.npm <- sensemakr(dml.npm, cf.y = 0.04, cf.d = 0.03,
+                      benchmark_covariates = c("twoearn", "pira", "inc"))
+summary(sens.npm)
+```
+
+## Contour Plots with Benchmarks
+
+```{r npm-contour, fig.height=6}
+oldpar <- par(mfrow = c(1,2))
+plot(sens.npm, which.bound = "lwr", lim.x = 0.18)
+plot(sens.npm, which.bound = "upr", lim.x = 0.18)
+par(oldpar)
+```
+
+## GATE Bounds Plot
+
+The GATE bounds plot shows how the group-level effects change under confounding. The red ribbon shows the bias-adjusted bounds (point estimates); the blue ribbon shows the confidence bounds.
+
+```{r npm-gate-bounds, fig.width=8, fig.height=5}
+bds   <- confidence_bounds(dml.npm, cf.y = 0.04, cf.d = 0.03, level = 0)
+bds   <- setNames(as.data.frame(bds), c("lwr.bound", "upr.bound"))
+cbds  <- confidence_bounds(dml.npm, cf.y = 0.04, cf.d = 0.03, level = .95)
+cbds  <- setNames(as.data.frame(cbds), c("lwr.cbound", "upr.cbound"))
+df2   <- cbind(df, bds[-1, ], cbds[-1, ])
+
+ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
+  geom_ribbon(aes(ymin = lwr.bound, ymax = upr.bound),   alpha = 0.1, col = "red", fill = "red") +
+  geom_ribbon(aes(ymin = lwr.cbound, ymax = upr.cbound), alpha = 0.1, col = "blue", fill = "blue") +
+  theme_bw() +
+  xlab("Income Groups by Quartiles") +
+  ylab("ATE")
+```
+
+## NPM Benchmarks
+
+```{r npm-bench}
+bench.npm <- dml_benchmark(dml.npm, benchmark_covariates = c("twoearn", "pira", "inc"))
+bench.npm
+```

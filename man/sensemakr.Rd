@@ -10,6 +10,8 @@ sensemakr(model, ...)
 \method{sensemakr}{dml}(
   model,
   benchmark_covariates = NULL,
+  kd = 1,
+  ky = kd,
   cf.y = NULL,
   cf.d = cf.y,
   rho2 = 1,

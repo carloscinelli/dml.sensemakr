@@ -65,6 +65,7 @@ d <- pension$e401     # 401K eligibility
 x <- model.matrix(~ -1 + age + inc  + educ+ fsize + marr + twoearn + pira + hown, data = pension)
 
 # run DML (nonparametric model)
+set.seed(1)
 dml.401k <- dml(y, d, x, model = "npm")
 #> Debiased Machine Learning
 #> 
@@ -105,13 +106,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.104%), treatment (ranger, R2 = 11.523%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 24.281%), treatment (ranger, R2 = 11.335%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8268       1161    7.12 1.08e-12 ***
+#> ate.all     7936       1173   6.767 1.31e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -136,13 +137,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.104%), treatment (ranger, R2 = 11.523%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 24.281%), treatment (ranger, R2 = 11.335%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8268       1161    7.12 1.08e-12 ***
+#> ate.all     7936       1173   6.767 1.31e-11 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -158,7 +159,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 6.2288  4.7312
+#> ate.all 5.9566  4.4334
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -169,8 +170,8 @@ summary(sens.401k)
 #>  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
-#>               lwr       upr
-#> ate.all  1773.695 14797.656
+#>              lwr      upr
+#> ate.all  1370.64 14484.13
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
@@ -179,10 +180,10 @@ summary(sens.401k)
 #> 
 #> -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.
 #> Benchmark Statistic for Sensitivity Scenario:
-#>          gain.Y   gain.D     rho theta.s theta.sj  delta
-#> twoearn 0.04763 0.005716 -0.4279    8268     7363 -904.8
-#> pira    0.05495 0.000000  0.0000    8268     8477  209.0
-#> inc     0.15289 0.157558  0.1787    8268    11582 3313.8
+#>          gain.Y gain.D    rho theta.s theta.sj  delta
+#> twoearn 0.00000  0.000 0.0000    7936     7256 -680.5
+#> pira    0.01112  0.000 0.0000    7936     8279  342.5
+#> inc     0.10577  0.123 0.2795    7936    11823 3886.7
 #> 
 #> Verbal interpretation of Benchmark Statistic:
 #> 

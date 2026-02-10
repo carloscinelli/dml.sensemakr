@@ -477,7 +477,6 @@ add_bound_to_contour <- function(model, ...) {
 ##' @param combine.method method for combining cross-fitting estimates.
 ##' @param ... additional arguments passed to \code{sensemakr::add_bound_to_contour}.
 ##' @exportS3Method sensemakr::add_bound_to_contour dml
-##' @exportS3Method dml.sensemakr::add_bound_to_contour dml
 add_bound_to_contour.dml <- function(model,
                                      cf.y,
                                      cf.d = cf.y,
@@ -539,7 +538,6 @@ add_bound_to_contour.dml <- function(model,
 ##' @param label.text should label texts be plotted? Default is \code{TRUE}.
 ##' @param ... additional arguments passed to \code{sensemakr::add_bound_to_contour}.
 ##' @exportS3Method sensemakr::add_bound_to_contour dml_benchmark
-##' @exportS3Method dml.sensemakr::add_bound_to_contour dml_benchmark
 add_bound_to_contour.dml_benchmark <- function(benchmarks,
                                                kd = 1,
                                                ky = kd,
