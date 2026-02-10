@@ -251,6 +251,9 @@ ovb_contour_plot.dml <- function(model,
                                  cf.y = NULL,
                                  cf.d = cf.y,
                                  bound.label = "Scenario",
+                                 benchmarks = NULL,
+                                 kd = 1,
+                                 ky = kd,
                                  group = FALSE,
                                  group.number = 1,
                                  threshold = 0,
@@ -387,7 +390,32 @@ ovb_contour_plot.dml <- function(model,
                                     round = round)
   }
 
+  # auto-overlay benchmark bounds (cross product of covariates x multipliers)
+  if (!is.null(benchmarks)) {
+    bench_summary <- summary(benchmarks)
+    for (i in seq_len(nrow(bench_summary))) {
+      covar_name <- rownames(bench_summary)[i]
+      gain.Y <- bench_summary[i, "gain.Y"]
+      gain.D <- bench_summary[i, "gain.D"]
 
+      for (j in seq_along(kd)) {
+        scaled.cf.d <- gain.D * kd[j]
+        scaled.cf.y <- gain.Y * ky[j]
+        bound_label_j <- label_maker(covar_name, kd[j], ky[j])
+        bound_value_j <- f(x = scaled.cf.d, y = scaled.cf.y)
+
+        sensemakr::add_bound_to_contour(r2dz.x = scaled.cf.d,
+                                        r2yz.dx = scaled.cf.y,
+                                        bound_value = bound_value_j,
+                                        bound_label = bound_label_j,
+                                        label.text = label.text,
+                                        label.bump.x = label.bump.x,
+                                        label.bump.y = label.bump.y,
+                                        cex.label.text = cex.label.text,
+                                        round = round)
+      }
+    }
+  }
 
 }
 

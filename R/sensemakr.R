@@ -47,6 +47,7 @@ sensemakr <- function(model, ...) {
 ##' @rdname sensemakr
 sensemakr.dml <- function(model,
                           benchmark_covariates = NULL,
+                          kd = 1, ky = kd,
                           cf.y = NULL, cf.d = cf.y,
                           rho2 = 1,
                           bound_label = "Confounding Scenario",
@@ -57,6 +58,8 @@ sensemakr.dml <- function(model,
   out$info <- list(cf.y = cf.y,
                    cf.d = cf.d,
                    rho2 = rho2,
+                   kd = kd,
+                   ky = ky,
                    bound.label = bound_label,
                    theta = theta,
                    alpha = alpha)
@@ -193,6 +196,18 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
   }
 }
 
+## label maker (internal, matching sensemakr OLS style)
+label_maker <- function(benchmark_covariate, kd, ky) {
+  vapply(seq_along(kd), function(j) {
+    if (kd[j] == ky[j]) {
+      multiplier_text <- paste0(kd[j], "x")
+    } else {
+      multiplier_text <- paste0(kd[j], "/", ky[j], "x")
+    }
+    paste0(multiplier_text, " ", benchmark_covariate)
+  }, character(1))
+}
+
 ##' Sensitivity analysis plots for dml.sensemakr
 ##'
 ##' This function provides the contour plots of the sensitivity analysis results obtained with the function \code{\link{sensemakr}} for IV. It is basically a dispatcher to the core plot function \code{\link{ovb_contour_plot}}.
@@ -206,6 +221,11 @@ plot.dml.sensemakr <- function(model,
                                level = 0.95,
                                combine.method = "median",
                                ...){
+  # pass benchmarks and multipliers through to ovb_contour_plot
+  benchmarks <- model$bench.bounds
+  kd <- model$info$kd
+  ky <- model$info$ky
+
   if (!"bound.label" %in% names(list(...))) {
     ovb_contour_plot(model$model,
                      parameter = parameter,
@@ -215,6 +235,8 @@ plot.dml.sensemakr <- function(model,
                      cf.y = model$info$cf.y,
                      cf.d = model$info$cf.d,
                      bound.label = model$info$bound.label,
+                     benchmarks = benchmarks,
+                     kd = kd, ky = ky,
                      combine.method = combine.method, ...)
   } else {
     ovb_contour_plot(model$model,
@@ -224,6 +246,8 @@ plot.dml.sensemakr <- function(model,
                      rho2 = model$info$rho2,
                      cf.y = model$info$cf.y,
                      cf.d = model$info$cf.d,
+                     benchmarks = benchmarks,
+                     kd = kd, ky = ky,
                      combine.method = combine.method, ...)
   }
 
