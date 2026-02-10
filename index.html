@@ -73,9 +73,11 @@
   <div class="contents col-md-9">
 
 <div class="section level1">
-<div class="page-header"><h1 id="dmlsensemakr-">dml.sensemakr <img src="reference/figures/dml-sensemakr-logo-sm.png" align="right"><a class="anchor" aria-label="anchor" href="#dmlsensemakr-"></a>
+<div class="page-header"><h1 id="dmlsensemakr-sensitivity-analysis-tools-for-causal-ml-">dml.sensemakr: Sensitivity Analysis Tools for Causal ML <img src="reference/figures/dml-sensemakr-logo-sm.png" align="right"><a class="anchor" aria-label="anchor" href="#dmlsensemakr-sensitivity-analysis-tools-for-causal-ml-"></a>
 </h1></div>
 <!-- badges: start -->
+<!-- [![CRAN status](https://www.r-pkg.org/badges/version/dml.sensemakr)](https://CRAN.R-project.org/package=dml.sensemakr) -->
+<!-- [![Downloads](https://cranlogs.r-pkg.org/badges/dml.sensemakr)](https://cran.r-project.org/package=dml.sensemakr) -->
 
 <p><code>dml.sensemakr</code> implements a general suite of sensitivity analysis tools for Causal Machine Learning as discussed in <a href="https://doi.org/10.1162/REST.a.1705" class="external-link">Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). “Long Story Short: Omitted Variable Bias in Causal Machine Learning.” <em>Review of Economics and Statistics</em>.</a></p>
 </div>
@@ -162,13 +164,13 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.022%), treatment (ranger, R2 = 11.667%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.996%), treatment (ranger, R2 = 11.476%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     8208       1169   7.021 2.21e-12 ***</span></span>
+<span><span class="co">#&gt; ate.all     7887       1169   6.747 1.51e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
@@ -188,13 +190,13 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.022%), treatment (ranger, R2 = 11.667%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.996%), treatment (ranger, R2 = 11.476%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     8208       1169   7.021 2.21e-12 ***</span></span>
+<span><span class="co">#&gt; ate.all     7887       1169   6.747 1.51e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
@@ -210,7 +212,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Robustness Values:</span></span>
 <span><span class="co">#&gt;         RV (%) RVa (%)</span></span>
-<span><span class="co">#&gt; ate.all 6.1346  4.6377</span></span>
+<span><span class="co">#&gt; ate.all 5.9797  4.4684</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of robustness values:</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -222,7 +224,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence Bounds for Sensitivity Scenario:</span></span>
 <span><span class="co">#&gt;               lwr       upr</span></span>
-<span><span class="co">#&gt; ate.all  1658.375 14791.225</span></span>
+<span><span class="co">#&gt; ate.all  1398.323 14399.146</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
 <span><span class="co">#&gt; Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.</span></span>
@@ -333,8 +335,6 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://CRAN.R-project.org/package=dml.sensemakr" class="external-link"><img src="https://www.r-pkg.org/badges/version/dml.sensemakr" alt="CRAN status"></a></li>
-<li><a href="https://cran.r-project.org/package=dml.sensemakr" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/dml.sensemakr" alt="Downloads"></a></li>
 <li><a href="https://github.com/carloscinelli/dml.sensemakr/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/carloscinelli/dml.sensemakr/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://app.codecov.io/gh/carloscinelli/dml.sensemakr" class="external-link"><img src="https://codecov.io/gh/carloscinelli/dml.sensemakr/graph/badge.svg" alt="Codecov test coverage"></a></li>
 </ul>
