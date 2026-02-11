@@ -54,23 +54,24 @@ mean(y[d==1]) - mean(y[d==0])
 set.seed(1)
 dml.401k.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
 summary(dml.401k.plm)
+confint(dml.401k.plm)
+```
+
+## Robustness Value
+
+```{r plm-rv}
+robustness_value(dml.401k.plm)
 ```
 
 ## Sensitivity Analysis
 
 ```{r plm-sensitivity}
-sens.401k <- sensemakr(dml.401k.plm, cf.y = 0.04, cf.d = 0.03,
-                       bound_label = "Max match (3 years)")
-summary(sens.401k)
-```
+confidence_bounds(dml.401k.plm, cf.y = 0.04, cf.d = 0.03, level = 0)
+confidence_bounds(dml.401k.plm, cf.y = 0.04, cf.d = 0.03)
 
-## Contour Plots
+dml_bounds(dml.401k.plm, cf.y = 0.04, cf.d = 0.03)
 
-```{r plm-contour, fig.height=6}
-oldpar <- par(mfrow = c(1,2))
-plot(sens.401k, which.bound = "lwr", lim.x = 0.18, col.contour = "blue")
-plot(sens.401k, which.bound = "upr", lim.x = 0.18, col.contour = "blue")
-par(oldpar)
+summary(sensemakr(dml.401k.plm, cf.y = 0.04, cf.d = 0.03))
 ```
 
 ## Benchmarks
@@ -138,6 +139,14 @@ g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25, .5, .75, 1), na.rm = TRUE),
 set.seed(1)
 dml.401k.npm <- dml(y, d, x, groups = g1, model = "npm", cf.folds = 5, cf.reps = 5)
 summary(dml.401k.npm)
+confint(dml.401k.npm)
+```
+
+## NPM Robustness Value
+
+```{r npm-rv}
+options(scipen = 99)
+robustness_value(dml.401k.npm)
 ```
 
 ## GATE Plot under Conditional Ignorability
@@ -158,21 +167,14 @@ ggplot(df, aes(x = groups, y = estimate)) + geom_line() +
   ylab("ATE")
 ```
 
-## Sensitivity Analysis
+## NPM Sensitivity Analysis
 
 ```{r npm-sensitivity}
-sens.401k.npm <- sensemakr(dml.401k.npm, cf.y = 0.04, cf.d = 0.03,
-                            bound_label = "Max match (3 years)")
-summary(sens.401k.npm)
-```
+summary(sensemakr(dml.401k.npm, cf.y = 0.04, cf.d = 0.03))
 
-## Contour Plots
-
-```{r npm-contour, fig.height=6}
-oldpar <- par(mfrow = c(1,2))
-plot(sens.401k.npm, which.bound = "lwr", lim.x = 0.18, col.contour = "blue")
-plot(sens.401k.npm, which.bound = "upr", lim.x = 0.18, col.contour = "blue")
-par(oldpar)
+dml_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03)
+confidence_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03, level = 0)
+confidence_bounds(dml.401k.npm, cf.y = 0.04, cf.d = 0.03)
 ```
 
 ## GATE Bounds Plot
