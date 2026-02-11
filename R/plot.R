@@ -537,7 +537,7 @@ add_bound_to_contour.dml_benchmark <- function(benchmarks,
                                                label.bump.x = 0.01,
                                                label.bump.y = 0.01,
                                                cex.label.text = 0.7,
-                                               round = 0,
+                                               round = 2,
                                                label.text = TRUE,
                                                bound_label = NULL,
                                                ...){
