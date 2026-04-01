@@ -107,13 +107,13 @@ summary(dml.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.879%), treatment (ranger, R2 = 11.18%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 28.038%), treatment (ranger, R2 = 11.559%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8121       1157   7.017 2.27e-12 ***
+#> ate.all     8010       1163   6.889 5.63e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -133,13 +133,13 @@ summary(sens.401k)
 #> 
 #>  Model: Nonparametric 
 #>  Cross-Fitting: 5 folds, 1 reps 
-#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.879%), treatment (ranger, R2 = 11.18%)
+#>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 28.038%), treatment (ranger, R2 = 11.559%)
 #>  Tuning: dirty 
 #> 
 #> Average Treatment Effect: 
 #> 
 #>         Estimate Std. Error t value  P(>|t|)    
-#> ate.all     8121       1157   7.017 2.27e-12 ***
+#> ate.all     8010       1163   6.889 5.63e-12 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> Note: DML estimates combined using the median method.
@@ -155,7 +155,7 @@ summary(sens.401k)
 #> 
 #> Robustness Values:
 #>         RV (%) RVa (%)
-#> ate.all 6.2003  4.6919
+#> ate.all 6.1021  4.6027
 #> 
 #> Verbal interpretation of robustness values:
 #> 
@@ -167,7 +167,7 @@ summary(sens.401k)
 #> 
 #> Confidence Bounds for Sensitivity Scenario:
 #>               lwr       upr
-#> ate.all  1694.969 14584.645
+#> ate.all  1572.415 14503.094
 #> 
 #> Confidence level: point = 95%; region = 90%.
 #> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.
@@ -186,102 +186,9 @@ summary(sens.401k)
 plot(sens.401k)
 ```
 
-<img src="man/figures/README-basic-usage-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-basic-usage-1.png" alt="" width="100%" style="display: block; margin: auto;" />
 
-<!-- ### Use DML to estimate the ATE -->
+# Acknowledgements
 
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Explore results -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Extract coefs, se, confidence intervals -->
-
-<!-- ```{r} -->
-
-<!-- # coef median method (default) -->
-
-<!-- coef(dml.401k, combine.method = "median") -->
-
-<!-- # se median method (default) -->
-
-<!-- se(dml.401k, combine.method = "median") -->
-
-<!-- # confint median method -->
-
-<!-- confint(dml.401k, combine.method = "median") -->
-
-<!-- ``` -->
-
-<!-- ### Coefficients Plot -->
-
-<!-- ```{r} -->
-
-<!-- plot(dml.401k) -->
-
-<!-- ``` -->
-
-<!-- ### You can add groups after the model is fit -->
-
-<!-- ```{r} -->
-
-<!-- ## compute GATE by married -->
-
-<!-- g2 <- ifelse(pension$marr, "married", "not.married") -->
-
-<!-- dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2) -->
-
-<!-- summary(dml.401k.g2) -->
-
-<!-- coef(dml.401k.g2) -->
-
-<!-- confint(dml.401k.g2) -->
-
-<!-- plot(dml.401k.g2) -->
-
-<!-- ``` -->
-
-<!-- ## Sensitivity Analysis -->
-
-<!-- ### Robustness Values -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Confidence Bounds -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Contour Plots -->
-
-<!-- ```{r, fig.width=12} -->
-
-<!-- ``` -->
-
-<!-- ### Further results -->
-
-<!-- ```{r} -->
-
-<!-- bounds.401k <- dml_bounds(dml.401k, cf.y = 0.03, cf.d = 0.04) -->
-
-<!-- bounds.401k -->
-
-<!-- ``` -->
-
-<!-- ```{r} -->
-
-<!-- coef(bounds.401k) -->
-
-<!-- se(bounds.401k) -->
-
-<!-- confint(bounds.401k) -->
-
-<!-- ``` -->
+This project was partially supported by the Royalty Research Fund at the
+University of Washington, and by the National Science Foundation.

@@ -52,6 +52,7 @@ Some presentations that may be useful:
 - [Carlos' presentation at the ICLR.](http://interactivecausallearning.com/Carlos_Cinelli.html)
 - [Victor's tutorial at the Chamberlain Seminar.](https://www.youtube.com/watch?v=PQtYqKfxH_I)
 
+
 # Basic Usage
 
 ```{r basic-usage, fig.align='center', collapse=T, dpi=300}
@@ -82,79 +83,7 @@ summary(sens.401k)
 plot(sens.401k)
 ```
 
-<!-- ### Use DML to estimate the ATE -->
+# Acknowledgements
 
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Explore results -->
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Extract coefs, se, confidence intervals -->
-<!-- ```{r} -->
-<!-- # coef median method (default) -->
-<!-- coef(dml.401k, combine.method = "median") -->
-
-<!-- # se median method (default) -->
-<!-- se(dml.401k, combine.method = "median") -->
-
-<!-- # confint median method -->
-<!-- confint(dml.401k, combine.method = "median") -->
-<!-- ``` -->
-
-<!-- ### Coefficients Plot -->
-
-<!-- ```{r} -->
-<!-- plot(dml.401k) -->
-<!-- ``` -->
-
-<!-- ### You can add groups after the model is fit -->
-
-<!-- ```{r} -->
-<!-- ## compute GATE by married -->
-<!-- g2 <- ifelse(pension$marr, "married", "not.married") -->
-<!-- dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2) -->
-<!-- summary(dml.401k.g2) -->
-
-<!-- coef(dml.401k.g2) -->
-<!-- confint(dml.401k.g2) -->
-<!-- plot(dml.401k.g2) -->
-<!-- ``` -->
-
-<!-- ## Sensitivity Analysis -->
-
-<!-- ### Robustness Values -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Confidence Bounds -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-
-<!-- ### Contour Plots -->
-
-<!-- ```{r, fig.width=12} -->
-
-<!-- ``` -->
-
-
-<!-- ### Further results -->
-
-<!-- ```{r} -->
-<!-- bounds.401k <- dml_bounds(dml.401k, cf.y = 0.03, cf.d = 0.04) -->
-<!-- bounds.401k -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- coef(bounds.401k) -->
-<!-- se(bounds.401k) -->
-<!-- confint(bounds.401k) -->
-<!-- ``` -->
+This project was partially supported by the Royalty Research Fund at the University of Washington, and by the National Science Foundation.
 

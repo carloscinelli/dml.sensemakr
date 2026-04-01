@@ -1,5 +1,6 @@
 ---
-title: "Sensitivity 401k"
+title: "Sensitivity Analysis for the Effect of 401(k) on Net Financial Assets"
+author: "Victor Chernozhukov, Carlos Cinelli, Whitney Newey, Amit Sharma, and Vasilis Syrgkanis"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{dml-401k}
@@ -23,9 +24,19 @@ library(dml.sensemakr)
 library(ggplot2)
 ```
 
-Here we reproduce the empirical example of  [Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." Review of Economics and Statistics.](https://doi.org/10.1162/REST.a.1705)
+# Introduction
 
-# Load Data
+Unmeasured confounding is a pervasive issue in studies that aim to draw causal inferences from observational data. Such studies typically rely on a conditional ignorability (also known as unconfoundedness) assumption, which states that the treatment assignment is independent of potential outcomes given a set of observed covariates. This assumption, however, requires that there are no unobserved confounders influencing both the treatment and the outcome---a requirement that is often difficult to defend in practice.
+
+The `R` package `dml.sensemakr` implements the sensitivity analysis tools developed in [Chernozhukov, Cinelli, Newey, Sharma, and Syrgkanis (2026)](https://doi.org/10.1162/REST.a.1705), which provides a general theory of omitted variable bias for a wide range of causal parameters estimated with machine learning. The theory applies to nonparametric models, while naturally allowing for semiparametric restrictions such as partial linearity. We show how simple plausibility judgments on the maximum explanatory power of omitted variables are sufficient to bound the magnitude of the bias, thus facilitating sensitivity analysis in otherwise complex, nonlinear models.
+
+Since sensitivity analysis requires contextual knowledge to be properly interpreted, we illustrate the functionality of the package with a real example. Here we reproduce the results found in Section 5 of [Chernozhukov et al. (2026)](https://doi.org/10.1162/REST.a.1705), which estimates the average treatment effect of 401(k) eligibility on net financial assets. Further details about this application can be found in Poterba et al. (1994, 1995) and Chernozhukov et al. (2018).
+
+# The data and research question
+
+A 401(k) plan is an employer-sponsored tax-deferred savings option that allows individuals to deduct contributions from their taxable income and accrue tax-free interest on investments within the plan. Introduced in the early 1980s as an incentive to increase individual savings for retirement, an important question in the savings literature is precisely to quantify the *causal* impact of 401(k) eligibility on net financial assets.
+
+The `dml.sensemakr` package comes with an example dataset, `pension`, drawn from the 1991 *Survey of Income and Program Participation* (SIPP). The data can be loaded with the command `data("pension")`.
 
 ```{r}
 # loads package
@@ -38,27 +49,49 @@ d <- pension$e401 # 401K eligibility
 x <- model.matrix(~ -1 + age + inc + educ+ fsize + marr + twoearn + pira + hown, data = pension)
 ```
 
-# Naive Estimate (no adjustment)
+The outcome variable of interest is `net_tfa`, which measures net total financial assets. The treatment variable is `e401`, an indicator for whether the individual is eligible to enroll in a 401(k) plan. The vector of observed covariates consists of: `age` (in years), `inc` (income), `educ` (years of education), `fsize` (family size), `marr` (a binary indicator of marital status), `twoearn` (a two-earner household indicator), `pira` (an IRA participation indicator), and `hown` (a homeownership indicator). For further details, see `?pension`.
+
+A naive comparison of net financial assets between those with and without 401(k) eligibility suggests a positive and large impact:
 
 ```{r}
 mean(y[d==1]) - mean(y[d==0])
 ```
 
+This naive difference amounts to approximately \$19,559. The problem, however, is that 401(k) plans can be obtained only by those individuals who work for a firm that offers such a savings option---and employment decisions are far from randomized. As an attempt to overcome this lack of random assignment, Poterba et al. (1994, 1995), and more recently Chernozhukov et al. (2018), leveraged the 1991 SIPP data to adjust for potential confounding factors between 401(k) eligibility and net financial assets. As explained in Poterba et al. (1994), at least around the time 401(k) plans initially became available, people were unlikely to make employment decisions based on whether an employer offered a 401(k) plan; instead, their main focus was on salary and other aspects of the job. Thus, as a first approximation, whether one is eligible for a 401(k) plan could be taken as ignorable once we condition on income and other covariates related to job choice.
 
-# Partially Linear Model
+More precisely, we consider that the decision to work for a firm that offers a 401(k) plan depends both on the observed covariates $X$, but also on *unobserved* firm characteristics, denoted by $U$; moreover, $X$, $U$, and $D$ are jointly affected by a set of latent factors $L$. Most importantly, note the assumption of *absence* of direct arrows, both from $U$ and $L$, to $Y$. Under such assumption, conditional ignorability holds adjusting for $X$ only. The story represented by this causal diagram is one way of rationalizing the identification strategy used in earlier papers.
+
+# Estimates under conditional ignorability
+
+We now estimate the average treatment effect (ATE) of 401(k) eligibility on net financial assets under this conditional ignorability assumption. For this, we use the `dml()` function, which estimates causal parameters using debiased machine learning (DML) with 5-fold cross-fitting. The procedure is repeated 5 times to reduce the variance that stems from sample splitting, and estimates are combined using the median as the final estimate. The argument `model = "plm"` specifies a partially linear model, in which the treatment enters linearly but the nuisance functions (the conditional expectations of $Y$ and $D$ given $X$) are estimated nonparametrically using Random Forests.
 
 ```{r}
 # run DML
 dml.401k.plm <- dml(y, d, x, model = "plm", cf.folds = 5, cf.reps = 5)
 ```
 
-
+The `summary()` method reports the estimated ATE, along with the $R^2$ of the outcome and treatment models:
 
 ```{r}
 # results under conditional ignorability
 summary(dml.401k.plm)
 ```
 
+As we can see, after flexibly taking into account observed confounding factors, the estimate of the effect of 401(k) eligibility on net financial assets is substantially attenuated relative to the naive difference, but it is still large, positive, and statistically significant (approximately \$9,000).
+
+# Sensitivity analysis
+
+## The threat of unobserved confounding
+
+The previous estimate requires the assumption of *no unobserved confounders* for unbiasedness. This assumption, however, may be violated. Employers often offer a benefit in which they "match" a proportion of an employee's contribution to their 401(k) up to 5% of the employee's salary. This "matched amount," denoted by $M$, is determined by unobserved firm characteristics $U$, observed worker characteristics $X$, and by 401(k) eligibility $D$. In this model, adjustment for $X$ alone is *not* sufficient for control of confounding. Instead, we now need to condition *both* on observed covariates $X$ *and* unobserved confounders $U$ for ignorability to hold. How strong would the omitted firm characteristics $U$ have to be in order to overturn our previous conclusions? And how plausible are the strengths revealed to be problematic? In what follows, we use our sensitivity analysis results to address these questions.
+
+## Robustness values and the main confounding scenario
+
+A useful summary of how robust the estimate is to unmeasured confounding is the *robustness value* (RV). Whereas standard errors, t-values or p-values communicate how robust the estimate is to *sampling errors*, the idea of robustness values is to quickly communicate how robust the estimate is to *systematic errors* due to residual confounding. More precisely, the $\text{RV}_{\theta = 0, \alpha = 0.05}$ measures the minimal strength on *both* confounding factors such that the estimated confidence bound for the ATE would include zero, at the 5% significance level. Any postulated confounding scenario that does not meet this minimal criterion of strength cannot overturn the results of the original study.
+
+We now proceed to construct a particular confounding scenario, based on the contextual details of the problem. We start with the assumption that $U$ explains as much variation in net financial assets as the total variation of the maximal matched amount of income (5%) over the period of three years (roughly the period over which the effect is measured). In the worst case scenario, this would lead to an additional 3% of *total* variation explained, resulting in a partial $R^2$ of outcome with omitted firm characteristics $U$ of $C_Y \approx 4\%$. Following similar reasoning, and more conservatively, we posit that omitted firm characteristics can explain an additional 2.5% of the variation in 401(k) eligibility, resulting in $C_D \approx 3\%$ for the partially linear model. Since both $C_Y \approx 4\%$ and $C_D \approx 3\%$ are below the robustness value, we immediately conclude that such a confounding scenario is *not* capable of bringing the lower limit of the confidence bound of the ATE to zero.
+
+We apply the `sensemakr()` method to the `dml` object, passing the confounding scenario through the arguments `cf.y` (the postulated partial $R^2$ of omitted variables with the outcome) and `cf.d` (the postulated partial $R^2$ of omitted variables with the treatment):
 
 ```{r}
 # sensitivity analysis
@@ -74,6 +107,15 @@ plot(sens.401k, which.bound = "upr", bound.label = "Max match (3 years)", col.co
 par(oldpar)
 ```
 
+The `summary()` method reports the robustness value, the bias, the bounds, and the confidence bounds for the ATE under the postulated scenario. The `plot()` method produces contour plots for the lower and upper limits of the confidence bounds.
+
+## Sensitivity contour plots
+
+Researchers may wish to refine their analysis by visually exploring the whole range of possible estimates that confounders with different strengths could cause. The contour plots above serve this purpose. The horizontal axis describes the fraction of residual variation of the treatment explained by unobserved confounders, whereas the vertical axis describes the share of residual variation of the outcome explained by unobserved confounders. The contour lines show the lower (left panel) and upper (right panel) limits of the confidence bounds for the ATE, given a pair of hypothesized values of partial $R^2$. The red dashed line marks the zero contour---the critical threshold beyond which the estimate changes sign. Note $\text{RV}_{\theta = 0, \alpha = 0.05}$ is simply the point where the zero contour crosses the 45-degree line. The labeled point *Max match (3 years)* shows the bounds on the partial $R^2$ as previously discussed, confirming that this confounding scenario is not sufficient to overturn the original conclusions. Any other scenario can also be contemplated by simply picking different pairs of $R^2$ values on the plot.
+
+## Benchmarking with observed covariates
+
+Another approach to construct confounding scenarios is to use observed covariates to bound the plausible strength of unobserved covariates. For instance, in our empirical example, we know that employment decisions are largely driven by salary considerations. Similarly, salary is clearly an important determinant of net financial assets. One could therefore argue that it is implausible to imagine other latent firm characteristics that would be even a fraction as strong as the observed *income* of individuals, in terms of explanatory power in predicting 401(k) eligibility and net financial assets. Whenever such claims of relative importance can be made, they can be used to set plausible bounds on the strength of unmeasured confounding. The function `dml_benchmark()` automates this comparison:
 
 ```{r}
 # benchmarks
@@ -81,24 +123,29 @@ bench.plm <- dml_benchmark(dml.401k.plm, benchmark_covariates = c("inc", "pira",
 bench.plm
 ```
 
+The output shows the bounds on the strength of the latent variable $U$ if it were as strong as (i) income (`inc`), (ii) whether a worker has an individual retirement account (`pira`), and (iii) whether the worker's family has a two-earner status (`twoearn`). Note that, apart from income, latent variables as strong as these covariates would result in a weaker confounding scenario than the one we have previously considered (*Max match*). As for income, the worst-case bound indicates that omitted firm characteristics as important as income could be sufficiently strong to overturn the original results. However, one could argue such a scenario to be implausible, as it is hard to imagine latent firm characteristics that would explain more variation in job choice than income itself. A more realistic, but still conservative, scenario is thus provided by the benchmark point *1/4 x Income*, which shows the bound on the strength of $U$ if it were 25% as strong as income in predicting treatment and outcome variation.
 
-# Nonparametric Model
+# Nonparametric model
+
+The partially linear model imposes a constant treatment effect. With a binary treatment, however, a fully nonparametric model allows for more flexible estimation and, importantly, for exploring heterogeneous treatment effects. We now stratify by income quartiles and estimate the group average treatment effects (GATEs), in addition to the overall ATE. This is done by passing a `groups` argument to `dml()`, along with `model = "npm"` for the nonparametric model:
 
 ```{r}
 ## compute income quartiles
-g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE), 
+g1 <- cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE),
           labels = c("q1", "q2", "q3", "q4"), include.lowest = TRUE)
 
 ## Nonparametric model
 dml.401k.npm <- dml(y, d, x, groups = g1, model = "npm", cf.folds = 5, cf.reps = 5)
 ```
 
-
+The `summary()` method now reports both the overall ATE and the group-specific treatment effects:
 
 ```{r}
 # results under conditional ignorability
 summary(dml.401k.npm)
 ```
+
+The ATE varies substantially across groups, with effects ranging from approximately \$4,000 (first quartile) to almost \$18,000 (last quartile). We can visualize the heterogeneous treatment effects by plotting the point estimates along with their confidence intervals for each income quartile:
 
 ```{r, fig.width=8}
 # load ggplot2
@@ -112,11 +159,14 @@ cis  <- setNames(as.data.frame(cis), c("lwr.ci", "upr.ci"))
 df   <- cbind(df, cis)
 ggplot(df, aes(x = groups, y = estimate)) + geom_line() +
   geom_ribbon(aes(ymin = lwr.ci, ymax = upr.ci), alpha = 0.1, col = "blue", fill = "blue") +
-  theme_bw() + 
-  xlab("Income Groups by Quartiles") + 
+  theme_bw() +
+  xlab("Income Groups by Quartiles") +
   ylab("ATE")
 ```
 
+## Sensitivity analysis for the nonparametric model
+
+We now repeat the sensitivity analysis using the same confounding scenario ($C_Y = 4\%$, $C_D = 3\%$). The interpretation of the contours is the same as before, with the main difference being that the horizontal axis now describes gains in precision rather than gains in variance explained (see Remark 3 of Chernozhukov et al., 2026). We adopt the same scenario for the NPM, with the understanding that $C_D \approx 3\%$ now corresponds to gains in precision.
 
 ```{r}
 # sensitivity analysis
@@ -132,6 +182,7 @@ plot(sens.401k.npm, which.bound = "upr", bound.label = "Max match (3 years)", co
 par(oldpar)
 ```
 
+Confidence bounds for group-wise ATEs can also be computed. The `confidence_bounds()` function returns the lower and upper bounds on the treatment effect under the confounding scenario; setting `level = 0` gives the point-wise bounds (no statistical uncertainty, only the bias from confounding), whereas `level = 0.95` gives the confidence bounds (accounting for both bias and sampling uncertainty). The results are shown in the figure below, where the red band shows the bounds and the blue band shows the confidence bounds.
 
 ```{r, fig.width=8}
 # confidence bounds plot
@@ -143,10 +194,14 @@ df2   <- cbind(df, bds[-1,], cbds[-1, ])
 ggplot(df2, aes(x = groups, y = estimate)) + geom_line() +
   geom_ribbon(aes(ymin = lwr.bound, ymax = upr.bound),   alpha = 0.1, col = "red", fill = "red") +
   geom_ribbon(aes(ymin = lwr.cbound, ymax = upr.cbound), alpha = 0.1, col = "blue", fill = "blue") +
-  theme_bw() + 
-  xlab("Income Groups by Quartiles") + 
+  theme_bw() +
+  xlab("Income Groups by Quartiles") +
   ylab("ATE")
 ```
+
+Note how the bounds are still largely positive, with only a small excursion into the negative in the case of the second quartile group. These results suggest that the main qualitative findings reported in earlier studies are relatively robust to plausible violations of unconfoundedness, such as the one specified by our confounding scenario.
+
+Finally, we provide benchmarks for the nonparametric model:
 
 ```{r}
 # benchmarks
@@ -154,3 +209,16 @@ bench.npm <- dml_benchmark(dml.401k.npm, benchmark_covariates = c("inc", "pira",
 bench.npm
 ```
 
+# References
+
+Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A. and Syrgkanis, V. (2026), "Long Story Short: Omitted Variable Bias in Causal Machine Learning." *Review of Economics and Statistics*. ( [link](https://doi.org/10.1162/REST.a.1705) )
+
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), "Double/debiased machine learning for treatment and structural parameters." *The Econometrics Journal*, 21(1), C1--C68.
+
+Cinelli, C. and Hazlett, C. (2020), "Making Sense of Sensitivity: Extending Omitted Variable Bias." *Journal of the Royal Statistical Society, Series B (Statistical Methodology)*, 82(1), 39--67. ( [link](https://doi.org/10.1111/rssb.12348) )
+
+Imbens, G. (2003), "Sensitivity to Exogeneity Assumptions in Program Evaluation." *American Economic Review*, 93(2), 126--132.
+
+Poterba, J., Venti, S. and Wise, D. (1994), "401(k) Plans and Tax-Deferred Saving." In D. Wise (Ed.), *Studies in the Economics of Aging*, pp. 105--142, University of Chicago Press.
+
+Poterba, J., Venti, S. and Wise, D. (1995), "Do 401(k) Contributions Crowd Out Other Personal Saving?" *Journal of Public Economics*, 58(1), 1--32.
