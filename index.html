@@ -164,13 +164,13 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.879%), treatment (ranger, R2 = 11.18%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 28.038%), treatment (ranger, R2 = 11.559%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     8121       1157   7.017 2.27e-12 ***</span></span>
+<span><span class="co">#&gt; ate.all     8010       1163   6.889 5.63e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
@@ -190,13 +190,13 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
-<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.879%), treatment (ranger, R2 = 11.18%)</span></span>
+<span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 28.038%), treatment (ranger, R2 = 11.559%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     8121       1157   7.017 2.27e-12 ***</span></span>
+<span><span class="co">#&gt; ate.all     8010       1163   6.889 5.63e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
@@ -212,7 +212,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Robustness Values:</span></span>
 <span><span class="co">#&gt;         RV (%) RVa (%)</span></span>
-<span><span class="co">#&gt; ate.all 6.2003  4.6919</span></span>
+<span><span class="co">#&gt; ate.all 6.1021  4.6027</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of robustness values:</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -224,7 +224,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence Bounds for Sensitivity Scenario:</span></span>
 <span><span class="co">#&gt;               lwr       upr</span></span>
-<span><span class="co">#&gt; ate.all  1694.969 14584.645</span></span>
+<span><span class="co">#&gt; ate.all  1572.415 14503.094</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
 <span><span class="co">#&gt; Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.</span></span>
@@ -241,56 +241,12 @@
 <span></span>
 <span><span class="co"># contout plots</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sens.401k</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-basic-usage-1.png" width="100%" style="display: block; margin: auto;"></p>
-<!-- ### Use DML to estimate the ATE -->
-<!-- ```{r} -->
-<!-- ``` -->
-<!-- ### Explore results -->
-<!-- ```{r} -->
-<!-- ``` -->
-<!-- ### Extract coefs, se, confidence intervals -->
-<!-- ```{r} -->
-<!-- # coef median method (default) -->
-<!-- coef(dml.401k, combine.method = "median") -->
-<!-- # se median method (default) -->
-<!-- se(dml.401k, combine.method = "median") -->
-<!-- # confint median method -->
-<!-- confint(dml.401k, combine.method = "median") -->
-<!-- ``` -->
-<!-- ### Coefficients Plot -->
-<!-- ```{r} -->
-<!-- plot(dml.401k) -->
-<!-- ``` -->
-<!-- ### You can add groups after the model is fit -->
-<!-- ```{r} -->
-<!-- ## compute GATE by married -->
-<!-- g2 <- ifelse(pension$marr, "married", "not.married") -->
-<!-- dml.401k.g2 <- dml_gate(dml.fit = dml.401k, groups = g2) -->
-<!-- summary(dml.401k.g2) -->
-<!-- coef(dml.401k.g2) -->
-<!-- confint(dml.401k.g2) -->
-<!-- plot(dml.401k.g2) -->
-<!-- ``` -->
-<!-- ## Sensitivity Analysis -->
-<!-- ### Robustness Values -->
-<!-- ```{r} -->
-<!-- ``` -->
-<!-- ### Confidence Bounds -->
-<!-- ```{r} -->
-<!-- ``` -->
-<!-- ### Contour Plots -->
-<!-- ```{r, fig.width=12} -->
-<!-- ``` -->
-<!-- ### Further results -->
-<!-- ```{r} -->
-<!-- bounds.401k <- dml_bounds(dml.401k, cf.y = 0.03, cf.d = 0.04) -->
-<!-- bounds.401k -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- coef(bounds.401k) -->
-<!-- se(bounds.401k) -->
-<!-- confint(bounds.401k) -->
-<!-- ``` -->
+<p><img src="reference/figures/README-basic-usage-1.png" alt="" width="100%" style="display: block; margin: auto;"></p>
+</div>
+<div class="section level1">
+<h1 id="acknowledgements">Acknowledgements<a class="anchor" aria-label="anchor" href="#acknowledgements"></a>
+</h1>
+<p>This project was partially supported by the Royalty Research Fund at the University of Washington, and by the National Science Foundation.</p>
 </div>
 
   </div>

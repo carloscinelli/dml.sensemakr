@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sensitivity 401k • dml.sensemakr</title>
+<title>Sensitivity Analysis for the Effect of 401(k) on Net Financial Assets • dml.sensemakr</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/cosmo/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Sensitivity 401k">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Sensitivity Analysis for the Effect of 401(k) on Net Financial Assets">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -71,7 +71,11 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Sensitivity 401k</h1>
+      <h1 data-toc-skip>Sensitivity Analysis for the Effect of 401(k) on
+Net Financial Assets</h1>
+                        <h4 data-toc-skip class="author">Victor
+Chernozhukov, Carlos Cinelli, Whitney Newey, Amit Sharma, and Vasilis
+Syrgkanis</h4>
             
       
       <small class="dont-index">Source: <a href="https://github.com/carloscinelli/dml.sensemakr/blob/main/vignettes/dml-401k.Rmd" class="external-link"><code>vignettes/dml-401k.Rmd</code></a></small>
@@ -81,13 +85,50 @@
 
     
     
-<p>Here we reproduce the empirical example of <a href="https://doi.org/10.1162/REST.a.1705" class="external-link">Chernozhukov, V., Cinelli,
-C., Newey, W., Sharma A., and Syrgkanis, V. (2026). “Long Story Short:
-Omitted Variable Bias in Causal Machine Learning.” Review of Economics
-and Statistics.</a></p>
 <div class="section level2">
-<h2 id="load-data">Load Data<a class="anchor" aria-label="anchor" href="#load-data"></a>
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
+<p>Unmeasured confounding is a pervasive issue in studies that aim to
+draw causal inferences from observational data. Such studies typically
+rely on a conditional ignorability (also known as unconfoundedness)
+assumption, which states that the treatment assignment is independent of
+potential outcomes given a set of observed covariates. This assumption,
+however, requires that there are no unobserved confounders influencing
+both the treatment and the outcome—a requirement that is often difficult
+to defend in practice.</p>
+<p>The <code>R</code> package <code>dml.sensemakr</code> implements the
+sensitivity analysis tools developed in <a href="https://doi.org/10.1162/REST.a.1705" class="external-link">Chernozhukov, Cinelli, Newey,
+Sharma, and Syrgkanis (2026)</a>, which provides a general theory of
+omitted variable bias for a wide range of causal parameters estimated
+with machine learning. The theory applies to nonparametric models, while
+naturally allowing for semiparametric restrictions such as partial
+linearity. We show how simple plausibility judgments on the maximum
+explanatory power of omitted variables are sufficient to bound the
+magnitude of the bias, thus facilitating sensitivity analysis in
+otherwise complex, nonlinear models.</p>
+<p>Since sensitivity analysis requires contextual knowledge to be
+properly interpreted, we illustrate the functionality of the package
+with a real example. Here we reproduce the results found in Section 5 of
+<a href="https://doi.org/10.1162/REST.a.1705" class="external-link">Chernozhukov et
+al. (2026)</a>, which estimates the average treatment effect of 401(k)
+eligibility on net financial assets. Further details about this
+application can be found in Poterba et al. (1994, 1995) and Chernozhukov
+et al. (2018).</p>
+</div>
+<div class="section level2">
+<h2 id="the-data-and-research-question">The data and research question<a class="anchor" aria-label="anchor" href="#the-data-and-research-question"></a>
+</h2>
+<p>A 401(k) plan is an employer-sponsored tax-deferred savings option
+that allows individuals to deduct contributions from their taxable
+income and accrue tax-free interest on investments within the plan.
+Introduced in the early 1980s as an incentive to increase individual
+savings for retirement, an important question in the savings literature
+is precisely to quantify the <em>causal</em> impact of 401(k)
+eligibility on net financial assets.</p>
+<p>The <code>dml.sensemakr</code> package comes with an example dataset,
+<code>pension</code>, drawn from the 1991 <em>Survey of Income and
+Program Participation</em> (SIPP). The data can be loaded with the
+command <code>data("pension")</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># loads package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/carloscinelli/dml.sensemakr" class="external-link">dml.sensemakr</a></span><span class="op">)</span></span>
@@ -97,17 +138,79 @@ and Statistics.</a></p>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">pension</span><span class="op">$</span><span class="va">net_tfa</span> <span class="co"># net total financial assets</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">pension</span><span class="op">$</span><span class="va">e401</span> <span class="co"># 401K eligibility</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">inc</span> <span class="op">+</span> <span class="va">educ</span><span class="op">+</span> <span class="va">fsize</span> <span class="op">+</span> <span class="va">marr</span> <span class="op">+</span> <span class="va">twoearn</span> <span class="op">+</span> <span class="va">pira</span> <span class="op">+</span> <span class="va">hown</span>, data <span class="op">=</span> <span class="va">pension</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="naive-estimate-no-adjustment">Naive Estimate (no adjustment)<a class="anchor" aria-label="anchor" href="#naive-estimate-no-adjustment"></a>
-</h2>
+<p>The outcome variable of interest is <code>net_tfa</code>, which
+measures net total financial assets. The treatment variable is
+<code>e401</code>, an indicator for whether the individual is eligible
+to enroll in a 401(k) plan. The vector of observed covariates consists
+of: <code>age</code> (in years), <code>inc</code> (income),
+<code>educ</code> (years of education), <code>fsize</code> (family
+size), <code>marr</code> (a binary indicator of marital status),
+<code>twoearn</code> (a two-earner household indicator),
+<code>pira</code> (an IRA participation indicator), and
+<code>hown</code> (a homeownership indicator). For further details, see
+<code><a href="../reference/pension.html">?pension</a></code>.</p>
+<p>A naive comparison of net financial assets between those with and
+without 401(k) eligibility suggests a positive and large impact:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">d</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">y</span><span class="op">[</span><span class="va">d</span><span class="op">==</span><span class="fl">0</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 19559.34</span></span></code></pre></div>
+<p>This naive difference amounts to approximately $19,559. The problem,
+however, is that 401(k) plans can be obtained only by those individuals
+who work for a firm that offers such a savings option—and employment
+decisions are far from randomized. As an attempt to overcome this lack
+of random assignment, Poterba et al. (1994, 1995), and more recently
+Chernozhukov et al. (2018), leveraged the 1991 SIPP data to adjust for
+potential confounding factors between 401(k) eligibility and net
+financial assets. As explained in Poterba et al. (1994), at least around
+the time 401(k) plans initially became available, people were unlikely
+to make employment decisions based on whether an employer offered a
+401(k) plan; instead, their main focus was on salary and other aspects
+of the job. Thus, as a first approximation, whether one is eligible for
+a 401(k) plan could be taken as ignorable once we condition on income
+and other covariates related to job choice.</p>
+<p>More precisely, we consider that the decision to work for a firm that
+offers a 401(k) plan depends both on the observed covariates
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>,
+but also on <em>unobserved</em> firm characteristics, denoted by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>;
+moreover,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>,
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
+are jointly affected by a set of latent factors
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>.
+Most importantly, note the assumption of <em>absence</em> of direct
+arrows, both from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>,
+to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>.
+Under such assumption, conditional ignorability holds adjusting for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+only. The story represented by this causal diagram is one way of
+rationalizing the identification strategy used in earlier papers.</p>
 </div>
 <div class="section level2">
-<h2 id="partially-linear-model">Partially Linear Model<a class="anchor" aria-label="anchor" href="#partially-linear-model"></a>
+<h2 id="estimates-under-conditional-ignorability">Estimates under conditional ignorability<a class="anchor" aria-label="anchor" href="#estimates-under-conditional-ignorability"></a>
 </h2>
+<p>We now estimate the average treatment effect (ATE) of 401(k)
+eligibility on net financial assets under this conditional ignorability
+assumption. For this, we use the <code><a href="../reference/dml.html">dml()</a></code> function, which
+estimates causal parameters using debiased machine learning (DML) with
+5-fold cross-fitting. The procedure is repeated 5 times to reduce the
+variance that stems from sample splitting, and estimates are combined
+using the median as the final estimate. The argument
+<code>model = "plm"</code> specifies a partially linear model, in which
+the treatment enters linearly but the nuisance functions (the
+conditional expectations of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
+given
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>)
+are estimated nonparametrically using Random Forests.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># run DML</span></span>
 <span><span class="va">dml.401k.plm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml.html">dml</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">x</span>, model <span class="op">=</span> <span class="st">"plm"</span>, cf.folds <span class="op">=</span> <span class="fl">5</span>, cf.reps <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
@@ -148,6 +251,10 @@ and Statistics.</a></p>
 <span><span class="co">#&gt; -- Rep 4 -- Folds: 1  2  3  4  5  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span></code></pre></div>
+<p>The <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method reports the estimated ATE, along
+with the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>
+of the outcome and treatment models:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># results under conditional ignorability</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">dml.401k.plm</span><span class="op">)</span></span>
@@ -170,6 +277,91 @@ and Statistics.</a></p>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
+<p>As we can see, after flexibly taking into account observed
+confounding factors, the estimate of the effect of 401(k) eligibility on
+net financial assets is substantially attenuated relative to the naive
+difference, but it is still large, positive, and statistically
+significant (approximately $9,000).</p>
+</div>
+<div class="section level2">
+<h2 id="sensitivity-analysis">Sensitivity analysis<a class="anchor" aria-label="anchor" href="#sensitivity-analysis"></a>
+</h2>
+<div class="section level3">
+<h3 id="the-threat-of-unobserved-confounding">The threat of unobserved confounding<a class="anchor" aria-label="anchor" href="#the-threat-of-unobserved-confounding"></a>
+</h3>
+<p>The previous estimate requires the assumption of <em>no unobserved
+confounders</em> for unbiasedness. This assumption, however, may be
+violated. Employers often offer a benefit in which they “match” a
+proportion of an employee’s contribution to their 401(k) up to 5% of the
+employee’s salary. This “matched amount,” denoted by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>,
+is determined by unobserved firm characteristics
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>,
+observed worker characteristics
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>,
+and by 401(k) eligibility
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>.
+In this model, adjustment for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
+alone is <em>not</em> sufficient for control of confounding. Instead, we
+now need to condition <em>both</em> on observed covariates
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math><em>and</em> unobserved confounders
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+for ignorability to hold. How strong would the omitted firm
+characteristics
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+have to be in order to overturn our previous conclusions? And how
+plausible are the strengths revealed to be problematic? In what follows,
+we use our sensitivity analysis results to address these questions.</p>
+</div>
+<div class="section level3">
+<h3 id="robustness-values-and-the-main-confounding-scenario">Robustness values and the main confounding scenario<a class="anchor" aria-label="anchor" href="#robustness-values-and-the-main-confounding-scenario"></a>
+</h3>
+<p>A useful summary of how robust the estimate is to unmeasured
+confounding is the <em>robustness value</em> (RV). Whereas standard
+errors, t-values or p-values communicate how robust the estimate is to
+<em>sampling errors</em>, the idea of robustness values is to quickly
+communicate how robust the estimate is to <em>systematic errors</em> due
+to residual confounding. More precisely, the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mtext mathvariant="normal">RV</mtext><mrow><mi>θ</mi><mo>=</mo><mn>0</mn><mo>,</mo><mi>α</mi><mo>=</mo><mn>0.05</mn></mrow></msub><annotation encoding="application/x-tex">\text{RV}_{\theta = 0, \alpha = 0.05}</annotation></semantics></math>
+measures the minimal strength on <em>both</em> confounding factors such
+that the estimated confidence bound for the ATE would include zero, at
+the 5% significance level. Any postulated confounding scenario that does
+not meet this minimal criterion of strength cannot overturn the results
+of the original study.</p>
+<p>We now proceed to construct a particular confounding scenario, based
+on the contextual details of the problem. We start with the assumption
+that
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+explains as much variation in net financial assets as the total
+variation of the maximal matched amount of income (5%) over the period
+of three years (roughly the period over which the effect is measured).
+In the worst case scenario, this would lead to an additional 3% of
+<em>total</em> variation explained, resulting in a partial
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>
+of outcome with omitted firm characteristics
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>Y</mi></msub><mo>≈</mo><mn>4</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_Y \approx 4\%</annotation></semantics></math>.
+Following similar reasoning, and more conservatively, we posit that
+omitted firm characteristics can explain an additional 2.5% of the
+variation in 401(k) eligibility, resulting in
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>D</mi></msub><mo>≈</mo><mn>3</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_D \approx 3\%</annotation></semantics></math>
+for the partially linear model. Since both
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>Y</mi></msub><mo>≈</mo><mn>4</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_Y \approx 4\%</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>D</mi></msub><mo>≈</mo><mn>3</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_D \approx 3\%</annotation></semantics></math>
+are below the robustness value, we immediately conclude that such a
+confounding scenario is <em>not</em> capable of bringing the lower limit
+of the confidence bound of the ATE to zero.</p>
+<p>We apply the <code><a href="../reference/sensemakr.html">sensemakr()</a></code> method to the <code>dml</code>
+object, passing the confounding scenario through the arguments
+<code>cf.y</code> (the postulated partial
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>
+of omitted variables with the outcome) and <code>cf.d</code> (the
+postulated partial
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>
+of omitted variables with the treatment):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># sensitivity analysis</span></span>
 <span><span class="va">sens.401k</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensemakr.html">sensemakr</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, cf.y <span class="op">=</span> <span class="fl">0.04</span>, cf.d <span class="op">=</span> <span class="fl">0.03</span>,<span class="op">)</span></span>
@@ -230,6 +422,53 @@ and Statistics.</a></p>
 <p><img src="dml-401k_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="3600" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">oldpar</span><span class="op">)</span></span></code></pre></div>
+<p>The <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method reports the robustness value, the
+bias, the bounds, and the confidence bounds for the ATE under the
+postulated scenario. The <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> method produces contour
+plots for the lower and upper limits of the confidence bounds.</p>
+</div>
+<div class="section level3">
+<h3 id="sensitivity-contour-plots">Sensitivity contour plots<a class="anchor" aria-label="anchor" href="#sensitivity-contour-plots"></a>
+</h3>
+<p>Researchers may wish to refine their analysis by visually exploring
+the whole range of possible estimates that confounders with different
+strengths could cause. The contour plots above serve this purpose. The
+horizontal axis describes the fraction of residual variation of the
+treatment explained by unobserved confounders, whereas the vertical axis
+describes the share of residual variation of the outcome explained by
+unobserved confounders. The contour lines show the lower (left panel)
+and upper (right panel) limits of the confidence bounds for the ATE,
+given a pair of hypothesized values of partial
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>.
+The red dashed line marks the zero contour—the critical threshold beyond
+which the estimate changes sign. Note
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mtext mathvariant="normal">RV</mtext><mrow><mi>θ</mi><mo>=</mo><mn>0</mn><mo>,</mo><mi>α</mi><mo>=</mo><mn>0.05</mn></mrow></msub><annotation encoding="application/x-tex">\text{RV}_{\theta = 0, \alpha = 0.05}</annotation></semantics></math>
+is simply the point where the zero contour crosses the 45-degree line.
+The labeled point <em>Max match (3 years)</em> shows the bounds on the
+partial
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>
+as previously discussed, confirming that this confounding scenario is
+not sufficient to overturn the original conclusions. Any other scenario
+can also be contemplated by simply picking different pairs of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>
+values on the plot.</p>
+</div>
+<div class="section level3">
+<h3 id="benchmarking-with-observed-covariates">Benchmarking with observed covariates<a class="anchor" aria-label="anchor" href="#benchmarking-with-observed-covariates"></a>
+</h3>
+<p>Another approach to construct confounding scenarios is to use
+observed covariates to bound the plausible strength of unobserved
+covariates. For instance, in our empirical example, we know that
+employment decisions are largely driven by salary considerations.
+Similarly, salary is clearly an important determinant of net financial
+assets. One could therefore argue that it is implausible to imagine
+other latent firm characteristics that would be even a fraction as
+strong as the observed <em>income</em> of individuals, in terms of
+explanatory power in predicting 401(k) eligibility and net financial
+assets. Whenever such claims of relative importance can be made, they
+can be used to set plausible bounds on the strength of unmeasured
+confounding. The function <code><a href="../reference/dml_benchmark.html">dml_benchmark()</a></code> automates this
+comparison:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># benchmarks</span></span>
 <span><span class="va">bench.plm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_benchmark.html">dml_benchmark</a></span><span class="op">(</span><span class="va">dml.401k.plm</span>, benchmark_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inc"</span>, <span class="st">"pira"</span>, <span class="st">"twoearn"</span><span class="op">)</span><span class="op">)</span></span>
@@ -360,13 +599,41 @@ and Statistics.</a></p>
 <span><span class="co">#&gt; inc     0.15251 0.047876  0.3293    9020    12284 3263.4</span></span>
 <span><span class="co">#&gt; pira    0.05155 0.002753  0.2435    9020     9242  222.1</span></span>
 <span><span class="co">#&gt; twoearn 0.03752 0.005844 -0.5600    9020     8178 -841.8</span></span></code></pre></div>
+<p>The output shows the bounds on the strength of the latent variable
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+if it were as strong as (i) income (<code>inc</code>), (ii) whether a
+worker has an individual retirement account (<code>pira</code>), and
+(iii) whether the worker’s family has a two-earner status
+(<code>twoearn</code>). Note that, apart from income, latent variables
+as strong as these covariates would result in a weaker confounding
+scenario than the one we have previously considered (<em>Max
+match</em>). As for income, the worst-case bound indicates that omitted
+firm characteristics as important as income could be sufficiently strong
+to overturn the original results. However, one could argue such a
+scenario to be implausible, as it is hard to imagine latent firm
+characteristics that would explain more variation in job choice than
+income itself. A more realistic, but still conservative, scenario is
+thus provided by the benchmark point <em>1/4 x Income</em>, which shows
+the bound on the strength of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
+if it were 25% as strong as income in predicting treatment and outcome
+variation.</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="nonparametric-model">Nonparametric Model<a class="anchor" aria-label="anchor" href="#nonparametric-model"></a>
+<h2 id="nonparametric-model">Nonparametric model<a class="anchor" aria-label="anchor" href="#nonparametric-model"></a>
 </h2>
+<p>The partially linear model imposes a constant treatment effect. With
+a binary treatment, however, a fully nonparametric model allows for more
+flexible estimation and, importantly, for exploring heterogeneous
+treatment effects. We now stratify by income quartiles and estimate the
+group average treatment effects (GATEs), in addition to the overall ATE.
+This is done by passing a <code>groups</code> argument to
+<code><a href="../reference/dml.html">dml()</a></code>, along with <code>model = "npm"</code> for the
+nonparametric model:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## compute income quartiles</span></span>
-<span><span class="va">g1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="st">"inc"</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="st">"inc"</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.25</span>,<span class="fl">.5</span>,<span class="fl">.75</span>,<span class="fl">1</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
+<span><span class="va">g1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="st">"inc"</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>,<span class="st">"inc"</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.25</span>,<span class="fl">.5</span>,<span class="fl">.75</span>,<span class="fl">1</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>          labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"q1"</span>, <span class="st">"q2"</span>, <span class="st">"q3"</span>, <span class="st">"q4"</span><span class="op">)</span>, include.lowest <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Nonparametric model</span></span>
@@ -410,6 +677,8 @@ and Statistics.</a></p>
 <span><span class="co">#&gt; -- Rep 4 -- Folds: 1  2  3  4  5  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span></code></pre></div>
+<p>The <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> method now reports both the overall ATE
+and the group-specific treatment effects:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># results under conditional ignorability</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">dml.401k.npm</span><span class="op">)</span></span>
@@ -443,6 +712,11 @@ and Statistics.</a></p>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
+<p>The ATE varies substantially across groups, with effects ranging from
+approximately $4,000 (first quartile) to almost $18,000 (last quartile).
+We can visualize the heterogeneous treatment effects by plotting the
+point estimates along with their confidence intervals for each income
+quartile:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load ggplot2</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -455,10 +729,24 @@ and Statistics.</a></p>
 <span><span class="va">df</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">cis</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">groups</span>, y <span class="op">=</span> <span class="va">estimate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">lwr.ci</span>, ymax <span class="op">=</span> <span class="va">upr.ci</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, col <span class="op">=</span> <span class="st">"blue"</span>, fill <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Income Groups by Quartiles"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Income Groups by Quartiles"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"ATE"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="dml-401k_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="2400" style="display: block; margin: auto;"></p>
+<div class="section level3">
+<h3 id="sensitivity-analysis-for-the-nonparametric-model">Sensitivity analysis for the nonparametric model<a class="anchor" aria-label="anchor" href="#sensitivity-analysis-for-the-nonparametric-model"></a>
+</h3>
+<p>We now repeat the sensitivity analysis using the same confounding
+scenario
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>Y</mi></msub><mo>=</mo><mn>4</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_Y = 4\%</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>D</mi></msub><mo>=</mo><mn>3</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_D = 3\%</annotation></semantics></math>).
+The interpretation of the contours is the same as before, with the main
+difference being that the horizontal axis now describes gains in
+precision rather than gains in variance explained (see Remark 3 of
+Chernozhukov et al., 2026). We adopt the same scenario for the NPM, with
+the understanding that
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>D</mi></msub><mo>≈</mo><mn>3</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">C_D \approx 3\%</annotation></semantics></math>
+now corresponds to gains in precision.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># sensitivity analysis</span></span>
 <span><span class="va">sens.401k.npm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensemakr.html">sensemakr</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, cf.y <span class="op">=</span> <span class="fl">0.04</span>, cf.d <span class="op">=</span> <span class="fl">0.03</span><span class="op">)</span></span>
@@ -547,6 +835,15 @@ and Statistics.</a></p>
 <p><img src="dml-401k_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="3600" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">oldpar</span><span class="op">)</span></span></code></pre></div>
+<p>Confidence bounds for group-wise ATEs can also be computed. The
+<code><a href="../reference/dml_bounds.html">confidence_bounds()</a></code> function returns the lower and upper
+bounds on the treatment effect under the confounding scenario; setting
+<code>level = 0</code> gives the point-wise bounds (no statistical
+uncertainty, only the bias from confounding), whereas
+<code>level = 0.95</code> gives the confidence bounds (accounting for
+both bias and sampling uncertainty). The results are shown in the figure
+below, where the red band shows the bounds and the blue band shows the
+confidence bounds.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># confidence bounds plot</span></span>
 <span><span class="va">bds</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, cf.y <span class="op">=</span> <span class="fl">0.04</span>, cf.d <span class="op">=</span> <span class="fl">0.03</span>, level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
@@ -557,10 +854,17 @@ and Statistics.</a></p>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df2</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">groups</span>, y <span class="op">=</span> <span class="va">estimate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">lwr.bound</span>, ymax <span class="op">=</span> <span class="va">upr.bound</span><span class="op">)</span>,   alpha <span class="op">=</span> <span class="fl">0.1</span>, col <span class="op">=</span> <span class="st">"red"</span>, fill <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">lwr.cbound</span>, ymax <span class="op">=</span> <span class="va">upr.cbound</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, col <span class="op">=</span> <span class="st">"blue"</span>, fill <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Income Groups by Quartiles"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Income Groups by Quartiles"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"ATE"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="dml-401k_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="2400" style="display: block; margin: auto;"></p>
+<p>Note how the bounds are still largely positive, with only a small
+excursion into the negative in the case of the second quartile group.
+These results suggest that the main qualitative findings reported in
+earlier studies are relatively robust to plausible violations of
+unconfoundedness, such as the one specified by our confounding
+scenario.</p>
+<p>Finally, we provide benchmarks for the nonparametric model:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># benchmarks</span></span>
 <span><span class="va">bench.npm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dml_benchmark.html">dml_benchmark</a></span><span class="op">(</span><span class="va">dml.401k.npm</span>, benchmark_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inc"</span>, <span class="st">"pira"</span>, <span class="st">"twoearn"</span><span class="op">)</span><span class="op">)</span></span>
@@ -697,6 +1001,29 @@ and Statistics.</a></p>
 <span><span class="co">#&gt; inc     0.13918 0.133240  0.2346    7969    11783 3814.2</span></span>
 <span><span class="co">#&gt; pira    0.03914 0.003076  0.2503    7969     8490  520.8</span></span>
 <span><span class="co">#&gt; twoearn 0.01241 0.002352 -0.1368    7969     7475 -494.1</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A. and Syrgkanis,
+V. (2026), “Long Story Short: Omitted Variable Bias in Causal Machine
+Learning.” <em>Review of Economics and Statistics</em>. ( <a href="https://doi.org/10.1162/REST.a.1705" class="external-link">link</a> )</p>
+<p>Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen,
+C., Newey, W. and Robins, J. (2018), “Double/debiased machine learning
+for treatment and structural parameters.” <em>The Econometrics
+Journal</em>, 21(1), C1–C68.</p>
+<p>Cinelli, C. and Hazlett, C. (2020), “Making Sense of Sensitivity:
+Extending Omitted Variable Bias.” <em>Journal of the Royal Statistical
+Society, Series B (Statistical Methodology)</em>, 82(1), 39–67. ( <a href="https://doi.org/10.1111/rssb.12348" class="external-link">link</a> )</p>
+<p>Imbens, G. (2003), “Sensitivity to Exogeneity Assumptions in Program
+Evaluation.” <em>American Economic Review</em>, 93(2), 126–132.</p>
+<p>Poterba, J., Venti, S. and Wise, D. (1994), “401(k) Plans and
+Tax-Deferred Saving.” In D. Wise (Ed.), <em>Studies in the Economics of
+Aging</em>, pp. 105–142, University of Chicago Press.</p>
+<p>Poterba, J., Venti, S. and Wise, D. (1995), “Do 401(k) Contributions
+Crowd Out Other Personal Saving?” <em>Journal of Public Economics</em>,
+58(1), 1–32.</p>
 </div>
   </div>
 
