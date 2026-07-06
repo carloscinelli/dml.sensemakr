@@ -21,8 +21,9 @@
 ##' @param dreg learner specification for the propensity score. Default \code{"ranger"}.
 ##' @param yreg0 learner specification for the outcome regression on controls.
 ##'   Default inherits \code{dreg}.
-##' @param med.fold logical. If \code{TRUE} (default), summarise across cross-fitting
+##' @param med.rep logical. If \code{TRUE} (default), summarise across cross-fitting
 ##'   repetitions by picking the rep closest to the median \code{theta.s}.
+##'   Only relevant when \code{cf.reps > 1}.
 ##' @param verbose logical. Print progress messages. Default \code{TRUE}.
 ##' @param ... additional arguments passed to \code{cond_dml}.
 ##' @returns A \code{data.frame} with one row per benchmark covariate and columns:
@@ -40,7 +41,7 @@ cond_dml_strength <- function(y, d, x,
                               ps.trim  = 0.01,
                               dreg     = "ranger",
                               yreg0    = dreg,
-                              med.fold = TRUE,
+                              med.rep  = TRUE,
                               verbose  = TRUE,
                               ...) {
 
@@ -66,8 +67,8 @@ cond_dml_strength <- function(y, d, x,
              ...)
   }
 
-  pick_fold <- function(treat_results) {
-    if (!med.fold || length(treat_results) == 1L) return(1L)
+  pick_rep <- function(treat_results) {
+    if (!med.rep || length(treat_results) == 1L) return(1L)
     theta.vec <- sapply(treat_results, function(r) r$estimates$theta.s)
     which.min(abs(theta.vec - stats::median(theta.vec)))
   }
@@ -81,7 +82,7 @@ cond_dml_strength <- function(y, d, x,
   model_null <- fit_one(x_null, "null (intercept only)")
 
   treat_null        <- model_null$results$main$treat
-  k_null            <- pick_fold(treat_null)
+  k_null            <- pick_rep(treat_null)
   sigma2.uncond     <- get_est(treat_null, "sigma2.s",     k_null)
   nu2.uncond        <- get_est(treat_null, "nu2.s",        k_null)
   theta.uncond      <- get_est(treat_null, "theta.s",      k_null)
@@ -98,7 +99,7 @@ cond_dml_strength <- function(y, d, x,
     model_var <- fit_one(x_var, covar)
 
     treat_var      <- model_var$results$main$treat
-    k_var          <- pick_fold(treat_var)
+    k_var          <- pick_rep(treat_var)
 
     nu2.var        <- get_est(treat_var, "nu2.s",    k_var)
     se.nu2.var     <- get_est(treat_var, "se.nu2.s", k_var)
