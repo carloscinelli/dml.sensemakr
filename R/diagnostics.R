@@ -10,7 +10,7 @@
 ##' @param y numeric vector. Outcome (e.g. first-differenced outcome).
 ##' @param d numeric vector. Treatment indicator.
 ##' @param x numeric matrix. Full covariate matrix; columns must be named.
-##' @param benchmark_covariates character vector of column names in \code{x}
+##' @param diagnostic_covariates character vector of column names in \code{x}
 ##'   to benchmark one at a time.
 ##' @param scaled logical. Passed to \code{cond_dml}. Default \code{TRUE}.
 ##' @param model character. Model type passed to \code{cond_dml}. Default \code{"npm"}.
@@ -32,7 +32,7 @@
 ##'   \code{alignment}, \code{alignment_se}, \code{bias}, \code{bias_se}.
 ##' @export
 cond_dml_strength <- function(y, d, x,
-                              benchmark_covariates,
+                              diagnostic_covariates,
                               scaled   = TRUE,
                               model    = "npm",
                               cf.folds = 5,
@@ -45,10 +45,10 @@ cond_dml_strength <- function(y, d, x,
                               verbose  = TRUE,
                               ...) {
 
-  which.not <- which(!benchmark_covariates %in% colnames(x))
+  which.not <- which(!diagnostic_covariates %in% colnames(x))
   if (length(which.not) > 0) {
     stop("Covariates not found in x: ",
-         paste(benchmark_covariates[which.not], collapse = ", "), ".")
+         paste(diagnostic_covariates[which.not], collapse = ", "), ".")
   }
 
   fit_one <- function(x_i, label) {
@@ -91,10 +91,10 @@ cond_dml_strength <- function(y, d, x,
   psi.nu2.uncond    <- get_psi(treat_null, "psi.nu2.s",    k_null)
 
   # ----- 2. One single-covariate model per benchmark variable ------------------
-  out_rows <- vector("list", length(benchmark_covariates))
+  out_rows <- vector("list", length(diagnostic_covariates))
 
-  for (i in seq_along(benchmark_covariates)) {
-    covar     <- benchmark_covariates[i]
+  for (i in seq_along(diagnostic_covariates)) {
+    covar     <- diagnostic_covariates[i]
     x_var     <- x[, covar, drop = FALSE]
     model_var <- fit_one(x_var, covar)
 
