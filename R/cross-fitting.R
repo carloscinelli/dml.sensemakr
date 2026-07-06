@@ -151,35 +151,44 @@ cross.fitting <- function(y, d, x,
         silent.do.call(what = "train", args = args.y0x, warnings = warnings)
       metric.y0 <- model.y0x$metric
 
-      args.y1x  <- c(
-        list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d1, ,drop = FALSE],
-             y = ytil1), yreg1)
-      model.y1x <-
-        silent.do.call(what = "train", args = args.y1x, warnings = warnings)
-      metric.y1 <- model.y1x$metric
+      if (!is.null(yreg1)) {
+        args.y1x  <- c(
+          list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d1, ,drop = FALSE],
+               y = ytil1), yreg1)
+        model.y1x <-
+          silent.do.call(what = "train", args = args.y1x, warnings = warnings)
+        metric.y1 <- model.y1x$metric
+      } else {
+        model.y1x <- NULL
+        metric.y1 <- NULL
+      }
 
       metric.y <- list(metric.y0 = metric.y0, metric.y1 = metric.y1)
 
       if (save.models) {
-        out$model.y[[b]] <- list(model.y0x = model.y0x, model.y1x = model.y1x)
+        out$model.y[[b]]  <- list(model.y0x = model.y0x, model.y1x = model.y1x)
         out$model.y0[[b]] <- model.y0x
         out$model.y1[[b]] <- model.y1x
-        out$model.d[[b]] <- model.dx
+        out$model.d[[b]]  <- model.dx
       }
 
       if (all(target == "att")) {
         yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
-        yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = FALSE])*sdy1 + muy1
+        if (!is.null(model.y1x))
+          yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = FALSE])*sdy1 + muy1
       } else if (all(target == "atu")) {
         yhat0[Id[[b]]][num(d[Id[[b]]]) == 0] <- safe.predict(model.y0x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 0], ,drop = FALSE])*sdy0 + muy0
-        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
+        if (!is.null(model.y1x))
+          yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
       } else {
         yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
-        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
+        if (!is.null(model.y1x))
+          yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
       }
 
       yhat[Id[[b]]][num(d[Id[[b]]]) == 0] <- yhat0[Id[[b]]][num(d[Id[[b]]]) == 0]
-      yhat[Id[[b]]][num(d[Id[[b]]]) == 1] <- yhat1[Id[[b]]][num(d[Id[[b]]]) == 1]
+      if (!is.null(model.y1x))
+        yhat[Id[[b]]][num(d[Id[[b]]]) == 1] <- yhat1[Id[[b]]][num(d[Id[[b]]]) == 1]
     }
 
   }
@@ -205,16 +214,17 @@ cross.fitting <- function(y, d, x,
     out$preds$yhat0 <- yhat0
     out$preds$yhat1 <- yhat1
 
-    rmse_dhat <- sqrt(mean((num(d) - dhat)^2))
-    rmse_yhat0 <- sqrt(mean((num(y[num(d) == 0]) -
-                               yhat0[num(d) == 0])^2))
-    rmse_yhat1 <- sqrt(mean((num(y[num(d) == 1]) -
-                               yhat1[num(d) == 1])^2))
-    rmse_yhat <- sqrt(mean((num(y) - yhat)^2))
-    out$rmse$dhat <- rmse_dhat
+    rmse_dhat  <- sqrt(mean((num(d) - dhat)^2))
+    rmse_yhat0 <- sqrt(mean((num(y[num(d) == 0]) - yhat0[num(d) == 0])^2))
+    rmse_yhat1 <- if (!is.null(yreg1))
+      sqrt(mean((num(y[num(d) == 1]) - yhat1[num(d) == 1])^2)) else NULL
+    rmse_yhat  <- if (!is.null(yreg1))
+      sqrt(mean((num(y) - yhat)^2)) else rmse_yhat0
+
+    out$rmse$dhat  <- rmse_dhat
     out$rmse$yhat0 <- rmse_yhat0
     out$rmse$yhat1 <- rmse_yhat1
-    out$rmse$yhat <- rmse_yhat
+    out$rmse$yhat  <- rmse_yhat
   }
   out$preds$phat <- phat
   if(verbose) cat("\n")
