@@ -86,6 +86,8 @@
 dml <- function(y, d, x,
                 model  = c("plm", "npm"),
                 target = "ate",
+                conditional = NULL,
+                scaled = TRUE,
                 groups = NULL,
                 cf.folds = 5,
                 cf.reps  = 1,
@@ -157,6 +159,19 @@ dml <- function(y, d, x,
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
 
+  # auto-set conditional: TRUE when the only target is "att" and model is "npm"
+  if (is.null(conditional)) {
+    conditional <- (model == "npm" && identical(target, "att"))
+  }
+  if (conditional && model != "npm") {
+    warning("conditional = TRUE is only supported for model = 'npm'; setting conditional = FALSE.")
+    conditional <- FALSE
+  }
+  if (conditional && !identical(target, "att")) {
+    warning("conditional = TRUE requires target = 'att' only; setting conditional = FALSE.")
+    conditional <- FALSE
+  }
+
 
   out <- list()
   out$data <- list(y = y, d = d, x = x)
@@ -188,6 +203,8 @@ dml <- function(y, d, x,
 
   out$info <- list(model = model,
                    target = target,
+                   conditional = conditional,
+                   scaled = scaled,
                    cf.folds = cf.folds,
                    cf.reps = cf.reps,
                    dirty.tuning = dirty.tuning,
@@ -198,7 +215,7 @@ dml <- function(y, d, x,
     cat("Debiased Machine Learning\n")
     cat("\n")
     cat("", "Model:", ifelse(out$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
-    cat("", "Target:", out$info$target , "\n")
+    cat("", "Target:", out$info$target, if (conditional) "(conditional)" else "(unconditional)", "\n")
     cat("", "Cross-Fitting:", out$info$cf.folds, "folds,", out$info$cf.reps, "reps", "\n")
     cat("", "ML Method:",
         "outcome", paste0("(yreg0:", attr(out$info$yreg$yreg0$method, "name"),
@@ -289,12 +306,16 @@ dml <- function(y, d, x,
     if (model == "npm") {
       if (verbose) cat("- Tuning Model for Y (non-parametric).\n")
       yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
-      yreg1 <- tune_model(x = x[d == d1, ,drop = FALSE], y = ytil1, args = yreg1)
+      if (!conditional) {
+        yreg1 <- tune_model(x = x[d == d1, ,drop = FALSE], y = ytil1, args = yreg1)
+      } else {
+        yreg1 <- NULL
+      }
       yreg <- list(yreg0 = yreg0, yreg1 = yreg1)
       if (verbose) {
         cat("-- Best Tune:\n")
         print(yreg0$tuneGrid)
-        print(yreg1$tuneGrid)
+        if (!conditional) print(yreg1$tuneGrid)
         cat("\n")
       }
     }
@@ -376,8 +397,44 @@ dml <- function(y, d, x,
   out$coefs$main$all   <- combine.cross.fits(results)
 
   if (model == "npm") {
-    out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
-    out$coefs$main <- lapply(out$results$main, combine.cross.fits)
+    if (conditional) {
+      # conditional ATT path: use att.npm.cond() for each rep
+      treat_results <- vector("list", cf.reps)
+      for (i in seq_len(cf.reps)) {
+        phat  <- fits[[i]]$preds$phat
+        dhat  <- fits[[i]]$preds$dhat
+        yhat0 <- fits[[i]]$preds$yhat0
+        treat_results[[i]] <- att.npm.cond(
+          y      = num(y),
+          d      = num(d),
+          yhat0  = yhat0,
+          yhat1  = NULL,
+          dhat   = dhat,
+          phat   = phat,
+          trim   = ps.trim,
+          scaled = scaled
+        )
+        trimmed.all.idx  <- treat_results[[i]]$trim.summary$trimmed_indices$all
+        trimmed.low.idx  <- treat_results[[i]]$trim.summary$trimmed_indices$low
+        trimmed.high.idx <- treat_results[[i]]$trim.summary$trimmed_indices$high
+        treat_results[[i]]$trim.summary$trimmed_obs <- list(
+          all  = list(y.trimmed = y[trimmed.all.idx],
+                      d.trimmed = d[trimmed.all.idx],
+                      x.trimmed = x[trimmed.all.idx, ]),
+          low  = list(y.trimmed = y[trimmed.low.idx],
+                      d.trimmed = d[trimmed.low.idx],
+                      x.trimmed = x[trimmed.low.idx, ]),
+          high = list(y.trimmed = y[trimmed.high.idx],
+                      d.trimmed = d[trimmed.high.idx],
+                      x.trimmed = x[trimmed.high.idx, ])
+        )
+      }
+      out$results$main$treat <- treat_results
+      out$coefs$main$treat   <- combine.cross.fits(treat_results)
+    } else {
+      out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
+      out$coefs$main   <- lapply(out$results$main, combine.cross.fits)
+    }
   }
 
   # Group ATE

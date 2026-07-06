@@ -1,7 +1,117 @@
 
-# computes standard error using influence function psi
-psi.sd <- function(psi){
-  sqrt(mean(psi^2))/sqrt(length(psi))
+# computes standard error using influence function psi (optionally weighted)
+psi.sd <- function(psi, w = NULL){
+  if (is.null(w)) {
+    w <- rep(1, length(psi))
+  }
+  w_norm <- w / sum(w)
+  Ew_psi2 <- sum(w_norm * psi^2)
+  n_eff <- (sum(w)^2) / sum(w^2)
+  sqrt(Ew_psi2) / sqrt(n_eff)
+}
+
+# computes conditional ATT for npm (conditional/DiD version)
+# returns estimates and influence functions for theta.s, sigma2.0s, nu2.0s, S02
+att.npm.cond <- function(y, d,
+                         yhat0,
+                         yhat1 = NULL,
+                         dhat, phat,
+                         trim   = 0.02,
+                         scaled = TRUE,
+                         nu2.weight = NULL) {
+
+  trim.summary <- trim.ps(dhat, trim = trim)
+  dhat.t       <- trim.summary$ps
+
+  l    <- d / phat
+  lc   <- (1 - d) / (1 - phat)
+  lbar <- dhat.t / phat
+
+  gs        <- rep(NA, length(y))
+  gs[d == 1] <- if (is.null(yhat1)) y[d == 1] else yhat1[d == 1]
+  gs[d == 0] <- yhat0[d == 0]
+
+  # ATT (same score as unconditional)
+  RRs         <- d / phat - ((1 - d) / (1 - dhat.t)) * lbar
+  Ms          <- (y - yhat0) * l
+  theta.s     <- mean(Ms + (1 - d) * (y - gs) * RRs) / mean(l)
+  psi.theta.s <- (Ms + (1 - d) * (y - gs) * RRs - theta.s * l) / mean(l)
+
+  # E[g0s | D=1]  and  E[Y | D=1]
+  theta.0s     <- mean(l * yhat0 + (((1 - d) * dhat.t) / ((1 - dhat.t) * phat)) * (y - yhat0)) / mean(l)
+  psi.theta.0s <- (l * (yhat0 - theta.0s) + (((1 - d) * dhat.t) / ((1 - dhat.t) * phat)) * (y - yhat0)) / mean(l)
+
+  theta.1s     <- mean(l * y) / mean(l)
+  psi.theta.1s <- (l * (y - theta.1s)) / mean(l)
+
+  # sigma2.0s  =  E[(Y - g0s)^2 | D=0]
+  sigma2.0s     <- mean(lc * (y - yhat0)^2) / mean(lc)
+  psi.sigma2.0s <- lc * ((y - yhat0)^2 - sigma2.0s) / mean(lc)
+
+  # sigma2.1s  (optional, requires yhat1)
+  if (!is.null(yhat1)) {
+    sigma2.1s     <- mean(l * (y - yhat1)^2, na.rm = TRUE) / mean(l)
+    psi.sigma2.1s <- l * ((y - yhat1)^2 - sigma2.1s) / mean(l)
+  }
+
+  # nu2.0s  =  conditional imbalance (propensity-score based)
+  if (is.null(nu2.weight)) nu2.weight <- rep(1, length(d))
+
+  if (scaled) {
+    nu2.0s <- weighted.mean(
+      (d * (phat - dhat.t) * (phat + dhat.t - 2) +
+         (phat^2) * (1 - 2 * dhat.t) -
+         (dhat.t^2) * (1 - 2 * phat)) /
+        ((phat^2) * (1 - phat) * (1 - dhat.t)^2),
+      w = nu2.weight) / weighted.mean(2 * l - lc, w = nu2.weight)
+
+    psi.nu2.0s <- (
+      (d * (phat - dhat.t) * (phat + dhat.t - 2) +
+         (phat^2) * (1 - 2 * dhat.t) -
+         (dhat.t^2) * (1 - 2 * phat)) /
+        ((phat^2) * (1 - phat) * (1 - dhat.t)^2) -
+        (2 * l - lc) * nu2.0s
+    ) / weighted.mean(2 * l - lc, w = nu2.weight)
+  } else {
+    OX <- dhat.t / (1 - dhat.t)
+    O  <- phat   / (1 - phat)
+    nu2.0s     <- weighted.mean(2 * l * (OX / O) - lc * (OX / O)^2, w = nu2.weight) /
+                  weighted.mean(2 * l - lc, w = nu2.weight)
+    psi.nu2.0s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.0s) /
+                  weighted.mean(2 * l - lc, w = nu2.weight)
+  }
+
+  # S02 = sigma2.0s * nu2.0s
+  S02     <- sigma2.0s * nu2.0s
+  psi.S02 <- sigma2.0s * psi.nu2.0s + nu2.0s * psi.sigma2.0s
+
+  list(
+    psis = list(
+      psi.theta.s   = psi.theta.s,
+      psi.theta.0s  = psi.theta.0s,
+      psi.theta.1s  = psi.theta.1s,
+      psi.sigma2.s  = psi.sigma2.0s,
+      psi.sigma2.1s = if (is.null(yhat1)) 0 else psi.sigma2.1s,
+      psi.nu2.s     = psi.nu2.0s,
+      psi.S2        = psi.S02
+    ),
+    estimates = list(
+      theta.s      = theta.s,
+      theta.0s     = theta.0s,
+      theta.1s     = theta.1s,
+      se.theta.s   = psi.sd(psi.theta.s),
+      se.theta.0s  = psi.sd(psi.theta.0s),
+      se.theta.1s  = psi.sd(psi.theta.1s),
+      sigma2.s     = sigma2.0s,
+      se.sigma2.s  = psi.sd(psi.sigma2.0s),
+      nu2.s        = nu2.0s,
+      se.nu2.s     = psi.sd(psi.nu2.0s, w = nu2.weight),
+      S2           = S02,
+      se.S2        = psi.sd(psi.S02),
+      cov.theta.S2 = mean(psi.theta.s * psi.S02) / length(psi.S02)
+    ),
+    trim.summary = trim.summary
+  )
 }
 
 # trims propensity score
