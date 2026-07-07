@@ -76,8 +76,7 @@ dml_diagnostic <- function(y, d, x,
   model <- match.arg(model)
 
   if (type == "uncond")
-    stop("Unconditional diagnostics (type = \"uncond\") are not yet implemented. ",
-         "For unconditional ATE benchmarks use dml_benchmark().")
+    stop("Unconditional diagnostics (type = \"uncond\") are not yet implemented.")
   if (model == "plm")
     stop("PLM diagnostics (model = \"plm\") are not yet implemented.")
 
