@@ -1,9 +1,9 @@
-##' Covariate strength table for conditional DML (DiD/ATT)
+##' Covariate strength diagnostics for DML models
 ##' @description
 ##' For each benchmark covariate (and optionally for each learner in
-##' \code{learners}), fits a single-covariate conditional DML model and
-##' computes four strength diagnostics: imbalance, trend, alignment, and bias.
-##' These correspond to the columns of the "Covariate Strength" table in the
+##' \code{learners}), fits a single-covariate DML model and computes four
+##' strength diagnostics: imbalance, trend, alignment, and bias.  These
+##' correspond to the columns of the "Covariate Strength" table in the
 ##' OVB-for-DiD manuscript.
 ##'
 ##' @param y numeric vector. Outcome (e.g. first-differenced outcome).
@@ -11,6 +11,9 @@
 ##' @param x numeric matrix. Full covariate matrix; columns must be named.
 ##' @param diagnostic_covariates character vector of column names in \code{x}
 ##'   to benchmark one at a time.
+##' @param type character. \code{"cond"} (default) fits conditional ATT models
+##'   (DiD/panel setting).  \code{"uncond"} is reserved for future unconditional
+##'   ATE diagnostics and is not yet implemented.
 ##' @param x_list optional named list of pre-built covariate matrices, one per
 ##'   entry in \code{diagnostic_covariates}.  When a covariate name appears in
 ##'   \code{x_list}, that matrix is used as-is (no intercept is added
@@ -19,7 +22,8 @@
 ##'   this to pass multi-column encodings such as
 ##'   \code{list(region = model.matrix(~ region))}.
 ##' @param scaled logical. Passed to \code{dml}. Default \code{TRUE}.
-##' @param model character. Model type passed to \code{dml}. Default \code{"npm"}.
+##' @param model character. \code{"npm"} (default) uses the nonparametric model.
+##'   \code{"plm"} (partially linear model) is not yet implemented.
 ##' @param cf.folds integer. Number of cross-fitting folds. Default \code{5}.
 ##' @param cf.reps integer. Number of cross-fitting repetitions. Default \code{1}.
 ##' @param cf.seed integer or \code{NULL}. Seed for cross-fitting. Default \code{NULL}.
@@ -50,22 +54,32 @@
 ##'   \code{models} (named list of named lists of fitted \code{dml} objects,
 ##'   mirroring \code{models_all[[learner]][[variable]]}).
 ##' @export
-cond_dml_strength <- function(y, d, x,
-                              diagnostic_covariates,
-                              x_list     = NULL,
-                              scaled     = TRUE,
-                              model      = "npm",
-                              cf.folds   = 5,
-                              cf.reps    = 1,
-                              cf.seed    = NULL,
-                              ps.trim    = 0.01,
-                              dreg       = "ranger",
-                              yreg0      = dreg,
-                              learners   = NULL,
-                              null_model = NULL,
-                              med.rep    = TRUE,
-                              verbose    = TRUE,
-                              ...) {
+dml_diagnostic <- function(y, d, x,
+                           diagnostic_covariates,
+                           type       = c("cond", "uncond"),
+                           x_list     = NULL,
+                           scaled     = TRUE,
+                           model      = c("npm", "plm"),
+                           cf.folds   = 5,
+                           cf.reps    = 1,
+                           cf.seed    = NULL,
+                           ps.trim    = 0.01,
+                           dreg       = "ranger",
+                           yreg0      = dreg,
+                           learners   = NULL,
+                           null_model = NULL,
+                           med.rep    = TRUE,
+                           verbose    = TRUE,
+                           ...) {
+
+  type  <- match.arg(type)
+  model <- match.arg(model)
+
+  if (type == "uncond")
+    stop("Unconditional diagnostics (type = \"uncond\") are not yet implemented. ",
+         "For unconditional ATE benchmarks use dml_benchmark().")
+  if (model == "plm")
+    stop("PLM diagnostics (model = \"plm\") are not yet implemented.")
 
   # Covariates not in x_list must be columns of x
   covars_need_x <- setdiff(diagnostic_covariates, names(x_list))

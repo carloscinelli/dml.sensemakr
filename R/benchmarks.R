@@ -2,7 +2,7 @@
 ##' @description
 ##' Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
 ##' @param model an object of class \code{\link{dml}}. Must be an unconditional ATE model.
-##'   For conditional ATT models use \code{\link{cond_dml_strength}}.
+##'   For conditional ATT models use \code{\link{dml_diagnostic}}.
 ##' @param benchmark_covariates a character vector with the names of the observed covariates that will be used for benchmarking.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
 ##' @export
@@ -103,7 +103,7 @@ bench_fun <- function(model, benchmark_covariates){
 
   if (isTRUE(model$info$conditional))
     stop("dml_benchmark() computes unconditional ATE benchmarks. ",
-         "For conditional ATT models use cond_dml_strength().")
+         "For conditional ATT models use dml_diagnostic().")
   x <- model$data$x
   which.not <- which(!benchmark_covariates %in% colnames(x))
 
