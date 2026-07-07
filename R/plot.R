@@ -342,12 +342,17 @@ ovb_contour_plot.dml <- function(model,
   }
 
   parameter <- match.arg(parameter)
-  parameter <- switch (parameter,
+  target_label <- parameter                        # user-facing label ("ate"/"att"/"atu")
+  parameter <- switch(parameter,
     ate = "all",
     att = "treat",
     atu = "untr"
   )
   results <- model$results$main[[parameter]]
+  if (is.null(results))
+    stop(sprintf("Parameter '%s' (slot '%s') was not computed for this model (target = '%s').",
+                 target_label, parameter, paste(model$info$target, collapse="/")))
+
 
   if(group) {
     results <- model$results$groups[[group.number]]
@@ -394,7 +399,7 @@ ovb_contour_plot.dml <- function(model,
 
   points(0, 0, pch = 17, col = "black", cex = 1)
 
-  idx <- ifelse(group, group.number + 1, paste0("ate.", parameter))
+  idx <- ifelse(group, group.number + 1, target_label)
   plot_estimate <- confint(model,
                            combine.method = combine.method,
                            level = level)[idx, ifelse(which.bound == "lwr", 1, 2)]

@@ -4,14 +4,13 @@
 \alias{dml_benchmark}
 \title{Benchmarks for the strength of latent variables using observed covariates}
 \usage{
-dml_benchmark(model, benchmark_covariates, target = "ate")
+dml_benchmark(model, benchmark_covariates)
 }
 \arguments{
-\item{model}{an object of class \code{\link{dml}}.}
+\item{model}{an object of class \code{\link{dml}}. Must be an unconditional ATE model.
+For conditional ATT models use \code{\link{cond_dml_strength}}.}
 
 \item{benchmark_covariates}{a character vector with the names of the observed covariates that will be used for benchmarking.}
-
-\item{target}{character. The target parameter. Default is \code{"ate"}.}
 }
 \value{
 An object of class \code{dml_benchmark} containing benchmark results.

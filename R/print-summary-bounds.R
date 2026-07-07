@@ -74,7 +74,7 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   cat("Sensitivity Parameters\n",
       "","cf.y =", paste0(x$info$cf.y,"\n"),
       "","r2rr =", paste0(x$info$cf.d, "\n"),
-      "", "rho =", paste0(x$info$rho,""), "\n")
+      "", "rho =", paste0(x$info$rho2,""), "\n")
   # cat("\nBounds on Average Treatment Effect:", "\n\n")
   # print()
   main <- x$main
@@ -100,11 +100,11 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
 #' @rdname print.dml.bounds
 #' @export
 coef.dml.bounds <- function(object, combine.method = "median", ...){
-  # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "estimate"]))
+  slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
   if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     ate <- do.call("rbind", ate)
-    rownames(ate) <- paste0("ate.", rownames(ate))
+    rownames(ate) <- slot_to_target[rownames(ate)]
   } else{
     ate = NULL
   }
@@ -123,11 +123,11 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
 #' @rdname print.dml.bounds
 #' @export
 se.dml.bounds <- function(object, combine.method = "median", ...){
-  # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "se"]))
+  slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
   if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "se"]))
     ate <- do.call("rbind", ate)
-    rownames(ate) <- paste0("ate.", rownames(ate))
+    rownames(ate) <- slot_to_target[rownames(ate)]
   } else{
     ate = NULL
   }

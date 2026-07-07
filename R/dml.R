@@ -217,9 +217,10 @@ dml <- function(y, d, x,
     cat("", "Model:", ifelse(out$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
     cat("", "Target:", out$info$target, if (conditional) "(conditional)" else "(unconditional)", "\n")
     cat("", "Cross-Fitting:", out$info$cf.folds, "folds,", out$info$cf.reps, "reps", "\n")
+    yreg1_label <- if (conditional) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
     cat("", "ML Method:",
         "outcome", paste0("(yreg0:", attr(out$info$yreg$yreg0$method, "name"),
-                          ", yreg1:", attr(out$info$yreg$yreg1$method, "name"), "),"),
+                          ", yreg1:", yreg1_label, "),"),
         "treatment", paste0("(", attr(out$info$dreg$method,"name"), ")\n"))
     cat("", "Tuning:", ifelse(out$info$dirty.tuning, "dirty", "clean"), "\n")
     cat("\n")
@@ -321,6 +322,7 @@ dml <- function(y, d, x,
     }
       out$dreg <- dreg
       out$yreg <- yreg
+      out$info$yreg <- yreg   # update info to reflect final tuned specs (yreg1=NULL if conditional)
 
   }
 

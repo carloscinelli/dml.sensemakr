@@ -11,6 +11,8 @@ dml(
   x,
   model = c("plm", "npm"),
   target = "ate",
+  conditional = NULL,
+  scaled = TRUE,
   groups = NULL,
   cf.folds = 5,
   cf.reps = 1,

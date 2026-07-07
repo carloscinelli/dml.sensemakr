@@ -1,16 +1,12 @@
 ##' Benchmarks for the strength of latent variables using observed covariates
 ##' @description
 ##' Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
-##' @param model an object of class \code{\link{dml}}.
+##' @param model an object of class \code{\link{dml}}. Must be an unconditional ATE model.
+##'   For conditional ATT models use \code{\link{cond_dml_strength}}.
 ##' @param benchmark_covariates a character vector with the names of the observed covariates that will be used for benchmarking.
-##' @param target character. The target parameter. Default is \code{"ate"}.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
 ##' @export
-dml_benchmark <- function(model, benchmark_covariates, target = "ate"){
-  model.type <- model$info$model
-  # bench_fun <- switch(model.type,
-  #                     npm = bench_npm,
-  #                     plm = bench_plm)
+dml_benchmark <- function(model, benchmark_covariates){
   bench <- bench_fun(model = model, benchmark_covariates = benchmark_covariates)
   class(bench) <- "dml_benchmark"
   return(bench)
@@ -55,7 +51,7 @@ summary.dml_benchmark <- function(object, combine.method = "mean", na.rm = TRUE,
 #   R2.Y <- (apply(resY.D, 2, function(x) max(1-mean(x^2)/var(model$data$y),0)))
 #   R2.D <- (apply(resD, 2, function(x) max(1-mean(x^2)/var(model$data$d),0)))
 #
-#   theta.short <- extract_estimate(model$results$main[[1]], "theta.s")
+#   theta.short <- extract_estimate(model$results$main$all, "theta.s")
 #   benchmarks <- list()
 #   for (i in seq_along(benchmark_covariates)){
 #     covar <- benchmark_covariates[i]
@@ -74,7 +70,7 @@ summary.dml_benchmark <- function(object, combine.method = "mean", na.rm = TRUE,
 #     R2.Dwo <- (apply(resD.wo, 2, function(x) max(1-mean(x^2)/var(model.wo$data$d),0)))
 #
 #     ## Bias Decomposition
-#     theta.short.wo <- extract_estimate(model.wo$results$main[[1]], "theta.s")
+#     theta.short.wo <- extract_estimate(model.wo$results$main$all, "theta.s")
 #     Bias <-  theta.short.wo - theta.short
 #     V.g <- apply(resY.D.wo, 2, function(x) mean(x^2)) -
 #       apply(resY.D,2, function(x) mean(x^2)) # var( g - g_s)
@@ -105,7 +101,9 @@ summary.dml_benchmark <- function(object, combine.method = "mean", na.rm = TRUE,
 
 bench_fun <- function(model, benchmark_covariates){
 
-  # if (is.null(model$results$main$all)) stop("Benchmarks implemented for ATE only. ATT/ATU coming soon.")
+  if (isTRUE(model$info$conditional))
+    stop("dml_benchmark() computes unconditional ATE benchmarks. ",
+         "For conditional ATT models use cond_dml_strength().")
   x <- model$data$x
   which.not <- which(!benchmark_covariates %in% colnames(x))
 
@@ -113,18 +111,18 @@ bench_fun <- function(model, benchmark_covariates){
     stop("Covariates not found: ", paste(benchmark_covariates[which.not], collapse = ", "), ".")
   }
 
-  nu.sq <- extract_estimate(model$results$main[[1]], param = "nu2.s")
-  sigma.sq <- extract_estimate(model$results$main[[1]], param = "sigma2.s")
+  nu.sq <- extract_estimate(model$results$main$all, param = "nu2.s")
+  sigma.sq <- extract_estimate(model$results$main$all, param = "sigma2.s")
 
   # resY  <- sapply(model$fits, function(x)model$data$y-x$preds$yhat)
   # R2.Y  <- apply(resY, 2, function(x) max(1-var(x)/var(model$data$y),0))
 
-  theta.short <- extract_estimate(model$results$main[[1]], "theta.s")
+  theta.short <- extract_estimate(model$results$main$all, "theta.s")
 
   # short IFs
-  psi.theta.s  <- lapply(model$results$main[[1]], function(x) x$psis$psi.theta.s)
-  psi.sigma2.s <- lapply(model$results$main[[1]], function(x) x$psis$psi.sigma2.s)
-  psi.nu2.s    <- lapply(model$results$main[[1]], function(x) x$psis$psi.nu2.s)
+  psi.theta.s  <- lapply(model$results$main$all, function(x) x$psis$psi.theta.s)
+  psi.sigma2.s <- lapply(model$results$main$all, function(x) x$psis$psi.sigma2.s)
+  psi.nu2.s    <- lapply(model$results$main$all, function(x) x$psis$psi.nu2.s)
 
   benchmarks <- list()
   benchmarks_psis <- list()
@@ -137,19 +135,19 @@ bench_fun <- function(model, benchmark_covariates){
     model.call["x"] <- call("xo")
     model.wo <- eval(model.call)
 
-    nu.sq.wo <- extract_estimate(model.wo$results$main[[1]], param = "nu2.s")
-    sigma.sq.wo <- extract_estimate(model.wo$results$main[[1]], param = "sigma2.s")
+    nu.sq.wo <- extract_estimate(model.wo$results$main$all, param = "nu2.s")
+    sigma.sq.wo <- extract_estimate(model.wo$results$main$all, param = "sigma2.s")
 
     # resY.wo  <- sapply(model.wo$fits, function(x) model.wo$data$y - x$preds$yhat)
     # R2.Y.wo  <- apply(resY.wo, 2, function(x) max(1-var(x)/var(model.wo$data$y),0))
 
     ## (Debiased) Bias Decomposition
-    theta.short.wo <- extract_estimate(model.wo$results$main[[1]], "theta.s")
+    theta.short.wo <- extract_estimate(model.wo$results$main$all, "theta.s")
 
     # benchmark IFs
-    psi.theta.s.wo  <- lapply(model.wo$results$main[[1]], function(x) x$psis$psi.theta.s)
-    psi.sigma2.s.wo <- lapply(model.wo$results$main[[1]], function(x) x$psis$psi.sigma2.s)
-    psi.nu2.s.wo    <- lapply(model.wo$results$main[[1]], function(x) x$psis$psi.nu2.s)
+    psi.theta.s.wo  <- lapply(model.wo$results$main$all, function(x) x$psis$psi.theta.s)
+    psi.sigma2.s.wo <- lapply(model.wo$results$main$all, function(x) x$psis$psi.sigma2.s)
+    psi.nu2.s.wo    <- lapply(model.wo$results$main$all, function(x) x$psis$psi.nu2.s)
 
     Bias <- theta.short.wo - theta.short
 
