@@ -48,7 +48,12 @@ summary.dml <- function(object, combine.method = "median", ...){
   # goodness of fits
   comb_fun <- get(combine.method)
   is_cond <- isTRUE(object$info$conditional)
-  if (is_cond) {
+  if (is_cond && identical(object$info$target, "atu")) {
+    # conditional ATU: yhat0 is NULL; report R2 of yhat1 on treated units only
+    d1_idx <- object$data$d == 1
+    out$r2y <- comb_fun(sapply(object$fits,
+                               function(f) r2(f$preds$yhat1[d1_idx], object$data$y[d1_idx])))
+  } else if (is_cond) {
     # conditional ATT: yhat1 is NULL; report R2 of yhat0 on control units only
     d0_idx <- object$data$d == 0
     out$r2y <- comb_fun(sapply(object$fits,
@@ -176,16 +181,19 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
   cat("\n")
   cat("", "Model:", ifelse(x$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
   cat("", "Cross-Fitting:",x$info$cf.folds, "folds,", x$info$cf.reps, "reps", "\n")
+  yreg0_name <- if (is.null(x$info$yreg$yreg0)) "(not used)" else attr(x$info$yreg$yreg0$method, "name")
   yreg1_name <- if (is.null(x$info$yreg$yreg1)) "(not used)" else attr(x$info$yreg$yreg1$method, "name")
   cat("", "ML Method:",
-      "outcome", paste0("(yreg0:", attr(x$info$yreg$yreg0$method, "name"),
+      "outcome", paste0("(yreg0:", yreg0_name,
                         ", yreg1:", yreg1_name, ", R2 = ", round(x$r2y*100,3), "%),"),
       "treatment", paste0("(", attr(x$info$dreg$method,"name"), ", R2 = ", round(x$r2d*100,3), "%)\n"))
   cat("", "Tuning:", ifelse(x$info$dirty.tuning, "dirty", "clean"), "\n")
 
   cat("\n")
 
-  target_label <- if (isTRUE(x$info$conditional)) "Conditional ATT" else "Average Treatment Effect"
+  target_label <- if (isTRUE(x$info$conditional)) {
+    if (identical(x$info$target, "atu")) "Conditional ATU" else "Conditional ATT"
+  } else "Average Treatment Effect"
   cat(target_label, ":", "\n\n")
   print(x$main, digits = digits)
 
@@ -199,8 +207,11 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
   cat("Note: DML estimates combined using the", x$combine.method, "method.")
 
   if (interpret) {
-    yreg.method <- x$info$yreg$method$label
-    yreg.lib    <- x$info$yreg$method$library[[1]]
+    # yreg is stored as list(yreg0, yreg1); report the side actually used
+    # (yreg0 for ATE/ATT/PLM, yreg1 for conditional ATU).
+    yreg.used   <- if (!is.null(x$info$yreg$yreg0)) x$info$yreg$yreg0 else x$info$yreg$yreg1
+    yreg.method <- yreg.used$method$label
+    yreg.lib    <- yreg.used$method$library[[1]]
     dreg.method <- x$info$dreg$method$label
     dreg.lib    <- x$info$dreg$method$library[[1]]
     cf.folds    <- x$info$cf.folds

@@ -78,7 +78,7 @@ sensemakr.dml <- function(model,
     out$conf.bounds <- conf.bounds
   }
 
-  # benchmarks (unconditional ATE only; for conditional ATT use cond_dml_strength())
+  # benchmarks (unconditional ATE only; for conditional ATT/ATU use dml_diagnostic())
   is_cond <- isTRUE(model$info$conditional)
   if (!is.null(benchmark_covariates) & !is_cond & !is.null(model$results$main$all)) {
     bench.bounds <- dml_benchmark(model = model, benchmark_covariates = benchmark_covariates)
@@ -192,7 +192,8 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
     cat("   ATT", if (is_cond_model) "(conditional)" else "(unconditional)",
         ": cf.d measures the percentage gains in the average odds of getting treatment. \n")
   if (!is.null(object$model$results$main$untr))
-    cat("   ATU: cf.d measures the percentage gains in the average odds of not getting treatment. \n")
+    cat("   ATU", if (is_cond_model) "(conditional)" else "(unconditional)",
+        ": cf.d measures the percentage gains in the average odds of not getting treatment. \n")
   if (!is.null(object$model$results$groups))
     cat("-- For Group Average Treatment Effects (GATE), parameters are conditional on the relevant group.")
   }
