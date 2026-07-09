@@ -7,6 +7,8 @@
 ##' @param x \code{\link{numeric}} vector or \code{\link{matrix}} with covariates. We suggest constructing \code{x} using \code{\link{model.matrix}}.
 ##' @param model specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.
 ##' @param target specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.
+##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target (the DiD/panel setting, where the outcome regression is fit on one arm only and the counterfactual trend is extrapolated to the other). Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise.
+##' @param scaled logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{E[(O/O_X)^2]} (equivalently \eqn{\chi^2 + 1}); when \code{TRUE}, it is the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The target estimate and its bounds are unaffected by this choice; it only changes the reported scale of \code{nu2.s}.
 ##' @param groups a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.
 ##' @param cf.folds number of cross-fitting folds. Default is \code{5}.
 ##' @param cf.reps number of cross-fitting repetitions. Default is \code{1}.
@@ -87,7 +89,7 @@ dml <- function(y, d, x,
                 model  = c("plm", "npm"),
                 target = "ate",
                 conditional = NULL,
-                scaled = TRUE,
+                scaled = FALSE,
                 groups = NULL,
                 cf.folds = 5,
                 cf.reps  = 1,
@@ -159,16 +161,16 @@ dml <- function(y, d, x,
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
 
-  # auto-set conditional: TRUE when the only target is "att" and model is "npm"
+  # auto-set conditional: TRUE when the only target is "att"/"atu" and model is "npm"
   if (is.null(conditional)) {
-    conditional <- (model == "npm" && identical(target, "att"))
+    conditional <- (model == "npm" && (identical(target, "att") || identical(target, "atu")))
   }
   if (conditional && model != "npm") {
     warning("conditional = TRUE is only supported for model = 'npm'; setting conditional = FALSE.")
     conditional <- FALSE
   }
-  if (conditional && !identical(target, "att")) {
-    warning("conditional = TRUE requires target = 'att' only; setting conditional = FALSE.")
+  if (conditional && !(identical(target, "att") || identical(target, "atu"))) {
+    warning("conditional = TRUE requires a single target = 'att' or 'atu'; setting conditional = FALSE.")
     conditional <- FALSE
   }
 
@@ -217,9 +219,11 @@ dml <- function(y, d, x,
     cat("", "Model:", ifelse(out$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
     cat("", "Target:", out$info$target, if (conditional) "(conditional)" else "(unconditional)", "\n")
     cat("", "Cross-Fitting:", out$info$cf.folds, "folds,", out$info$cf.reps, "reps", "\n")
-    yreg1_label <- if (conditional) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
+    # conditional ATT uses yreg0 only; conditional ATU uses yreg1 only
+    yreg0_label <- if (conditional && identical(target, "atu")) "(not used)" else attr(out$info$yreg$yreg0$method, "name")
+    yreg1_label <- if (conditional && identical(target, "att")) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
     cat("", "ML Method:",
-        "outcome", paste0("(yreg0:", attr(out$info$yreg$yreg0$method, "name"),
+        "outcome", paste0("(yreg0:", yreg0_label,
                           ", yreg1:", yreg1_label, "),"),
         "treatment", paste0("(", attr(out$info$dreg$method,"name"), ")\n"))
     cat("", "Tuning:", ifelse(out$info$dirty.tuning, "dirty", "clean"), "\n")
@@ -306,8 +310,17 @@ dml <- function(y, d, x,
 
     if (model == "npm") {
       if (verbose) cat("- Tuning Model for Y (non-parametric).\n")
-      yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
-      if (!conditional) {
+      # conditional ATT tunes yreg0 (controls) only; conditional ATU tunes
+      # yreg1 (treated) only; otherwise both sides are tuned.
+      cond.att <- conditional && identical(target, "att")
+      cond.atu <- conditional && identical(target, "atu")
+
+      if (!cond.atu) {
+        yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
+      } else {
+        yreg0 <- NULL
+      }
+      if (!cond.att) {
         yreg1 <- tune_model(x = x[d == d1, ,drop = FALSE], y = ytil1, args = yreg1)
       } else {
         yreg1 <- NULL
@@ -315,8 +328,8 @@ dml <- function(y, d, x,
       yreg <- list(yreg0 = yreg0, yreg1 = yreg1)
       if (verbose) {
         cat("-- Best Tune:\n")
-        print(yreg0$tuneGrid)
-        if (!conditional) print(yreg1$tuneGrid)
+        if (!is.null(yreg0)) print(yreg0$tuneGrid)
+        if (!is.null(yreg1)) print(yreg1$tuneGrid)
         cat("\n")
       }
     }
@@ -400,26 +413,42 @@ dml <- function(y, d, x,
 
   if (model == "npm") {
     if (conditional) {
-      # conditional ATT path: use att.npm.cond() for each rep
-      treat_results <- vector("list", cf.reps)
+      # conditional path: att.npm.cond() (target "att") or atu.npm.cond()
+      # (target "atu") for each rep. Results stored in the matching slot
+      # ("treat" for ATT, "untr" for ATU).
+      cond_results <- vector("list", cf.reps)
       for (i in seq_len(cf.reps)) {
         phat  <- fits[[i]]$preds$phat
         dhat  <- fits[[i]]$preds$dhat
         yhat0 <- fits[[i]]$preds$yhat0
-        treat_results[[i]] <- att.npm.cond(
-          y      = num(y),
-          d      = num(d),
-          yhat0  = yhat0,
-          yhat1  = NULL,
-          dhat   = dhat,
-          phat   = phat,
-          trim   = ps.trim,
-          scaled = scaled
-        )
-        trimmed.all.idx  <- treat_results[[i]]$trim.summary$trimmed_indices$all
-        trimmed.low.idx  <- treat_results[[i]]$trim.summary$trimmed_indices$low
-        trimmed.high.idx <- treat_results[[i]]$trim.summary$trimmed_indices$high
-        treat_results[[i]]$trim.summary$trimmed_obs <- list(
+        yhat1 <- fits[[i]]$preds$yhat1
+        if (identical(target, "att")) {
+          cond_results[[i]] <- att.npm.cond(
+            y      = num(y),
+            d      = num(d),
+            yhat0  = yhat0,
+            yhat1  = NULL,
+            dhat   = dhat,
+            phat   = phat,
+            trim   = ps.trim,
+            scaled = scaled
+          )
+        } else {
+          cond_results[[i]] <- atu.npm.cond(
+            y      = num(y),
+            d      = num(d),
+            yhat1  = yhat1,
+            yhat0  = NULL,
+            dhat   = dhat,
+            phat   = phat,
+            trim   = ps.trim,
+            scaled = scaled
+          )
+        }
+        trimmed.all.idx  <- cond_results[[i]]$trim.summary$trimmed_indices$all
+        trimmed.low.idx  <- cond_results[[i]]$trim.summary$trimmed_indices$low
+        trimmed.high.idx <- cond_results[[i]]$trim.summary$trimmed_indices$high
+        cond_results[[i]]$trim.summary$trimmed_obs <- list(
           all  = list(y.trimmed = y[trimmed.all.idx],
                       d.trimmed = d[trimmed.all.idx],
                       x.trimmed = x[trimmed.all.idx, ]),
@@ -431,8 +460,9 @@ dml <- function(y, d, x,
                       x.trimmed = x[trimmed.high.idx, ])
         )
       }
-      out$results$main$treat <- treat_results
-      out$coefs$main$treat   <- combine.cross.fits(treat_results)
+      cond_slot <- if (identical(target, "att")) "treat" else "untr"
+      out$results$main[[cond_slot]] <- cond_results
+      out$coefs$main[[cond_slot]]   <- combine.cross.fits(cond_results)
     } else {
       out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
       out$coefs$main   <- lapply(out$results$main, combine.cross.fits)

@@ -17,7 +17,7 @@ att.npm.cond <- function(y, d,
                          yhat1 = NULL,
                          dhat, phat,
                          trim   = 0.02,
-                         scaled = TRUE,
+                         scaled = FALSE,
                          nu2.weight = NULL) {
 
   trim.summary <- trim.ps(dhat, trim = trim)
@@ -109,6 +109,116 @@ att.npm.cond <- function(y, d,
       S2           = S02,
       se.S2        = psi.sd(psi.S02),
       cov.theta.S2 = mean(psi.theta.s * psi.S02) / length(psi.S02)
+    ),
+    trim.summary = trim.summary
+  )
+}
+
+# computes conditional ATU for npm (conditional/DiD version)
+# Mirror of att.npm.cond() with the treated/untreated roles swapped:
+#   D -> (1 - D),  p -> (1 - p),  pi(X) -> (1 - pi(X)),  g0s -> g1s.
+# The outcome regression is fit on the TREATED units (yhat1 = g1s), and the
+# control regression (yhat0) is not used. The sign of theta.s follows the
+# causal ATU convention theta = E[g1s - dY | D = 0], matching the untreated
+# target of ate.npm(parameter = "untr").
+# returns estimates and influence functions for theta.s, sigma2.1s, nu2.1s, S12
+atu.npm.cond <- function(y, d,
+                         yhat1,
+                         yhat0 = NULL,
+                         dhat, phat,
+                         trim   = 0.02,
+                         scaled = FALSE,
+                         nu2.weight = NULL) {
+
+  trim.summary <- trim.ps(dhat, trim = trim)
+  dhat.t       <- trim.summary$ps
+
+  # target = untreated: l is the (1-D)/(1-p) weight; lc is its complement
+  l    <- (1 - d) / (1 - phat)
+  lc   <- d / phat
+  lbar <- (1 - dhat.t) / (1 - phat)
+
+  gs         <- rep(NA, length(y))
+  gs[d == 0] <- if (is.null(yhat0)) y[d == 0] else yhat0[d == 0]
+  gs[d == 1] <- yhat1[d == 1]
+
+  # ATU (same score as unconditional untr)
+  RRs         <- (d / dhat.t) * lbar - ((1 - d) / (1 - phat))
+  Ms          <- (yhat1 - y) * l
+  theta.s     <- mean(Ms + d * (y - gs) * RRs) / mean(l)
+  psi.theta.s <- (Ms + d * (y - gs) * RRs - theta.s * l) / mean(l)
+
+  # E[g1s | D=0]  and  E[Y | D=0]
+  theta.1s     <- mean(l * yhat1 + (((d * (1 - dhat.t)) / (dhat.t * (1 - phat)))) * (y - yhat1)) / mean(l)
+  psi.theta.1s <- (l * (yhat1 - theta.1s) + (((d * (1 - dhat.t)) / (dhat.t * (1 - phat)))) * (y - yhat1)) / mean(l)
+
+  theta.0s     <- mean(l * y) / mean(l)
+  psi.theta.0s <- (l * (y - theta.0s)) / mean(l)
+
+  # sigma2.1s  =  E[(Y - g1s)^2 | D=1]
+  sigma2.1s     <- mean(lc * (y - yhat1)^2) / mean(lc)
+  psi.sigma2.1s <- lc * ((y - yhat1)^2 - sigma2.1s) / mean(lc)
+
+  # sigma2.0s  (optional, requires yhat0)
+  if (!is.null(yhat0)) {
+    sigma2.0s     <- mean(l * (y - yhat0)^2, na.rm = TRUE) / mean(l)
+    psi.sigma2.0s <- l * ((y - yhat0)^2 - sigma2.0s) / mean(l)
+  }
+
+  # nu2.1s  =  conditional imbalance (propensity-score based)
+  if (is.null(nu2.weight)) nu2.weight <- rep(1, length(d))
+
+  if (scaled) {
+    # ATT scaled imbalance with p -> 1-p, pi -> 1-pi, D -> 1-D
+    pa <- 1 - phat     # 1 - p
+    ba <- 1 - dhat.t   # 1 - pi(X)
+    da <- 1 - d        # 1 - D
+    num.nu <- (da * (pa - ba) * (pa + ba - 2) +
+                 (pa^2) * (1 - 2 * ba) -
+                 (ba^2) * (1 - 2 * pa)) /
+              ((pa^2) * (1 - pa) * (1 - ba)^2)
+
+    nu2.1s     <- weighted.mean(num.nu, w = nu2.weight) /
+                  weighted.mean(2 * l - lc, w = nu2.weight)
+    psi.nu2.1s <- (num.nu - (2 * l - lc) * nu2.1s) /
+                  weighted.mean(2 * l - lc, w = nu2.weight)
+  } else {
+    OX <- (1 - dhat.t) / dhat.t   # (1 - pi)/pi  = 1 / O_X
+    O  <- (1 - phat)   / phat     # (1 - p)/p    = 1 / O
+    nu2.1s     <- weighted.mean(2 * l * (OX / O) - lc * (OX / O)^2, w = nu2.weight) /
+                  weighted.mean(2 * l - lc, w = nu2.weight)
+    psi.nu2.1s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.1s) /
+                  weighted.mean(2 * l - lc, w = nu2.weight)
+  }
+
+  # S12 = sigma2.1s * nu2.1s
+  S12     <- sigma2.1s * nu2.1s
+  psi.S12 <- sigma2.1s * psi.nu2.1s + nu2.1s * psi.sigma2.1s
+
+  list(
+    psis = list(
+      psi.theta.s   = psi.theta.s,
+      psi.theta.0s  = psi.theta.0s,
+      psi.theta.1s  = psi.theta.1s,
+      psi.sigma2.s  = psi.sigma2.1s,
+      psi.sigma2.0s = if (is.null(yhat0)) 0 else psi.sigma2.0s,
+      psi.nu2.s     = psi.nu2.1s,
+      psi.S2        = psi.S12
+    ),
+    estimates = list(
+      theta.s      = theta.s,
+      theta.0s     = theta.0s,
+      theta.1s     = theta.1s,
+      se.theta.s   = psi.sd(psi.theta.s),
+      se.theta.0s  = psi.sd(psi.theta.0s),
+      se.theta.1s  = psi.sd(psi.theta.1s),
+      sigma2.s     = sigma2.1s,
+      se.sigma2.s  = psi.sd(psi.sigma2.1s),
+      nu2.s        = nu2.1s,
+      se.nu2.s     = psi.sd(psi.nu2.1s, w = nu2.weight),
+      S2           = S12,
+      se.S2        = psi.sd(psi.S12),
+      cov.theta.S2 = mean(psi.theta.s * psi.S12) / length(psi.S12)
     ),
     trim.summary = trim.summary
   )
