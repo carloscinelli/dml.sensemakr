@@ -10,8 +10,9 @@ dml_diagnostic(
   x,
   diagnostic_covariates,
   type = c("cond", "uncond"),
+  target = c("att", "atu"),
   x_list = NULL,
-  scaled = TRUE,
+  scaled = FALSE,
   model = c("npm", "plm"),
   cf.folds = 5,
   cf.reps = 1,
@@ -33,22 +34,39 @@ dml_diagnostic(
 
 \item{x}{numeric matrix. Full covariate matrix; columns must be named.}
 
-\item{diagnostic_covariates}{character vector of column names in \code{x}
-to benchmark one at a time.}
+\item{diagnostic_covariates}{the covariates to benchmark one at a time.
+Either a character vector of column names in \code{x} (each benchmarked
+individually), or a named list where each element is a character vector of
+column names to benchmark \emph{together} as a single covariate (e.g. the
+dummy columns of a factor: \code{list(region = c("region2", "region3",
+"region4"))}).  The two forms may be mixed inside a list.  List element
+names become the row labels in the output table; unnamed elements are
+labelled by the column name (singletons) or the columns joined by
+\code{"+"}.}
 
-\item{type}{character. \code{"cond"} (default) fits conditional ATT models
-(DiD/panel setting). \code{"uncond"} is reserved for future unconditional
-ATE diagnostics and is not yet implemented.}
+\item{type}{character. \code{"cond"} (default) fits conditional models
+(DiD/panel setting) for the target given by \code{target}.
+\code{"uncond"} is reserved for future unconditional ATE diagnostics and
+is not yet implemented.}
 
-\item{x_list}{optional named list of pre-built covariate matrices, one per
-entry in \code{diagnostic_covariates}.  When a covariate name appears in
-\code{x_list}, that matrix is used as-is (no intercept is added
-automatically); for covariates not in \code{x_list}, the function falls
-back to \code{cbind("(Intercept)" = 1, x[, covar, drop = FALSE])}.  Use
-this to pass multi-column encodings such as
-\code{list(region = model.matrix(~ region))}.}
+\item{target}{character. Causal target for the conditional diagnostics:
+\code{"att"} (default) for the average effect on the treated (outcome
+regression fit on controls), or \code{"atu"} for the average effect on the
+untreated (outcome regression fit on the treated).}
 
-\item{scaled}{logical. Passed to \code{dml}. Default \code{TRUE}.}
+\item{x_list}{optional named list of pre-built covariate matrices, keyed by
+covariate label.  When a label appears in \code{x_list}, that matrix is
+used as-is (no intercept is added automatically).  This is a low-level
+escape hatch for columns that are \emph{not} in \code{x} at all; to
+benchmark a group of columns that are already in \code{x} (such as a
+factor's dummies), prefer passing them as one entry of
+\code{diagnostic_covariates}.}
+
+\item{scaled}{logical. Passed to \code{dml}. Default \code{FALSE}.
+When \code{FALSE}, \code{nu2.s} is the full second moment of the Riesz
+representer (\eqn{\chi^2 + 1}); when \code{TRUE}, it is the \eqn{\chi^2}
+divergence. The strength table is identical either way (the imbalance
+column is converted internally).}
 
 \item{model}{character. \code{"npm"} (default) uses the nonparametric model.
 \code{"plm"} (partially linear model) is not yet implemented.}
@@ -64,19 +82,23 @@ this to pass multi-column encodings such as
 \item{dreg}{learner specification for the propensity score. Default \code{"ranger"}.
 Ignored when \code{learners} is supplied.}
 
-\item{yreg0}{learner specification for the outcome regression on controls.
-Default inherits \code{dreg}. Ignored when \code{learners} is supplied.}
+\item{yreg0}{learner specification for the outcome regression. Applied to
+the control units for \code{target = "att"} and to the treated units for
+\code{target = "atu"}. Default inherits \code{dreg}. Ignored when
+\code{learners} is supplied.}
 
 \item{learners}{optional named list of learner pairs. Each element should be
 a named list with elements \code{dreg} and \code{yreg0}, e.g.
 \code{list(ranger = list(dreg = dreg_rf, yreg0 = yreg_rf), lm = list(dreg
 = list(method = "lm"), yreg0 = list(method = "lm")))}. When supplied,
 \code{dreg} and \code{yreg0} are ignored and the function returns results
-for every learner.}
+for every learner, mirroring the \code{models_all} structure from the
+manuscript.}
 
 \item{null_model}{optional. A fitted \code{dml} object (from \code{\link{dml}}
-with \code{conditional = TRUE} and an intercept-only \code{x}) whose
-\code{treat} results supply the null-model quantities. Shared across all
+with \code{conditional = TRUE}, matching \code{target}, and an
+intercept-only \code{x}) whose conditional results (\code{treat} for ATT,
+\code{untr} for ATU) supply the null-model quantities.  Shared across all
 learners when \code{learners} is supplied.}
 
 \item{med.rep}{logical. If \code{TRUE} (default), summarise across
@@ -91,12 +113,13 @@ When \code{learners} is \code{NULL}: a list with elements
   \code{table} (data frame) and \code{models} (named list of fitted
   \code{dml} objects).  When \code{learners} is supplied: a list with
   elements \code{tables} (named list of data frames, one per learner) and
-  \code{models} (named list of named lists of fitted \code{dml} objects).
+  \code{models} (named list of named lists of fitted \code{dml} objects,
+  mirroring \code{models_all[[learner]][[variable]]}).
 }
 \description{
 For each benchmark covariate (and optionally for each learner in
 \code{learners}), fits a single-covariate DML model and computes four
-strength diagnostics: imbalance, trend, alignment, and bias. These
+strength diagnostics: imbalance, trend, alignment, and bias.  These
 correspond to the columns of the "Covariate Strength" table in the
 OVB-for-DiD manuscript.
 }
