@@ -104,6 +104,13 @@ dml_diagnostic <- function(y, d, x,
   # conditional results live in slot "treat" (ATT) or "untr" (ATU)
   cond_slot <- if (target == "att") "treat" else "untr"
 
+  # OVB alignment sign: delta = theta - theta_s decomposes as
+  #   ATT : delta = -rho * (imbalance * trend * scaling)   -> sign(rho) = -sign(delta)
+  #   ATU : delta = +rho * (imbalance * trend * scaling)   -> sign(rho) = +sign(delta)
+  # compute_table's raw Cor uses sign(Bias) = -sign(delta) (Bias = theta.uncond - theta.var),
+  # which is ATT-correct; flip it for ATU so the reported alignment carries the true rho sign.
+  align.sign <- if (target == "att") 1 else -1
+
   # Normalise diagnostic_covariates into a named list of column-name vectors:
   #   - a character vector  -> each element is its own singleton group
   #   - a list              -> each element is a group of columns to benchmark
@@ -262,14 +269,16 @@ dml_diagnostic <- function(y, d, x,
       valid <- V.g > 0 & V.a > 0
 
       Cor     <- 0
-      if (valid) Cor <- pmin(1, abs(Bias) / sqrt(V.g * V.a)) * sign(Bias)
+      if (valid) Cor <- align.sign * pmin(1, abs(Bias) / sqrt(V.g * V.a)) * sign(Bias)
 
       psi.rho <- if (!valid) {
         rep(0, n_obs)
       } else {
-        ((psi.theta.uncond - psi.theta.var) / sqrt(V.g * V.a)) -
-          ((Bias * (psi.sigma2.uncond - psi.sigma2.var)) / (2 * (V.g^(3/2)) * sqrt(V.a))) -
-          ((Bias * (psi.nu2.var - psi.nu2.uncond))       / (2 * (V.a^(3/2)) * sqrt(V.g)))
+        align.sign * (
+          ((psi.theta.uncond - psi.theta.var) / sqrt(V.g * V.a)) -
+            ((Bias * (psi.sigma2.uncond - psi.sigma2.var)) / (2 * (V.g^(3/2)) * sqrt(V.a))) -
+            ((Bias * (psi.nu2.var - psi.nu2.uncond))       / (2 * (V.a^(3/2)) * sqrt(V.g)))
+        )
       }
 
       rows[[i]] <- data.frame(
