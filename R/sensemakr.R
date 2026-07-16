@@ -78,9 +78,12 @@ sensemakr.dml <- function(model,
     out$conf.bounds <- conf.bounds
   }
 
-  # benchmarks (unconditional ATE only; for conditional ATT/ATU use dml_diagnostic())
-  is_cond <- isTRUE(model$info$conditional)
-  if (!is.null(benchmark_covariates) & !is_cond & !is.null(model$results$main$all)) {
+  # benchmarks: works for any single-target model (ATE/ATT/ATU), conditional or
+  # not. Only the results slot read from the model differs (all/treat/untr).
+  bench.slot <- unname(.target_to_slot[model$info$target])
+  if (!is.null(benchmark_covariates) &&
+      length(bench.slot) == 1L && !is.na(bench.slot) &&
+      !is.null(model$results$main[[bench.slot]])) {
     bench.bounds <- dml_benchmark(model = model, benchmark_covariates = benchmark_covariates)
     out$bench.bounds <- bench.bounds
   }
@@ -130,7 +133,7 @@ print.dml.sensemakr <- function(x,
     cat("\nVerbal interpretation of Benchmark Statistic:\n\n")
     cat("-- gain.Y: the observed strength of association of the benchmark covariate with the outcome.\n")
     cat("-- gain.D: the observed strength of association of the benchmark covariate with the RR.\n")
-    cat("-- delta: the bias of omitting the benchmark covariate (i.e., theta.sj - theta.s).")
+    cat("-- delta: the bias contribution of the benchmark covariate, in the convention delta = theta - theta_s (i.e., theta.s - theta.sj).")
   }
 
   cat("For more information, check summary.")
@@ -178,7 +181,7 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
     cat("\nVerbal interpretation of Benchmark Statistic:\n\n")
     cat("-- gain.Y: the observed strength of association of the benchmark covariate with the outcome.\n")
     cat("-- gain.D: the observed strength of association of the benchmark covariate with the RR.\n")
-    cat("-- delta: the bias of omitting the benchmark covariate (i.e., theta.sj - theta.s).")
+    cat("-- delta: the bias contribution of the benchmark covariate, in the convention delta = theta - theta_s (i.e., theta.s - theta.sj).")
   }
 
   if (object$model$info$model == "npm") {
