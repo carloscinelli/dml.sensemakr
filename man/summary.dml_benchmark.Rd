@@ -3,6 +3,7 @@
 \name{print.dml_benchmark}
 \alias{print.dml_benchmark}
 \alias{summary.dml_benchmark}
+\alias{print.summary_dml_benchmark}
 \title{Print and summary methods for DML benchmarks}
 \usage{
 \method{print}{dml_benchmark}(
@@ -12,14 +13,17 @@
   ...
 )
 
-\method{summary}{dml_benchmark}(object, combine.method = "mean", na.rm = TRUE, ...)
+\method{summary}{dml_benchmark}(object, combine.method = c("mean", "median"), na.rm = TRUE, ...)
+
+\method{print}{summary_dml_benchmark}(x, digits = max(3L, getOption("digits") - 3L), ...)
 }
 \arguments{
 \item{x}{an object of class \code{\link{dml_benchmark}}.}
 
 \item{digits}{minimal number of significant digits.}
 
-\item{combine.method}{method to combine results. Default is \code{"mean"}.}
+\item{combine.method}{method to combine cross-fitting repetitions. Either
+\code{"mean"} (default) or \code{"median"}.}
 
 \item{...}{arguments passed to other methods.}
 
@@ -28,7 +32,15 @@
 \item{na.rm}{logical. Should NA values be removed? Default is \code{TRUE}.}
 }
 \value{
-For \code{print}: the object, printed to console. For \code{summary}: the object with aggregated benchmarks.
+For \code{print}: the object, printed to console. For \code{summary}:
+  an object of class \code{summary_dml_benchmark} holding a table of the
+  benchmark components -- the leave-one-out gains \code{gain.Y} and
+  \code{gain.D}, the alignment \code{rho}, and the bias contribution
+  \code{delta} -- each with a standard error derived from its influence
+  function and combined across cross-fitting repetitions. \code{delta} is
+  reported in the convention \code{delta = theta - theta_s}, so that
+  \code{delta = -rho * M} for ATT and \code{delta = +rho * M} for ATU/ATE
+  (with \code{M = sqrt(V.g * V.a)}), matching the OVB decomposition.
 }
 \description{
 Print and summary methods for benchmark results.

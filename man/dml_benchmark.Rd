@@ -7,10 +7,18 @@
 dml_benchmark(model, benchmark_covariates)
 }
 \arguments{
-\item{model}{an object of class \code{\link{dml}}. Must be an unconditional ATE model.
-For conditional ATT models use \code{\link{dml_diagnostic}}.}
+\item{model}{an object of class \code{\link{dml}}, fit with a single target
+(\code{"ate"}, \code{"att"}, or \code{"atu"}), conditional or unconditional.
+The benchmarking procedure is identical across these; only the results
+slot read from the model differs (\code{all}/\code{treat}/\code{untr}).}
 
-\item{benchmark_covariates}{a character vector with the names of the observed covariates that will be used for benchmarking.}
+\item{benchmark_covariates}{the observed covariates to benchmark. Either a
+character vector of column names in the model's \code{x} (each benchmarked
+on its own), or a named list where each element is a character vector of
+column names to drop \emph{together} in the leave-one-out refit (e.g. the
+dummy columns of a factor: \code{list(region = c("region3", "region4"))}).
+List element names become the row labels; unnamed elements are labelled by
+the column name (singletons) or the columns joined by \code{"+"}.}
 }
 \value{
 An object of class \code{dml_benchmark} containing benchmark results.
