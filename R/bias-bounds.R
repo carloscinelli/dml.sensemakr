@@ -229,6 +229,14 @@ rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
   (confidence_bounds(dml.fit,  cf.y = rv,cf.d = rv, level = 1 - alpha)[par,side] - theta)^2
 }
 
+xrv_fun <- function(dml.fit, xrv, par, side = "lwr", theta = 0, alpha = 0.05, rho2 = 1){
+  (confidence_bounds(dml.fit, rho2 = rho2, cf.y = 1,cf.d = xrv, level = 1 - alpha)[par,side] - theta)^2
+}
+
+xrv_fun_2D <- function(dml.fit, yrv, xrv, par, side = "lwr", theta = 0, alpha = 1){
+  (confidence_bounds(dml.fit,  cf.y = yrv,cf.d = xrv, level = 1 - alpha)[par,side] - theta)^2
+}
+
 
 ##' Computes Robustness Values for Debiased Machine Learning
 ##'
@@ -267,6 +275,77 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
   # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
   # grid[rv.idx]
 }
+
+###################################################################################################################
+##' Computes Extreme Robustness Values for Debiased Machine Learning
+##'
+##' @description
+##' This function computes the extreme robustness value of a target parameter estimated via debiased machine learning.
+##'
+##' The extreme robustness value describes the minimum strength of association (parameterized in terms of partial R2) that omitted variables would need to have with the Riesz Representer alone so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
+##'
+##'
+##' @export
+extreme_robustness_value <- function(model, ...) {
+  UseMethod("extreme_robustness_value")
+}
+
+##' @rdname extreme_robustness_value
+##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param theta the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).
+##' @param alpha significance level. Default is \code{alpha = 0.05}.
+##' @inheritParams summary.dml
+##' @exportS3Method extreme_robustness_value dml
+extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 1,...){
+  conf <- confint(model, level = 1 - alpha,...)
+  out <- setNames(rep(NA,nrow(conf)), rownames(conf))
+  for (i in 1:nrow(conf)) {
+    if (conf[i,1] <= theta & theta <= conf[i,2]) {
+      out[i] <- 0
+    }
+    side <- ifelse(theta < conf[i,1], "lwr", "upr")
+    # print(side)
+    if (alpha == 1) {
+      S2 <- extract_estimate(model$results$main[[1]], "S2")
+      f0 <- abs(theta - coef(model))/sqrt(S2)
+      out[i] <- (f0^2)/(1+f0^2)
+    } else {
+      fn <- function(xrv) xrv_fun(xrv, dml.fit = model, par = names(out)[i],
+                                  side = side, theta = theta, alpha = alpha,
+                                  rho2 = rho2)
+      out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
+
+      # fn <- function(par) {
+      #   xrv <- par[1]
+      #   yrv <- par[2]
+      #   xrv_fun_2D(yrv = yrv, xrv = xrv, dml.fit = model,
+      #                                  par = names(out)[i],
+      #                             side = side, theta = theta, alpha = alpha)
+      # }
+      # # out[i] <- optim(par = c(0.01, 0.01), fn, lower = c(0, 0), upper = c(1, 1),
+      # #                 method = "L-BFGS-B")$par[2]
+      #
+      # starts <- expand.grid(yrv = c(seq(0.01,0.99,0.05),1), xrv = c(seq(0.01,0.99,0.05),0.99))
+      # best_val <- Inf
+      # best_par <- NULL
+      # for(j in 1:nrow(starts)){
+      #   res <- optim(par = as.numeric(starts[j,]), fn, lower = c(0,0), upper=c(1-1e-8,1), method="L-BFGS-B")
+      #   if(res$value < best_val){
+      #     best_val <- res$value
+      #     best_par <- res$par
+      #   }
+      # }
+      # out[i] <- best_par[1]
+    }
+  }
+
+  return(out)
+  # grid <- seq(0, 0.99,by = 0.001)
+  # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
+  # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
+  # grid[rv.idx]
+}
+########################################################################################
 
 ##' @rdname robustness_value
 ##' @exportS3Method sensemakr::robustness_value dml.bounds
