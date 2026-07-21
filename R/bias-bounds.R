@@ -306,9 +306,14 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
     # print(side)
     if (alpha == 1) {
-      S2 <- extract_estimate(model$results$main[[1]], "S2")
-      f0 <- abs(theta - coef(model))/sqrt(S2)
-      out[i] <- (f0^2)/(1+f0^2)
+      # closed-form point XRV for row i's target: f0 = |theta - theta.s|/sqrt(S2),
+      # XRV = f0^2/(1+f0^2). Map the row's target (rowname) to its results slot
+      # (treat/all/untr) and combine S2 across cf.reps -- multi-target / multi-rep
+      # safe (main[[1]] and whole-vector coef are not).
+      slot.i <- unname(.target_to_slot[rownames(conf)[i]])
+      S2.i   <- stats::median(extract_estimate(model$results$main[[slot.i]], "S2"))
+      f0     <- unname(abs(theta - coef(model)[rownames(conf)[i]]) / sqrt(S2.i))
+      out[i] <- f0^2 / (1 + f0^2)
     } else {
       fn <- function(xrv) xrv_fun(xrv, dml.fit = model, par = names(out)[i],
                                   side = side, theta = theta, alpha = alpha,
