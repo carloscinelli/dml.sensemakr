@@ -9,11 +9,11 @@
 \method{print}{dml_benchmark}(
   x,
   digits = max(3L, getOption("digits") - 3L),
-  combine.method = "mean",
+  combine.method = "median",
   ...
 )
 
-\method{summary}{dml_benchmark}(object, combine.method = c("mean", "median"), na.rm = TRUE, ...)
+\method{summary}{dml_benchmark}(object, combine.method = c("median", "mean"), na.rm = TRUE, ...)
 
 \method{print}{summary_dml_benchmark}(x, digits = max(3L, getOption("digits") - 3L), ...)
 }
@@ -23,7 +23,7 @@
 \item{digits}{minimal number of significant digits.}
 
 \item{combine.method}{method to combine cross-fitting repetitions. Either
-\code{"mean"} (default) or \code{"median"}.}
+\code{"median"} (default) or \code{"mean"}.}
 
 \item{...}{arguments passed to other methods.}
 

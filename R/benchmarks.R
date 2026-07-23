@@ -27,13 +27,13 @@ dml_benchmark <- function(model, benchmark_covariates){
 ##' @rdname summary.dml_benchmark
 ##' @export
 print.dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L),
-                                 combine.method = "mean", ...){
+                                 combine.method = "median", ...){
   print(summary(x, combine.method = combine.method), digits = digits, ...)
 }
 
 ##' @param object an object of class \code{\link{dml_benchmark}}.
 ##' @param combine.method method to combine cross-fitting repetitions. Either
-##'   \code{"mean"} (default) or \code{"median"}.
+##'   \code{"median"} (default) or \code{"mean"}.
 ##' @param na.rm logical. Should NA values be removed? Default is \code{TRUE}.
 ##' @param ... arguments passed to other methods.
 ##' @returns For \code{print}: the object, printed to console. For \code{summary}:
@@ -47,7 +47,7 @@ print.dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L),
 ##'   (with \code{M = sqrt(V.g * V.a)}), matching the OVB decomposition.
 ##' @rdname summary.dml_benchmark
 ##' @export
-summary.dml_benchmark <- function(object, combine.method = c("mean", "median"),
+summary.dml_benchmark <- function(object, combine.method = c("median", "mean"),
                                   na.rm = TRUE, ...){
   combine.method <- match.arg(combine.method)
   combine <- if (combine.method == "mean") combine.mean else combine.median
