@@ -57,6 +57,9 @@
 ##'   \code{surface} components used to redraw it.
 ##' @seealso \code{\link{add_pretrend_contour}} to draw the locus on a contour
 ##'   plot; \code{\link{dml_benchmark}} for the (separate) covariate benchmarking.
+##' @references
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working paper.
 ##' @export
 pretrend_benchmark <- function(model, pre_model,
                                parameter = c("att", "ate", "atu"),

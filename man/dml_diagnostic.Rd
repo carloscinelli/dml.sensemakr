@@ -92,8 +92,8 @@ a named list with elements \code{dreg} and \code{yreg0}, e.g.
 \code{list(ranger = list(dreg = dreg_rf, yreg0 = yreg_rf), lm = list(dreg
 = list(method = "lm"), yreg0 = list(method = "lm")))}. When supplied,
 \code{dreg} and \code{yreg0} are ignored and the function returns results
-for every learner, mirroring the \code{models_all} structure from the
-manuscript.}
+for every learner, mirroring the \code{models_all} structure from
+Wang et al. (2026).}
 
 \item{null_model}{optional. A fitted \code{dml} object (from \code{\link{dml}}
 with \code{conditional = TRUE}, matching \code{target}, and an
@@ -119,7 +119,11 @@ When \code{learners} is \code{NULL}: a list with elements
 \description{
 For each benchmark covariate (and optionally for each learner in
 \code{learners}), fits a single-covariate DML model and computes four
-strength diagnostics: imbalance, trend, alignment, and bias.  These
-correspond to the columns of the "Covariate Strength" table in the
-OVB-for-DiD manuscript.
+strength diagnostics: imbalance, trend, alignment (rho), and bias.  These
+correspond to the columns of the "Covariate Strength" table in
+Wang et al. (2026).
+}
+\references{
+Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working paper.
 }

@@ -68,6 +68,10 @@ pre-trend short estimand \eqn{\theta_{s,pre}}, the pre-treatment scale
 transported bounds, and the levels needed to overlay the pre-trend locus on a
 contour plot via \code{\link{add_pretrend_contour}}.
 }
+\references{
+Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working paper.
+}
 \seealso{
 \code{\link{add_pretrend_contour}} to draw the locus on a contour
   plot; \code{\link{dml_benchmark}} for the (separate) covariate benchmarking.
