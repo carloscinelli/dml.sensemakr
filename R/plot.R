@@ -252,8 +252,13 @@ ovb_contour_plot <- function(...){
 ##' @param lim.x  sets limit for x-axis. If `NULL`, limits are computed automatically.
 ##' @param lim.y  sets limit for y-axis. If `NULL`, limits are computed automatically.
 ##' @param cex.label.text size of the label text.
-##' @param xlab label of x axis. If `NULL`, default label is used.
-##' @param ylab label of y axis. If `NULL`, default label is used.
+##' @param xlab label of x axis. If `NULL` (default), a label matching the
+##'   target's omitted-variable-bias interpretation is chosen automatically:
+##'   the general partially-linear axis for unconditional targets, and the
+##'   DiD-specific conditional axis for conditional `att` (controls arm, D=0)
+##'   and conditional `atu` (treated arm, D=1).
+##' @param ylab label of y axis. If `NULL` (default), chosen automatically to
+##'   match the target, in the same way as `xlab`.
 ##' @param list.par  arguments to be passed to \code{\link{par}}. It needs to be a named list.
 ##' @param cex.lab The magnification to be used for x and y labels relative to the current setting of cex.
 ##' @param cex.main The magnification to be used for main titles relative to the current setting of cex.
@@ -353,6 +358,12 @@ ovb_contour_plot.dml <- function(model,
     stop(sprintf("Parameter '%s' (slot '%s') was not computed for this model (target = '%s').",
                  target_label, parameter, paste(model$info$target, collapse="/")))
 
+  # Unless the user supplied labels, default the axes to match the target's OVB
+  # interpretation (unconditional vs conditional att/atu). See default_contour_labs().
+  labs <- default_contour_labs(conditional = isTRUE(model$info$conditional),
+                               target = target_label)
+  if (is.null(xlab)) xlab <- labs$x
+  if (is.null(ylab)) ylab <- labs$y
 
   if(group) {
     results <- model$results$groups[[group.number]]
@@ -497,6 +508,27 @@ contour_plot <- function(grid_values.x,
           cex.axis = cex.axis,
           cex.main = cex.main,
           asp = asp)
+}
+
+# Internal: default contour axis labels matching the target's OVB interpretation.
+# `target` is the user-facing label ("ate"/"att"/"atu"); `conditional` is
+# model$info$conditional. Only conditional att/atu get the DiD-specific labels;
+# every other case (all unconditional targets, and any unexpected combination)
+# falls back to the general partially-linear labels.
+default_contour_labs <- function(conditional, target) {
+  if (isTRUE(conditional) && identical(target, "att")) {
+    # conditional ATT: controls arm (D = 0)
+    list(x = expression(1 - R[O[XU]*" ~ "*O[X]*" | "*D==0]^2),
+         y = expression(eta[Delta*Y*" ~ "*U*" | "*X*","*D==0]^2))
+  } else if (isTRUE(conditional) && identical(target, "atu")) {
+    # conditional ATU: treated arm (D = 1), reciprocal Riesz representer
+    list(x = expression(1 - R[1/O[XU]*" ~ "*1/O[X]*" | "*D==1]^2),
+         y = expression(eta[Delta*Y*" ~ "*U*" | "*X*","*D==1]^2))
+  } else {
+    # unconditional (ate/att/atu), and safe fallback for any other case
+    list(x = expression(paste("1-", R[alpha%~%alpha[s]]^2)),
+         y = expression(paste(R[y-g[s]%~%g-g[s]]^2)))
+  }
 }
 
 # Internal helper to validate R2 sensitivity parameters

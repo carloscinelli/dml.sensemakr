@@ -23,8 +23,11 @@ pretrend_benchmark(
 \item{pre_model}{pre-treatment placebo \code{\link{dml}} fit, computed on the
 same units and target as \code{model} but using the pre-treatment period.}
 
-\item{parameter}{target quantity: \code{"att"} (default), \code{"ate"} or
-\code{"atu"}. Must be present in both models.}
+\item{parameter}{target quantity. Currently only \code{"att"} (the default)
+is supported: the pre-trend extrapolation theory is derived for the
+conditional ATT, and the \code{"ate"}/\code{"atu"} analogues are not yet
+established, so they raise an error rather than return unvalidated bounds.
+Must be present in both models.}
 
 \item{k}{relative-strength multiplier for the post-vs-pre bias (the \eqn{k}
 of the extrapolation). Default \code{1} (transport the observed pre-trend
@@ -48,13 +51,15 @@ sensitivity surface for the overlay. Default \code{1} (worst case).}
 \value{
 An object of class \code{dml_pretrend}: a list with the post- and
   pre-treatment estimates and scales, the scale ratio \code{scale.ratio}
-  (\eqn{S_0/S_{0,pre}}), \code{bias.factor.pre}, and the two transported
-  bounds \code{bounds.magnitude} and \code{bounds.factors}. For each
-  extrapolation method it also carries the difference SE
-  (\code{se.diff.magnitude}/\code{se.diff.factors}), the overlay contour
-  level (\code{level.magnitude}/\code{level.factors}) and its confidence band
-  (\code{band.magnitude}/\code{band.factors}), plus the post-treatment
-  \code{surface} components used to redraw it.
+  (\eqn{S_0/S_{0,pre}}), \code{bias.factor.pre}, and, for each extrapolation
+  method, the transported point bounds \eqn{[\theta_-, \theta_+]}
+  (\code{bounds.magnitude}/\code{bounds.factors}) and the one-sided
+  confidence bounds \eqn{[\ell, u]}
+  (\code{confbound.magnitude}/\code{confbound.factors}), built from the
+  Appendix-C.2 influence functions of \eqn{\theta_\pm} with the one-sided
+  critical value \eqn{\Phi^{-1}(1-a)}. It also carries the influence-function
+  standard errors \code{se.tp.*}/\code{se.tm.*} and the post-treatment
+  \code{surface} components used to redraw the sensitivity surface.
 }
 \description{
 Calibrates omitted-variable-bias sensitivity for a difference-in-differences

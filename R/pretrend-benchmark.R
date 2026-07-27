@@ -35,8 +35,11 @@
 ##' @param model post-treatment \code{\link{dml}} fit (the analysis model).
 ##' @param pre_model pre-treatment placebo \code{\link{dml}} fit, computed on the
 ##'   same units and target as \code{model} but using the pre-treatment period.
-##' @param parameter target quantity: \code{"att"} (default), \code{"ate"} or
-##'   \code{"atu"}. Must be present in both models.
+##' @param parameter target quantity. Currently only \code{"att"} (the default)
+##'   is supported: the pre-trend extrapolation theory is derived for the
+##'   conditional ATT, and the \code{"ate"}/\code{"atu"} analogues are not yet
+##'   established, so they raise an error rather than return unvalidated bounds.
+##'   Must be present in both models.
 ##' @param k relative-strength multiplier for the post-vs-pre bias (the \eqn{k}
 ##'   of the extrapolation). Default \code{1} (transport the observed pre-trend
 ##'   as-is), reproducing \code{main2.Rmd}.
@@ -48,13 +51,15 @@
 ##'   sensitivity surface for the overlay. Default \code{1} (worst case).
 ##' @returns An object of class \code{dml_pretrend}: a list with the post- and
 ##'   pre-treatment estimates and scales, the scale ratio \code{scale.ratio}
-##'   (\eqn{S_0/S_{0,pre}}), \code{bias.factor.pre}, and the two transported
-##'   bounds \code{bounds.magnitude} and \code{bounds.factors}. For each
-##'   extrapolation method it also carries the difference SE
-##'   (\code{se.diff.magnitude}/\code{se.diff.factors}), the overlay contour
-##'   level (\code{level.magnitude}/\code{level.factors}) and its confidence band
-##'   (\code{band.magnitude}/\code{band.factors}), plus the post-treatment
-##'   \code{surface} components used to redraw it.
+##'   (\eqn{S_0/S_{0,pre}}), \code{bias.factor.pre}, and, for each extrapolation
+##'   method, the transported point bounds \eqn{[\theta_-, \theta_+]}
+##'   (\code{bounds.magnitude}/\code{bounds.factors}) and the one-sided
+##'   confidence bounds \eqn{[\ell, u]}
+##'   (\code{confbound.magnitude}/\code{confbound.factors}), built from the
+##'   Appendix-C.2 influence functions of \eqn{\theta_\pm} with the one-sided
+##'   critical value \eqn{\Phi^{-1}(1-a)}. It also carries the influence-function
+##'   standard errors \code{se.tp.*}/\code{se.tm.*} and the post-treatment
+##'   \code{surface} components used to redraw the sensitivity surface.
 ##' @seealso \code{\link{add_pretrend_contour}} to draw the locus on a contour
 ##'   plot; \code{\link{dml_benchmark}} for the (separate) covariate benchmarking.
 ##' @references
@@ -68,6 +73,19 @@ pretrend_benchmark <- function(model, pre_model,
                                rho2 = 1) {
   parameter      <- match.arg(parameter)
   combine.method <- match.arg(combine.method)
+
+  # Pre-trend benchmarking is currently validated only for the conditional ATT.
+  # The extrapolation theory (Wang et al., Section 4.2) is derived for att; the
+  # ate/atu analogues (treated-arm / reciprocal Riesz representer and their
+  # bias-factor definitions) are not yet worked out. Disabled to avoid reporting
+  # unvalidated bounds.
+  if (!identical(parameter, "att"))
+    stop("pretrend_benchmark() currently supports only parameter = 'att'; '",
+         parameter, "' is not allowed yet. The pre-trend extrapolation theory is ",
+         "derived only for the conditional ATT; the ATE/ATU analogues are not yet ",
+         "established, so they are disabled to avoid reporting unvalidated bounds.",
+         call. = FALSE)
+
   slot <- unname(.target_to_slot[parameter])
   if (is.na(slot) || is.null(model$results$main[[slot]]))
     stop("`model` has no '", parameter, "' results (slot '", slot, "').")
@@ -109,40 +127,66 @@ pretrend_benchmark <- function(model, pre_model,
   # pre-treatment bias-factor product |rho0 C0Y C0D|_pre = |theta_s,pre| / S0,pre
   bias.factor.pre <- abs(theta.s.pre) / S0.pre
 
-  # ---- SE of the (post - transported pre) difference (rep-1 IFs) --------------
-  # magnitude transports k*theta_s,pre; factors transports k*r*theta_s,pre with
-  # r = S0.post/S0.pre (the factors SE/band treat the scale ratio r as fixed).
-  psi.post <- post[[1]]$psis$psi.theta.s
-  psi.pre  <- pre[[1]]$psis$psi.theta.s
-  if (is.null(psi.post) || is.null(psi.pre))
-    stop("Influence functions for theta.s are missing from one of the models.")
-  if (length(psi.post) != length(psi.pre))
-    stop("`model` and `pre_model` have different sample sizes; their influence ",
-         "functions cannot be differenced. Fit both on the same units.")
-  if (length(post) > 1L || length(pre) > 1L)
-    warning("cf.reps > 1: the post-vs-pre difference SE uses the first ",
-            "repetition only (matching the manuscript).")
-  r <- S0.post / S0.pre                          # scale ratio, post vs pre
-  se.diff.magnitude <- psi.sd(psi.post - k *     psi.pre)
-  se.diff.factors   <- psi.sd(psi.post - k * r * psi.pre)
+  # ---- C.2 influence functions and one-sided confidence bounds [l, u] ---------
+  # The transported bounds theta_+/- = theta_s +/- (transported pre-trend bias)
+  # are asymptotically linear; Wang et al. (Appendix C.2) give their influence
+  # functions, and the confidence bound is
+  #   [l, u] = [theta_- - z1*se(phi_-),  theta_+ + z1*se(phi_+)]
+  # with the ONE-SIDED critical value z1 = Phi^{-1}(1-a) = qnorm(level), which has
+  # the one-sided covering property P(theta_- >= l) -> level, P(theta_+ <= u) -> level.
+  sigma2.s.post <- cmb(need(post, "sigma2.s", "model"))
+  nu2.s.post    <- cmb(need(post, "nu2.s", "model"))
 
-  # ---- transported bounds (the paper's two strategies) ------------------------
+  ifs <- function(res, what) res[[1]]$psis[[what]]     # rep-1 influence functions
+  psi.theta.s   <- ifs(post, "psi.theta.s");  psi.theta.s.pre  <- ifs(pre, "psi.theta.s")
+  psi.sigma2.s  <- ifs(post, "psi.sigma2.s"); psi.sigma2.s.pre <- ifs(pre, "psi.sigma2.s")
+  psi.nu2.s     <- ifs(post, "psi.nu2.s");    psi.nu2.s.pre    <- ifs(pre, "psi.nu2.s")
+  if (is.null(psi.theta.s) || is.null(psi.theta.s.pre) ||
+      is.null(psi.sigma2.s) || is.null(psi.nu2.s) ||
+      is.null(psi.sigma2.s.pre) || is.null(psi.nu2.s.pre))
+    stop("Influence functions (theta.s, sigma2.s, nu2.s) are missing from one of ",
+         "the models; refit with the current dml().")
+  if (length(psi.theta.s) != length(psi.theta.s.pre))
+    stop("`model` and `pre_model` have different sample sizes; their influence ",
+         "functions cannot be combined. Fit both on the same units.")
+  if (length(post) > 1L || length(pre) > 1L)
+    warning("cf.reps > 1: the confidence bounds use the first repetition's ",
+            "influence functions only (matching the manuscript).")
+
+  r   <- S0.post / S0.pre                      # scale ratio k_S = S0 / S0,pre
+  sgn <- sign(theta.s.pre)                      # sign of the pre-trend estimand
+
+  # phi_S0 = (1/2S0)(sigma2 * phi_nu2 + nu2 * phi_sigma2)                    [C.2]
+  psi.S0     <- (sigma2.s.post * psi.nu2.s     + nu2.s.post * psi.sigma2.s)     / (2 * S0.post)
+  psi.S0.pre <- (sigma2.s.pre  * psi.nu2.s.pre + nu2.s.pre  * psi.sigma2.s.pre) / (2 * S0.pre)
+
+  # transported-bound influence functions phi_{theta_+/-}                    [C.2]
+  #   magnitude: phi_theta_s +/- k*sign(theta_s,pre)*phi_theta_s,pre
+  #   factors  : phi_theta_s +/- k|theta_s,pre|*r*( phi_theta_s,pre/theta_s,pre
+  #                                                 + phi_S0/S0 - phi_S0,pre/S0,pre )
+  psi.tp.mag <- psi.theta.s + k * sgn * psi.theta.s.pre
+  psi.tm.mag <- psi.theta.s - k * sgn * psi.theta.s.pre
+  fac.inner  <- psi.theta.s.pre / theta.s.pre + psi.S0 / S0.post - psi.S0.pre / S0.pre
+  psi.tp.fac <- psi.theta.s + k * abs(theta.s.pre) * r * fac.inner
+  psi.tm.fac <- psi.theta.s - k * abs(theta.s.pre) * r * fac.inner
+
+  se.tp.magnitude <- psi.sd(psi.tp.mag); se.tm.magnitude <- psi.sd(psi.tm.mag)
+  se.tp.factors   <- psi.sd(psi.tp.fac); se.tm.factors   <- psi.sd(psi.tm.fac)
+
+  # ---- transported point bounds theta_+/- (the paper's two strategies) --------
   b.mag <- k *     abs(theta.s.pre)   # (1) magnitude: theta.s +/- k|theta_s,pre|
   b.fac <- k * r * abs(theta.s.pre)   # (2) factors  : theta.s +/- k(S0/S0pre)|theta_s,pre|
   bounds.magnitude <- c(lwr = theta.s.post - b.mag, upr = theta.s.post + b.mag)
   bounds.factors   <- c(lwr = theta.s.post - b.fac, upr = theta.s.post + b.fac)
 
-  # ---- contour-overlay levels: locus where the post bias equals the pre-trend -
-  # On the post upr surface z = theta.s + bias.bound + z*se, the contour at
-  #   level = CI.upr - k*theta_s,pre     -> bias.bound = k|theta_s,pre|              (magnitude)
-  #   level = CI.upr - k*r*theta_s,pre   -> bias.bound = k(S0/S0pre)|theta_s,pre|    (factors)
-  # add_pretrend_contour(method=) draws exactly one of these.
-  fac2   <- stats::qnorm(c((1 - level) / 2, 1 - (1 - level) / 2))
-  ci.upr <- theta.s.post + fac2[2] * se.theta.s.post   # = confint(model)[,"upr"]
-  level.magnitude <- ci.upr - k *     theta.s.pre
-  level.factors   <- ci.upr - k * r * theta.s.pre
-  band.magnitude  <- level.magnitude + se.diff.magnitude * fac2
-  band.factors    <- level.factors   + se.diff.factors   * fac2
+  # ---- one-sided C.2 confidence bounds [l, u] --------------------------------
+  z1 <- stats::qnorm(level)            # one-sided critical value Phi^{-1}(1-a)
+  confbound.magnitude <- c(
+    lwr = unname(bounds.magnitude["lwr"]) - z1 * se.tm.magnitude,
+    upr = unname(bounds.magnitude["upr"]) + z1 * se.tp.magnitude)
+  confbound.factors <- c(
+    lwr = unname(bounds.factors["lwr"]) - z1 * se.tm.factors,
+    upr = unname(bounds.factors["upr"]) + z1 * se.tp.factors)
 
   out <- list(
     parameter = parameter, k = k, level = level,
@@ -151,12 +195,12 @@ pretrend_benchmark <- function(model, pre_model,
     S0.post = S0.post,
     theta.s.pre = theta.s.pre, se.theta.s.pre = se.theta.s.pre,
     S0.pre = S0.pre, scale.ratio = r, bias.factor.pre = bias.factor.pre,
-    se.diff.magnitude = se.diff.magnitude, se.diff.factors = se.diff.factors,
     bounds.magnitude = bounds.magnitude, bounds.factors = bounds.factors,
+    confbound.magnitude = confbound.magnitude, confbound.factors = confbound.factors,
+    se.tp.magnitude = se.tp.magnitude, se.tm.magnitude = se.tm.magnitude,
+    se.tp.factors = se.tp.factors, se.tm.factors = se.tm.factors,
     surface = list(theta.s = theta.s, S2 = S2, se.theta.s = se.theta.s,
-                   se.S2 = se.S2, cov.theta.S2 = cov.theta.S2),
-    level.magnitude = level.magnitude, level.factors = level.factors,
-    band.magnitude = band.magnitude, band.factors = band.factors
+                   se.S2 = se.S2, cov.theta.S2 = cov.theta.S2)
   )
   class(out) <- "dml_pretrend"
   out
@@ -179,44 +223,45 @@ print.dml_pretrend <- function(x, digits = 4, ...) {
       "   S0/S0pre = ", fmt(x$scale.ratio), "\n", sep = "")
   cat("  pre-trend bias-factor product |rho0 C0Y C0D|_pre = ",
       fmt(x$bias.factor.pre), "\n\n", sep = "")
-  cat("  transported bounds:\n")
+  cat("  transported bounds  (point estimate  [theta_-, theta_+]):\n")
   cat("   [magnitude]  theta.s +/- k|theta.s,pre|           : [",
       fmt(x$bounds.magnitude["lwr"]), ", ", fmt(x$bounds.magnitude["upr"]), "]\n", sep = "")
   cat("   [factors]    theta.s +/- k(S0/S0,pre)|theta.s,pre|: [",
       fmt(x$bounds.factors["lwr"]), ", ", fmt(x$bounds.factors["upr"]), "]\n", sep = "")
-  cat("\n  contour-overlay level (add_pretrend_contour method =):\n")
-  cat("   magnitude = ", fmt(x$level.magnitude),
-      "   factors = ", fmt(x$level.factors), "\n", sep = "")
+  cat("\n  one-sided ", format(100 * x$level), "% confidence bounds  [l, u]:\n", sep = "")
+  cat("   [magnitude]  [", fmt(x$confbound.magnitude["lwr"]), ", ",
+      fmt(x$confbound.magnitude["upr"]), "]\n", sep = "")
+  cat("   [factors]    [", fmt(x$confbound.factors["lwr"]), ", ",
+      fmt(x$confbound.factors["upr"]), "]\n", sep = "")
   invisible(x)
 }
 
 ##' Overlay a pre-trend locus on a DiD sensitivity contour plot
 ##'
 ##' @description
-##' Adds a SINGLE pre-trend benchmark contour -- the extrapolation method you
-##' select -- to a contour plot produced by \code{\link{ovb_contour_plot}}. Call
-##' \code{ovb_contour_plot(model, ...)} first, then this function with matching
-##' \code{which.bound}, \code{lim.x}, \code{lim.y} and \code{grid.number}. It
-##' redraws the post-treatment bound surface on the same grid and adds a dashed
-##' contour at the level where the adverse bias equals the transported pre-trend
-##' -- \eqn{k\,|\theta_{s,pre}|} for \code{method = "magnitude"}, or
-##' \eqn{k\,(S_0/S_{0,pre})\,|\theta_{s,pre}|} for \code{method = "factors"} --
-##' optionally with a confidence band. Only the selected method is plotted; the
-##' magnitude overlay reproduces the blue / light-blue lines in \code{main2.Rmd}.
+##' Adds a SINGLE pre-trend confidence-bound contour -- for the extrapolation
+##' method you select -- to a contour plot produced by
+##' \code{\link{ovb_contour_plot}}. Call \code{ovb_contour_plot(model, ...)}
+##' first, then this function with matching \code{which.bound}, \code{lim.x},
+##' \code{lim.y} and \code{grid.number}. It redraws the post-treatment bound
+##' surface on the same grid and adds a dashed contour at the pre-trend
+##' one-sided confidence bound: the upper bound \eqn{u} when
+##' \code{which.bound = "upr"}, the lower bound \eqn{\ell} when
+##' \code{which.bound = "lwr"} (see \code{\link{pretrend_benchmark}}). Only the
+##' selected method and direction are drawn.
 ##'
 ##' @param x an object of class \code{dml_pretrend} from
 ##'   \code{\link{pretrend_benchmark}}.
-##' @param method which extrapolation locus to draw: \code{"magnitude"}
+##' @param method which extrapolation to use: \code{"magnitude"}
 ##'   (default; transport \eqn{k|\theta_{s,pre}|}) or \code{"factors"} (transport
 ##'   the bias factors, re-scaled by \eqn{S_0/S_{0,pre}}). Only this one is drawn.
-##' @param which.bound overlay on the \code{"upr"} (default) or \code{"lwr"}
-##'   bound surface; must match the \code{ovb_contour_plot} call.
+##' @param which.bound draw the upper confidence bound \eqn{u} (\code{"upr"},
+##'   default) or the lower bound \eqn{\ell} (\code{"lwr"}); must match the
+##'   \code{ovb_contour_plot} call.
 ##' @param lim.x,lim.y,grid.number axis limits and grid resolution; must match
 ##'   the \code{ovb_contour_plot} call so the grids align.
-##' @param band logical; also draw the confidence-band contour. Default
-##'   \code{TRUE}.
-##' @param col,col.band colors for the pre-trend contour and its band.
-##' @param lwd,lty line width and type for the added contours.
+##' @param col color for the pre-trend confidence-bound contour.
+##' @param lwd,lty line width and type for the added contour.
 ##' @param labcex contour label size; \code{draw.labels = FALSE} suppresses labels.
 ##' @param draw.labels logical; label the contour with its value. Default
 ##'   \code{TRUE}.
@@ -228,16 +273,19 @@ add_pretrend_contour <- function(x,
                                  method = c("magnitude", "factors"),
                                  which.bound = c("upr", "lwr"),
                                  lim.x = 0.15, lim.y = lim.x, grid.number = 70,
-                                 band = TRUE,
-                                 col = "blue", col.band = "lightblue",
+                                 col = "lightblue",
                                  lwd = 3, lty = 2, labcex = 1.1,
                                  draw.labels = TRUE, ...) {
   if (!inherits(x, "dml_pretrend"))
     stop("`x` must be a 'dml_pretrend' object from pretrend_benchmark().")
+  if (!identical(x$parameter, "att"))
+    stop("add_pretrend_contour() currently supports only parameter = 'att' ",
+         "objects; this object has parameter = '", x$parameter, "'. Pre-trend ",
+         "benchmarking is validated only for the conditional ATT.", call. = FALSE)
   method      <- match.arg(method)
   which.bound <- match.arg(which.bound)
-  lvl  <- if (method == "magnitude") x$level.magnitude   else x$level.factors
-  bnd1 <- if (method == "magnitude") x$band.magnitude[1] else x$band.factors[1]
+  cb  <- if (method == "magnitude") x$confbound.magnitude else x$confbound.factors
+  lvl <- unname(cb[which.bound])       # u for which.bound = "upr", l for "lwr"
   s <- x$surface
 
   x_grid <- seq(0, lim.x, by = lim.x / grid.number)
@@ -254,10 +302,5 @@ add_pretrend_contour <- function(x,
   graphics::contour(x_grid, y_grid, z_grid, levels = lvl,
                     add = TRUE, col = col, lwd = lwd, lty = lty,
                     labels = lab(lvl), labcex = labcex, ...)
-  if (isTRUE(band)) {
-    graphics::contour(x_grid, y_grid, z_grid, levels = bnd1,
-                      add = TRUE, col = col.band, lwd = lwd, lty = lty,
-                      labels = lab(bnd1), labcex = labcex, ...)
-  }
   invisible(x)
 }

@@ -11,9 +11,7 @@ add_pretrend_contour(
   lim.x = 0.15,
   lim.y = lim.x,
   grid.number = 70,
-  band = TRUE,
-  col = "blue",
-  col.band = "lightblue",
+  col = "lightblue",
   lwd = 3,
   lty = 2,
   labcex = 1.1,
@@ -25,22 +23,20 @@ add_pretrend_contour(
 \item{x}{an object of class \code{dml_pretrend} from
 \code{\link{pretrend_benchmark}}.}
 
-\item{method}{which extrapolation locus to draw: \code{"magnitude"}
+\item{method}{which extrapolation to use: \code{"magnitude"}
 (default; transport \eqn{k|\theta_{s,pre}|}) or \code{"factors"} (transport
 the bias factors, re-scaled by \eqn{S_0/S_{0,pre}}). Only this one is drawn.}
 
-\item{which.bound}{overlay on the \code{"upr"} (default) or \code{"lwr"}
-bound surface; must match the \code{ovb_contour_plot} call.}
+\item{which.bound}{draw the upper confidence bound \eqn{u} (\code{"upr"},
+default) or the lower bound \eqn{\ell} (\code{"lwr"}); must match the
+\code{ovb_contour_plot} call.}
 
 \item{lim.x, lim.y, grid.number}{axis limits and grid resolution; must match
 the \code{ovb_contour_plot} call so the grids align.}
 
-\item{band}{logical; also draw the confidence-band contour. Default
-\code{TRUE}.}
+\item{col}{color for the pre-trend confidence-bound contour.}
 
-\item{col, col.band}{colors for the pre-trend contour and its band.}
-
-\item{lwd, lty}{line width and type for the added contours.}
+\item{lwd, lty}{line width and type for the added contour.}
 
 \item{labcex}{contour label size; \code{draw.labels = FALSE} suppresses labels.}
 
@@ -53,16 +49,16 @@ the \code{ovb_contour_plot} call so the grids align.}
 \code{x}, invisibly.
 }
 \description{
-Adds a SINGLE pre-trend benchmark contour -- the extrapolation method you
-select -- to a contour plot produced by \code{\link{ovb_contour_plot}}. Call
-\code{ovb_contour_plot(model, ...)} first, then this function with matching
-\code{which.bound}, \code{lim.x}, \code{lim.y} and \code{grid.number}. It
-redraws the post-treatment bound surface on the same grid and adds a dashed
-contour at the level where the adverse bias equals the transported pre-trend
--- \eqn{k\,|\theta_{s,pre}|} for \code{method = "magnitude"}, or
-\eqn{k\,(S_0/S_{0,pre})\,|\theta_{s,pre}|} for \code{method = "factors"} --
-optionally with a confidence band. Only the selected method is plotted; the
-magnitude overlay reproduces the blue / light-blue lines in \code{main2.Rmd}.
+Adds a SINGLE pre-trend confidence-bound contour -- for the extrapolation
+method you select -- to a contour plot produced by
+\code{\link{ovb_contour_plot}}. Call \code{ovb_contour_plot(model, ...)}
+first, then this function with matching \code{which.bound}, \code{lim.x},
+\code{lim.y} and \code{grid.number}. It redraws the post-treatment bound
+surface on the same grid and adds a dashed contour at the pre-trend
+one-sided confidence bound: the upper bound \eqn{u} when
+\code{which.bound = "upr"}, the lower bound \eqn{\ell} when
+\code{which.bound = "lwr"} (see \code{\link{pretrend_benchmark}}). Only the
+selected method and direction are drawn.
 }
 \seealso{
 \code{\link{pretrend_benchmark}}

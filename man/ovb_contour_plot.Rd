@@ -84,9 +84,14 @@ ovb_contour_plot(...)
 
 \item{col.thr.line}{color of threshold contour line.}
 
-\item{xlab}{label of x axis. If `NULL`, default label is used.}
+\item{xlab}{label of x axis. If `NULL` (default), a label matching the
+target's omitted-variable-bias interpretation is chosen automatically:
+the general partially-linear axis for unconditional targets, and the
+DiD-specific conditional axis for conditional `att` (controls arm, D=0)
+and conditional `atu` (treated arm, D=1).}
 
-\item{ylab}{label of y axis. If `NULL`, default label is used.}
+\item{ylab}{label of y axis. If `NULL` (default), chosen automatically to
+match the target, in the same way as `xlab`.}
 
 \item{cex.lab}{The magnification to be used for x and y labels relative to the current setting of cex.}
 
