@@ -72,9 +72,9 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   # cat("Short Estimates and Bounds on Omitted Variable Bias\n")
   # cat("\n")
   cat("Sensitivity Parameters\n",
-      "","cf.y =", paste0(x$info$cf.y,"\n"),
-      "","r2rr =", paste0(x$info$cf.d, "\n"),
-      "", "rho =", paste0(x$info$rho2,""), "\n")
+      "", "cf.y =", paste0(x$info$cf.y, "\n"),
+      "", "cf.d =", paste0(x$info$cf.d, "\n"),
+      "", "rho2 =", paste0(x$info$rho2, ""), "\n")
   # cat("\nBounds on Average Treatment Effect:", "\n\n")
   # print()
   main <- x$main
