@@ -164,8 +164,8 @@ bench_fun <- function(model, benchmark_covariates){
          "('ate', 'att', or 'atu').")
 
   # Sign of the alignment rho in the OVB decomposition of delta = theta - theta_s:
-  #   ATT:      delta = -rho * sqrt(V.g * V.a)      (Theorem 1, ATT)
-  #   ATE/ATU:  delta = +rho * sqrt(V.g * V.a)      (Theorem 2 / Theorem 1, ATU)
+  #   ATT:      delta = -rho * sqrt(V.g * V.a)
+  #   ATE/ATU:  delta = +rho * sqrt(V.g * V.a)
   # The leave-one-out formula below (delta = -Bias, rho = sign(Bias)*|Bias|/sqrt)
   # returns the ATT-correct rho; flip it for the other targets so that rho is the
   # true error correlation for every target.
@@ -173,10 +173,6 @@ bench_fun <- function(model, benchmark_covariates){
 
   x <- model$data$x
 
-  # Normalise benchmark_covariates into a named list of column-name groups. A
-  # character vector benchmarks each column on its own; a named list lets a
-  # group of columns (e.g. the dummies of a factor) be dropped together in the
-  # leave-one-out refit. Element names become the row labels.
   covariate_groups <- if (is.list(benchmark_covariates)) benchmark_covariates
                       else as.list(benchmark_covariates)
   grp_names <- names(covariate_groups)
@@ -253,13 +249,6 @@ bench_fun <- function(model, benchmark_covariates){
     Gain.Y = pmax(0, (sigma.sq.wo - sigma.sq)/sigma.sq)
     Gain.D = pmax(0, (nu.sq - nu.sq.wo)/nu.sq.wo)
 
-
-    # delta is the OVB bias in the convention delta = theta - theta_s, i.e.
-    #   delta = theta.short (full, has covariate) - theta.short.wo (leave-one-out) = -Bias.
-    # With rho = align.sign * Bias / sqrt(V.g * V.a) (unclipped), this gives the
-    # signed decomposition delta = -align.sign * rho * sqrt(V.g * V.a):
-    #   ATT (align.sign = +1): delta = -rho * M   (Theorem 1, ATT)
-    #   ATU/ATE (align.sign = -1): delta = +rho * M   (Theorem 1 ATU / Theorem 2)
     bench <- data.frame(gain.Y = Gain.Y,
                         gain.D = Gain.D,
                         rho = Cor,

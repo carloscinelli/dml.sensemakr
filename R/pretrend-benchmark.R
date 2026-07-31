@@ -1,36 +1,10 @@
-# =============================================================================
-# Pre-trend benchmarking for the DiD OVB sensitivity analysis.
-#
-# This file is self-contained and additive: it does NOT modify the covariate
-# benchmarking (dml_benchmark / bench_fun) or the contour machinery
-# (ovb_contour_plot / confidence_bounds). It only *uses* the exported/internal
-# helpers confidence_bounds.numeric(), extract_estimate(), psi.sd() and
-# .target_to_slot to reproduce main2.Rmd's pre-trend calibration and overlay.
-#
-# Theory (ovb4did.pdf, "benchmarking against pre-trend bias"): the pre-treatment
-# period is a placebo (theta_pre = 0), so the pre-treatment bias reduces to the
-# observed short estimand theta_s,pre. Its factors satisfy
-#   |rho0,pre| * C0Y,pre * C0D,pre * S0,pre = |theta_s,pre|.
-# Two strategies transport it to the post period:
-#   (1) magnitude:  theta ± k |theta_s,pre|
-#   (2) factors:    theta ± k (S0 / S0,pre) |theta_s,pre|
-# where S0^2 = sigma2_s * nu2_s and k collects the relative change in the
-# bias components across periods.
-# =============================================================================
-
 ##' Pre-trend benchmarking for difference-in-differences OVB sensitivity
 ##'
 ##' @description
 ##' Calibrates omitted-variable-bias sensitivity for a difference-in-differences
 ##' ATT (or ATE/ATU) against the bias implied by an observed pre-treatment trend,
 ##' following the "benchmarking against pre-trend" analysis of the OVB-in-DiD
-##' paper. Given a post-treatment \code{\link{dml}} fit and a pre-treatment
-##' placebo \code{\link{dml}} fit (same estimator, pre-period), it returns the
-##' pre-trend short estimand \eqn{\theta_{s,pre}}, the pre-treatment scale
-##' \eqn{S_{0,pre}}, the transported bias-factor product
-##' \eqn{|\rho_0 C_{0Y} C_{0D}|_{pre} = |\theta_{s,pre}| / S_{0,pre}}, the two
-##' transported bounds, and the levels needed to overlay the pre-trend locus on a
-##' contour plot via \code{\link{add_pretrend_contour}}.
+##' paper.
 ##'
 ##' @param model post-treatment \code{\link{dml}} fit (the analysis model).
 ##' @param pre_model pre-treatment placebo \code{\link{dml}} fit, computed on the
@@ -75,13 +49,9 @@ pretrend_benchmark <- function(model, pre_model,
   combine.method <- match.arg(combine.method)
 
   # Pre-trend benchmarking is currently validated only for the conditional ATT.
-  # The extrapolation theory (Wang et al., Section 4.2) is derived for att; the
-  # ate/atu analogues (treated-arm / reciprocal Riesz representer and their
-  # bias-factor definitions) are not yet worked out. Disabled to avoid reporting
-  # unvalidated bounds.
-  if (!identical(parameter, "att"))
+    if (!identical(parameter, "att"))
     stop("pretrend_benchmark() currently supports only parameter = 'att'; '",
-         parameter, "' is not allowed yet. The pre-trend extrapolation theory is ",
+         parameter, "' is not allowed yet. The pre-trend extrapolation is ",
          "derived only for the conditional ATT; the ATE/ATU analogues are not yet ",
          "established, so they are disabled to avoid reporting unvalidated bounds.",
          call. = FALSE)
@@ -128,12 +98,6 @@ pretrend_benchmark <- function(model, pre_model,
   bias.factor.pre <- abs(theta.s.pre) / S0.pre
 
   # ---- C.2 influence functions and one-sided confidence bounds [l, u] ---------
-  # The transported bounds theta_+/- = theta_s +/- (transported pre-trend bias)
-  # are asymptotically linear; Wang et al. (Appendix C.2) give their influence
-  # functions, and the confidence bound is
-  #   [l, u] = [theta_- - z1*se(phi_-),  theta_+ + z1*se(phi_+)]
-  # with the ONE-SIDED critical value z1 = Phi^{-1}(1-a) = qnorm(level), which has
-  # the one-sided covering property P(theta_- >= l) -> level, P(theta_+ <= u) -> level.
   sigma2.s.post <- cmb(need(post, "sigma2.s", "model"))
   nu2.s.post    <- cmb(need(post, "nu2.s", "model"))
 
@@ -153,14 +117,12 @@ pretrend_benchmark <- function(model, pre_model,
     warning("cf.reps > 1: the confidence bounds use the first repetition's ",
             "influence functions only (matching the manuscript).")
 
-  r   <- S0.post / S0.pre                      # scale ratio k_S = S0 / S0,pre
-  sgn <- sign(theta.s.pre)                      # sign of the pre-trend estimand
+  r   <- S0.post / S0.pre
+  sgn <- sign(theta.s.pre)
 
-  # phi_S0 = (1/2S0)(sigma2 * phi_nu2 + nu2 * phi_sigma2)                    [C.2]
   psi.S0     <- (sigma2.s.post * psi.nu2.s     + nu2.s.post * psi.sigma2.s)     / (2 * S0.post)
   psi.S0.pre <- (sigma2.s.pre  * psi.nu2.s.pre + nu2.s.pre  * psi.sigma2.s.pre) / (2 * S0.pre)
 
-  # transported-bound influence functions phi_{theta_+/-}                    [C.2]
   #   magnitude: phi_theta_s +/- k*sign(theta_s,pre)*phi_theta_s,pre
   #   factors  : phi_theta_s +/- k|theta_s,pre|*r*( phi_theta_s,pre/theta_s,pre
   #                                                 + phi_S0/S0 - phi_S0,pre/S0,pre )
@@ -180,7 +142,7 @@ pretrend_benchmark <- function(model, pre_model,
   bounds.factors   <- c(lwr = theta.s.post - b.fac, upr = theta.s.post + b.fac)
 
   # ---- one-sided C.2 confidence bounds [l, u] --------------------------------
-  z1 <- stats::qnorm(level)            # one-sided critical value Phi^{-1}(1-a)
+  z1 <- stats::qnorm(level)
   confbound.magnitude <- c(
     lwr = unname(bounds.magnitude["lwr"]) - z1 * se.tm.magnitude,
     upr = unname(bounds.magnitude["upr"]) + z1 * se.tp.magnitude)

@@ -108,17 +108,12 @@ dml_diagnostic <- function(y, d, x,
   cond_slot <- if (target == "att") "treat" else "untr"
 
   # OVB alignment sign: delta = theta - theta_s decomposes as
-  #   ATT : delta = -rho * (imbalance * trend * scaling)   -> sign(rho) = -sign(delta)
-  #   ATU : delta = +rho * (imbalance * trend * scaling)   -> sign(rho) = +sign(delta)
+  #   ATT : delta = -rho * (imbalance * trend * scaling)   <-> sign(rho) = -sign(delta)
+  #   ATU : delta = +rho * (imbalance * trend * scaling)   <-> sign(rho) = +sign(delta)
   # compute_table's raw Cor uses sign(Bias) = -sign(delta) (Bias = theta.uncond - theta.var),
   # which is ATT-correct; flip it for ATU so the reported alignment carries the true rho sign.
   align.sign <- if (target == "att") 1 else -1
 
-  # Normalise diagnostic_covariates into a named list of column-name vectors:
-  #   - a character vector  -> each element is its own singleton group
-  #   - a list              -> each element is a group of columns to benchmark
-  #     together; element names give the row label, falling back to the column
-  #     name (singletons) or the columns joined by "+".
   covariate_groups <- if (is.list(diagnostic_covariates)) {
     diagnostic_covariates
   } else {
@@ -149,7 +144,6 @@ dml_diagnostic <- function(y, d, x,
          paste(cols_need_x[which.not], collapse = ", "), ".")
   }
 
-  # Normalise learners: if not supplied, wrap dreg/yreg0 into the same structure
   if (is.null(learners)) {
     learners <- list(default = list(dreg = dreg, yreg0 = yreg0))
     single_learner <- TRUE
@@ -189,11 +183,6 @@ dml_diagnostic <- function(y, d, x,
   get_est <- function(treat_results, param, k) treat_results[[k]]$estimates[[param]]
   get_psi <- function(treat_results, param, k) treat_results[[k]]$psis[[param]]
 
-  # nu2.s is the full second moment E[(O_X/O)^2] when the model was fit with
-  # scaled = FALSE, and the chi^2 divergence (that moment minus 1) when scaled =
-  # TRUE. Convert either to the chi^2 divergence so the imbalance formulas below
-  # are convention-agnostic. (Influence functions and SEs are unaffected by the
-  # constant shift, so only the point estimates need converting.)
   to_chi2 <- function(nu2, is_scaled) if (isTRUE(is_scaled)) nu2 else nu2 - 1
 
   # ----- 1. Null model quantities (shared across all learners) -----------------
@@ -349,8 +338,7 @@ dml_diagnostic <- function(y, d, x,
 # =============================================================================
 # Standardized mean differences and variance-ratio deviations between treated
 # and control units for the observed covariates -- reproduces the covariate
-# balance table (Table 2) of Wang et al. (2026). Self-contained: uses only
-# model$data$x and model$data$d, independent of the diagnostics above.
+# balance table (Table 2) of Wang et al. (2026).
 check_balance_model <- function(model) {
   if (!inherits(model, "dml")) {
     stop("model must be an object of class 'dml' created with dml().")

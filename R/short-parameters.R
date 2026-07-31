@@ -118,9 +118,7 @@ att.npm.cond <- function(y, d,
 # Mirror of att.npm.cond() with the treated/untreated roles swapped:
 #   D -> (1 - D),  p -> (1 - p),  pi(X) -> (1 - pi(X)),  g0s -> g1s.
 # The outcome regression is fit on the TREATED units (yhat1 = g1s), and the
-# control regression (yhat0) is not used. The sign of theta.s follows the
-# causal ATU convention theta = E[g1s - dY | D = 0], matching the untreated
-# target of ate.npm(parameter = "untr").
+# control regression (yhat0) is not used.
 # returns estimates and influence functions for theta.s, sigma2.1s, nu2.1s, S12
 atu.npm.cond <- function(y, d,
                          yhat1,

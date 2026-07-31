@@ -65,13 +65,7 @@ An object of class \code{dml_pretrend}: a list with the post- and
 Calibrates omitted-variable-bias sensitivity for a difference-in-differences
 ATT (or ATE/ATU) against the bias implied by an observed pre-treatment trend,
 following the "benchmarking against pre-trend" analysis of the OVB-in-DiD
-paper. Given a post-treatment \code{\link{dml}} fit and a pre-treatment
-placebo \code{\link{dml}} fit (same estimator, pre-period), it returns the
-pre-trend short estimand \eqn{\theta_{s,pre}}, the pre-treatment scale
-\eqn{S_{0,pre}}, the transported bias-factor product
-\eqn{|\rho_0 C_{0Y} C_{0D}|_{pre} = |\theta_{s,pre}| / S_{0,pre}}, the two
-transported bounds, and the levels needed to overlay the pre-trend locus on a
-contour plot via \code{\link{add_pretrend_contour}}.
+paper.
 }
 \references{
 Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
