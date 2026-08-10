@@ -89,6 +89,173 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
   invisible(x)
 }
 
+##' Confidence bounds for covariate benchmarking (propagating benchmark uncertainty)
+##'
+##' @description
+##' Constructs the bias-adjusted bounds on the target parameter implied by
+##' benchmarking against observed covariates, together with one-sided confidence
+##' bounds that \emph{propagate the estimation uncertainty of the benchmarked
+##' gains}. Both the fixed-gain and the propagated bounds are
+##' returned so the two can be compared.
+##'
+##'
+##' @param model the \code{\link{dml}} fit used for the benchmark; supplies the
+##'   scale \eqn{\hat S=\sqrt{\hat\sigma^2_s\hat\nu^2_s}} and its influence
+##'   function. Must be fit with a single target (\code{"ate"}/\code{"att"}/\code{"atu"}).
+##' @param benchmark either a \code{dml_benchmark} object (from
+##'   \code{\link{dml_benchmark}}, re-used \emph{without} refitting) or the
+##'   \code{benchmark_covariates} to pass to \code{\link{dml_benchmark}}.
+##' @param kY,kD relative-strength multipliers \eqn{k_{Y,j}}, \eqn{k_{D,j}} of the
+##'   latent-vs-observed gains. Default \code{1} (a latent confounder as strong as
+##'   the observed covariate).
+##' @param rho optional fixed alignment to use in place of the benchmarked
+##'   \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate \eqn{j}'s estimated
+##'   alignment and, in the propagated CI, its sampling uncertainty. A value in
+##'   \eqn{[-1, 1]} (e.g. \code{1} for the conservative worst case, or \code{0.3})
+##'   pins \eqn{\rho} to that constant: it enters the bias factor but carries no
+##'   uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D} are propagated --
+##'   matching the fixed-alignment convention of the manuscript's contour figures.
+##' @param level confidence level for the one-sided bounds. Default \code{0.95}
+##'   (critical value \eqn{\Phi^{-1}(level)}, matching \code{\link{pretrend_benchmark}}).
+##' @param combine.method how to combine cross-fitting repetitions,
+##'   \code{"median"} (default) or \code{"mean"}. Each repetition's bound and its
+##'   influence-function SE are combined with the same rule as
+##'   \code{\link{confidence_bounds}}, so the reported SE folds in the
+##'   across-repetition spread of the estimate.
+##' @returns An object of class \code{dml_benchmark_bounds} (a data frame, one row
+##'   per benchmark covariate) with the bias factor \code{BF}, the point bounds
+##'   \code{theta.minus}/\code{theta.plus}, the fixed-gain confidence bounds
+##'   \code{lwr.fixed}/\code{upr.fixed} (\eqn{=}\code{confidence_bounds}), the
+##'   uncertainty-propagated confidence bounds \code{lwr}/\code{upr}, and the
+##'   propagated bound SEs \code{se.minus}/\code{se.plus}. Covariates whose implied
+##'   \eqn{k_D \hat G_{D,j} \ge 1} (a confounder that would explain essentially all
+##'   treatment-odds variation, so the bound diverges) return \code{NA} bounds with
+##'   a warning.
+##' @seealso \code{\link{dml_benchmark}}, \code{\link{pretrend_benchmark}},
+##'   \code{\link{confidence_bounds}}.
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   (Appendix E). Wang, J.,
+##'   Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026). "Omitted
+##'   Variable Bias in Difference-in-Differences Designs" (Section 5.2).
+##' @export
+benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho = NULL,
+                             level = 0.95, combine.method = c("median", "mean")) {
+  combine.method <- match.arg(combine.method)
+  if (!is.null(rho) && (length(rho) != 1L || !is.finite(rho) || abs(rho) > 1))
+    stop("`rho` must be NULL or a single value in [-1, 1].")
+  rho.fixed <- !is.null(rho)
+  cmb <- function(v) if (combine.method == "median") stats::median(v) else mean(v)
+
+  bench <- if (inherits(benchmark, "dml_benchmark")) benchmark
+           else dml_benchmark(model, benchmark)
+  if (!inherits(bench, "dml_benchmark"))
+    stop("`benchmark` must be a dml_benchmark object or benchmark_covariates.")
+
+  slot <- unname(.target_to_slot[model$info$target])
+  if (length(slot) != 1L || is.na(slot) || is.null(model$results$main[[slot]]))
+    stop("benchmark_bounds() requires a `model` fit with a single target ",
+         "('ate', 'att', or 'atu') matching the benchmark.")
+  post <- model$results$main[[slot]]
+
+  # ---- per-rep scale components; repetitions combined like confidence_bounds()
+  sigma2.s.rep <- extract_estimate(post, "sigma2.s")
+  nu2.s.rep    <- extract_estimate(post, "nu2.s")
+  theta.s.rep  <- extract_estimate(post, "theta.s")
+  R       <- length(theta.s.rep)                          # cross-fitting repetitions
+  combine <- if (combine.method == "mean") combine.mean else combine.median
+  z       <- stats::qnorm(level)
+
+  diverged <- character(0)
+  covs <- names(bench$benchmarks)
+  rows <- lapply(covs, function(v) {
+    est  <- bench$benchmarks[[v]]
+    psis <- bench$benchmarks_psis[[v]]
+
+    # combined benchmark gains -> the (fixed) bias factor, as in confidence_bounds()
+    GY <- cmb(est$gain.Y); GD <- cmb(est$gain.D)
+    rho.use <- if (rho.fixed) rho else cmb(est$rho)   # fixed alignment, or benchmarked
+    kGY <- kY * GY; kGD <- kD * GD
+    if (is.finite(kGD) && kGD >= 1) {                     # bound diverges
+      diverged <<- c(diverged, v)
+      return(data.frame(BF = NA_real_, theta.minus = NA_real_, theta.plus = NA_real_,
+                        lwr.fixed = NA_real_, upr.fixed = NA_real_,
+                        lwr = NA_real_, upr = NA_real_,
+                        se.minus = NA_real_, se.plus = NA_real_, row.names = v))
+    }
+    gain.zero <- !is.finite(GY) || !is.finite(GD) || GY <= 0 || GD <= 0
+    if (gain.zero) { CY <- CD <- BF <- 0 } else {
+      CY <- sqrt(kGY); CD <- sqrt(kGD / (1 - kGD)); BF <- abs(rho.use) * CY * CD
+    }
+
+    # per-rep bound endpoints and their influence-function SEs
+    tm <- tp <- sm <- sp <- sm.fx <- sp.fx <- numeric(R)
+    for (k in seq_len(R)) {
+      s2 <- sigma2.s.rep[k]; n2 <- nu2.s.rep[k]; th <- theta.s.rep[k]
+      S.k    <- sqrt(s2 * n2)
+      psi.th <- psis$psi.theta.s[[k]]
+      psi.S  <- (s2 * psis$psi.nu2.s[[k]] + n2 * psis$psi.sigma2.s[[k]]) / (2 * S.k)
+      psi.BF <- if (gain.zero) numeric(length(psi.th)) else {
+        # gain-uncertainty terms (always propagated); rho term only when rho is estimated
+        gains <- abs(rho.use) * CD * (kY * psis$psi.GY[[k]]) / (2 * CY) +
+                 abs(rho.use) * CY * (kD * psis$psi.GD[[k]]) / (2 * sqrt(kGD) * (1 - kGD)^(3/2))
+        if (rho.fixed) gains else gains + sign(rho.use) * CY * CD * psis$psi.rho[[k]]
+      }
+      tm[k] <- th - BF * S.k;                     tp[k] <- th + BF * S.k
+      sm[k] <- psi.sd(psi.th - BF * psi.S - S.k * psi.BF)   # full-propagation SE
+      sp[k] <- psi.sd(psi.th + BF * psi.S + S.k * psi.BF)
+      sm.fx[k] <- psi.sd(psi.th - BF * psi.S)               # fixed-gain SE
+      sp.fx[k] <- psi.sd(psi.th + BF * psi.S)
+    }
+
+    # combine reps: estimate + an SE that folds in the across-rep spread (CCDDHNR)
+    cm <- combine(tm, sm);       cp <- combine(tp, sp)
+    cm.fx <- combine(tm, sm.fx); cp.fx <- combine(tp, sp.fx)
+    data.frame(
+      BF = BF,
+      theta.minus = unname(cm["estimate"]), theta.plus = unname(cp["estimate"]),
+      lwr.fixed = unname(cm.fx["estimate"] - z * cm.fx["se"]),
+      upr.fixed = unname(cp.fx["estimate"] + z * cp.fx["se"]),
+      lwr = unname(cm["estimate"] - z * cm["se"]),
+      upr = unname(cp["estimate"] + z * cp["se"]),
+      se.minus = unname(cm["se"]), se.plus = unname(cp["se"]), row.names = v)
+  })
+  if (length(diverged))
+    warning("k_D * gain.D >= 1 for: ", paste(diverged, collapse = ", "),
+            " -- the implied confounder explains ~all treatment-odds variation, ",
+            "so the bound diverges (NA returned). Lower kD to obtain a finite bound.")
+
+  out <- do.call(rbind, rows)
+  attr(out, "kY") <- kY; attr(out, "kD") <- kD; attr(out, "rho") <- rho
+  attr(out, "level") <- level; attr(out, "combine.method") <- combine.method
+  attr(out, "theta.s") <- cmb(theta.s.rep)
+  attr(out, "S") <- sqrt(cmb(sigma2.s.rep) * cmb(nu2.s.rep))
+  class(out) <- c("dml_benchmark_bounds", "data.frame")
+  out
+}
+
+##' @param x an object of class \code{dml_benchmark_bounds}.
+##' @param digits number of digits to print.
+##' @param ... ignored.
+##' @rdname benchmark_bounds
+##' @export
+print.dml_benchmark_bounds <- function(x, digits = 4, ...) {
+  fmt <- function(v) formatC(v, digits = digits, format = "f")
+  rho.txt <- if (is.null(attr(x, "rho"))) "rho = benchmarked" else
+             paste0("rho = ", attr(x, "rho"), " (fixed)")
+  cat("Covariate benchmark bounds  (kY = ", attr(x, "kY"), ", kD = ", attr(x, "kD"),
+      ", ", rho.txt, ";  ", format(100 * attr(x, "level")), "% one-sided)\n", sep = "")
+  cat("theta.s = ", fmt(attr(x, "theta.s")), ",  S = ", fmt(attr(x, "S")),
+      "\n\n", sep = "")
+  cols <- c("BF", "theta.minus", "theta.plus", "lwr.fixed", "upr.fixed", "lwr", "upr")
+  print(round(as.data.frame(x)[, cols], digits))
+  cat("\n [theta.minus, theta.plus] point bounds  theta.s +/- BF * S\n")
+  cat(" [lwr.fixed, upr.fixed]    CI with gains held FIXED (= confidence_bounds; manuscript convention)\n")
+  cat(" [lwr, upr]                CI PROPAGATING benchmark-gain uncertainty (Appendix E / Sec. 5.2)\n")
+  invisible(x)
+}
+
 # bench_plm <- function(model, benchmark_covariates) {
 #   # if (is.null(model$results$main[[slot]])) stop("Benchmarks implemented for ATE only. ATT/ATU coming soon.")
 #   x <- model$data$x

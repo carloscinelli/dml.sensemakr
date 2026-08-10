@@ -97,58 +97,71 @@ pretrend_benchmark <- function(model, pre_model,
   # pre-treatment bias-factor product |rho0 C0Y C0D|_pre = |theta_s,pre| / S0,pre
   bias.factor.pre <- abs(theta.s.pre) / S0.pre
 
-  # ---- C.2 influence functions and one-sided confidence bounds [l, u] ---------
-  sigma2.s.post <- cmb(need(post, "sigma2.s", "model"))
-  nu2.s.post    <- cmb(need(post, "nu2.s", "model"))
+  # ---- per-rep C.2 influence functions; repetitions combined like confidence_bounds() ----
+  R <- length(post)                                    # cross-fitting repetitions
+  combine <- if (combine.method == "mean") combine.mean else combine.median
+  theta.s.pre.rep <- need(pre,  "theta.s",  "pre_model")
+  sigma2.post.rep <- need(post, "sigma2.s", "model"); nu2.post.rep <- need(post, "nu2.s", "model")
+  sigma2.pre.rep  <- need(pre,  "sigma2.s", "pre_model"); nu2.pre.rep  <- need(pre, "nu2.s", "pre_model")
 
-  ifs <- function(res, what) res[[1]]$psis[[what]]     # rep-1 influence functions
-  psi.theta.s   <- ifs(post, "psi.theta.s");  psi.theta.s.pre  <- ifs(pre, "psi.theta.s")
-  psi.sigma2.s  <- ifs(post, "psi.sigma2.s"); psi.sigma2.s.pre <- ifs(pre, "psi.sigma2.s")
-  psi.nu2.s     <- ifs(post, "psi.nu2.s");    psi.nu2.s.pre    <- ifs(pre, "psi.nu2.s")
-  if (is.null(psi.theta.s) || is.null(psi.theta.s.pre) ||
-      is.null(psi.sigma2.s) || is.null(psi.nu2.s) ||
-      is.null(psi.sigma2.s.pre) || is.null(psi.nu2.s.pre))
+  ifk <- function(res, kk, what) res[[kk]]$psis[[what]]
+  if (is.null(ifk(post, 1, "psi.theta.s")) || is.null(ifk(pre, 1, "psi.theta.s")) ||
+      is.null(ifk(post, 1, "psi.sigma2.s")) || is.null(ifk(post, 1, "psi.nu2.s")) ||
+      is.null(ifk(pre, 1, "psi.sigma2.s"))  || is.null(ifk(pre, 1, "psi.nu2.s")))
     stop("Influence functions (theta.s, sigma2.s, nu2.s) are missing from one of ",
          "the models; refit with the current dml().")
-  if (length(psi.theta.s) != length(psi.theta.s.pre))
+  if (length(ifk(post, 1, "psi.theta.s")) != length(ifk(pre, 1, "psi.theta.s")))
     stop("`model` and `pre_model` have different sample sizes; their influence ",
          "functions cannot be combined. Fit both on the same units.")
-  if (length(post) > 1L || length(pre) > 1L)
-    warning("cf.reps > 1: the confidence bounds use the first repetition's ",
-            "influence functions only (matching the manuscript).")
 
-  r   <- S0.post / S0.pre
-  sgn <- sign(theta.s.pre)
-
-  psi.S0     <- (sigma2.s.post * psi.nu2.s     + nu2.s.post * psi.sigma2.s)     / (2 * S0.post)
-  psi.S0.pre <- (sigma2.s.pre  * psi.nu2.s.pre + nu2.s.pre  * psi.sigma2.s.pre) / (2 * S0.pre)
+  r <- S0.post / S0.pre                                # combined scale ratio (reported)
 
   #   magnitude: phi_theta_s +/- k*sign(theta_s,pre)*phi_theta_s,pre
   #   factors  : phi_theta_s +/- k|theta_s,pre|*r*( phi_theta_s,pre/theta_s,pre
   #                                                 + phi_S0/S0 - phi_S0,pre/S0,pre )
-  psi.tp.mag <- psi.theta.s + k * sgn * psi.theta.s.pre
-  psi.tm.mag <- psi.theta.s - k * sgn * psi.theta.s.pre
-  fac.inner  <- psi.theta.s.pre / theta.s.pre + psi.S0 / S0.post - psi.S0.pre / S0.pre
-  psi.tp.fac <- psi.theta.s + k * abs(theta.s.pre) * r * fac.inner
-  psi.tm.fac <- psi.theta.s - k * abs(theta.s.pre) * r * fac.inner
+  tp.mag <- tm.mag <- se.tp.mag <- se.tm.mag <- numeric(R)   # magnitude endpoints + IF SEs
+  tp.fac <- tm.fac <- se.tp.fac <- se.tm.fac <- numeric(R)   # factors
+  for (kk in seq_len(R)) {
+    th.post <- theta.s[kk];         th.pre  <- theta.s.pre.rep[kk]; a.pre <- abs(th.pre)
+    s2.post <- sigma2.post.rep[kk]; n2.post <- nu2.post.rep[kk]
+    s2.pre  <- sigma2.pre.rep[kk];  n2.pre  <- nu2.pre.rep[kk]
+    S0.p <- sqrt(S2[kk]);            S0.q <- sqrt(s2.pre * n2.pre)   # S0.p matches S0.post = sqrt(cmb(S2))
+    r.k  <- S0.p / S0.q;             sgn.k <- sign(th.pre)
 
-  se.tp.magnitude <- psi.sd(psi.tp.mag); se.tm.magnitude <- psi.sd(psi.tm.mag)
-  se.tp.factors   <- psi.sd(psi.tp.fac); se.tm.factors   <- psi.sd(psi.tm.fac)
+    psi.th  <- ifk(post, kk, "psi.theta.s");  psi.th.pre  <- ifk(pre, kk, "psi.theta.s")
+    psi.sig <- ifk(post, kk, "psi.sigma2.s"); psi.sig.pre <- ifk(pre, kk, "psi.sigma2.s")
+    psi.nu  <- ifk(post, kk, "psi.nu2.s");    psi.nu.pre  <- ifk(pre, kk, "psi.nu2.s")
+    psi.S0     <- (s2.post * psi.nu     + n2.post * psi.sig)     / (2 * S0.p)
+    psi.S0.pre <- (s2.pre  * psi.nu.pre + n2.pre  * psi.sig.pre) / (2 * S0.q)
 
-  # ---- transported point bounds theta_+/- (the paper's two strategies) --------
-  b.mag <- k *     abs(theta.s.pre)   # (1) magnitude: theta.s +/- k|theta_s,pre|
-  b.fac <- k * r * abs(theta.s.pre)   # (2) factors  : theta.s +/- k(S0/S0pre)|theta_s,pre|
-  bounds.magnitude <- c(lwr = theta.s.post - b.mag, upr = theta.s.post + b.mag)
-  bounds.factors   <- c(lwr = theta.s.post - b.fac, upr = theta.s.post + b.fac)
+    tp.mag[kk] <- th.post + k * a.pre;          tm.mag[kk] <- th.post - k * a.pre
+    se.tp.mag[kk] <- psi.sd(psi.th + k * sgn.k * psi.th.pre)
+    se.tm.mag[kk] <- psi.sd(psi.th - k * sgn.k * psi.th.pre)
+
+    tp.fac[kk] <- th.post + k * r.k * a.pre;    tm.fac[kk] <- th.post - k * r.k * a.pre
+    fac.inner  <- psi.th.pre / th.pre + psi.S0 / S0.p - psi.S0.pre / S0.q
+    se.tp.fac[kk] <- psi.sd(psi.th + k * a.pre * r.k * fac.inner)
+    se.tm.fac[kk] <- psi.sd(psi.th - k * a.pre * r.k * fac.inner)
+  }
+
+  # combine reps: point estimate + an SE that folds in the across-rep spread (CCDDHNR)
+  cU.mag <- combine(tp.mag, se.tp.mag); cL.mag <- combine(tm.mag, se.tm.mag)
+  cU.fac <- combine(tp.fac, se.tp.fac); cL.fac <- combine(tm.fac, se.tm.fac)
+  se.tp.magnitude <- unname(cU.mag["se"]); se.tm.magnitude <- unname(cL.mag["se"])
+  se.tp.factors   <- unname(cU.fac["se"]); se.tm.factors   <- unname(cL.fac["se"])
+
+  # ---- transported point bounds theta_+/- (combined across reps) --------------
+  bounds.magnitude <- c(lwr = unname(cL.mag["estimate"]), upr = unname(cU.mag["estimate"]))
+  bounds.factors   <- c(lwr = unname(cL.fac["estimate"]), upr = unname(cU.fac["estimate"]))
 
   # ---- one-sided C.2 confidence bounds [l, u] --------------------------------
   z1 <- stats::qnorm(level)
   confbound.magnitude <- c(
-    lwr = unname(bounds.magnitude["lwr"]) - z1 * se.tm.magnitude,
-    upr = unname(bounds.magnitude["upr"]) + z1 * se.tp.magnitude)
+    lwr = unname(cL.mag["estimate"]) - z1 * se.tm.magnitude,
+    upr = unname(cU.mag["estimate"]) + z1 * se.tp.magnitude)
   confbound.factors <- c(
-    lwr = unname(bounds.factors["lwr"]) - z1 * se.tm.factors,
-    upr = unname(bounds.factors["upr"]) + z1 * se.tp.factors)
+    lwr = unname(cL.fac["estimate"]) - z1 * se.tm.factors,
+    upr = unname(cU.fac["estimate"]) + z1 * se.tp.factors)
 
   out <- list(
     parameter = parameter, k = k, level = level,

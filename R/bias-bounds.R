@@ -157,8 +157,9 @@ confidence_bounds.numeric <- function(theta.s, S2,
   theta.p <- theta.s + k*sqrt(S2)
   level[level < 0.5] <- 0.5
   t_crit <- qnorm(level)
-  lwr <- combine.median(theta.m, se.m)
-  upr <- combine.median(theta.p, se.p)
+  combine <- if (combine.method == "mean") combine.mean else combine.median   # honor combine.method (default median)
+  lwr <- combine(theta.m, se.m)
+  upr <- combine(theta.p, se.p)
   lwr <- unname(lwr["estimate"] - t_crit*lwr["se"])
   upr <- unname(upr["estimate"] + t_crit*upr["se"])
   c(lwr = lwr, upr = upr)
