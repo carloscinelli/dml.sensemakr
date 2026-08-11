@@ -33,7 +33,7 @@
 ##'   benchmark a group of columns that are already in \code{x} (such as a
 ##'   factor's dummies), prefer passing them as one entry of
 ##'   \code{diagnostic_covariates}.
-##' @param scaled logical. Passed to \code{dml}. Default \code{FALSE}.
+##' @param centered logical. Passed to \code{dml}. Default \code{FALSE}.
 ##'   When \code{FALSE}, \code{nu2.s} is the full second moment of the Riesz
 ##'   representer (\eqn{\chi^2 + 1}); when \code{TRUE}, it is the \eqn{\chi^2}
 ##'   divergence. The strength table is identical either way (the imbalance
@@ -81,7 +81,7 @@ dml_diagnostic <- function(y, d, x,
                            type       = c("cond", "uncond"),
                            target     = c("att", "atu"),
                            x_list     = NULL,
-                           scaled     = FALSE,
+                           centered   = FALSE,
                            model      = c("npm", "plm"),
                            cf.folds   = 5,
                            cf.reps    = 1,
@@ -163,7 +163,7 @@ dml_diagnostic <- function(y, d, x,
         model       = model,
         target      = target,
         conditional = TRUE,
-        scaled      = scaled,
+        centered    = centered,
         cf.folds    = cf.folds,
         cf.reps     = cf.reps,
         cf.seed     = cf.seed,
@@ -183,7 +183,7 @@ dml_diagnostic <- function(y, d, x,
   get_est <- function(treat_results, param, k) treat_results[[k]]$estimates[[param]]
   get_psi <- function(treat_results, param, k) treat_results[[k]]$psis[[param]]
 
-  to_chi2 <- function(nu2, is_scaled) if (isTRUE(is_scaled)) nu2 else nu2 - 1
+  to_chi2 <- function(nu2, is_centered) if (isTRUE(is_centered)) nu2 else nu2 - 1
 
   # ----- 1. Null model quantities (shared across all learners) -----------------
   n_obs <- nrow(x)
@@ -224,8 +224,8 @@ dml_diagnostic <- function(y, d, x,
 
   # chi^2 divergence of the null model (0 for an intercept-only model). The
   # analytical fallback uses the full-second-moment convention (nu2.uncond = 1).
-  scaled.uncond <- if (!is.null(null_model)) isTRUE(null_model$info$scaled) else FALSE
-  chi2.uncond   <- to_chi2(nu2.uncond, scaled.uncond)
+  centered.uncond <- if (!is.null(null_model)) isTRUE(null_model$info$centered) else FALSE
+  chi2.uncond   <- to_chi2(nu2.uncond, centered.uncond)
 
   # ----- 2. Helper: compute strength table from a list of fitted models --------
   compute_table <- function(fitted_models) {
@@ -243,8 +243,8 @@ dml_diagnostic <- function(y, d, x,
       psi.sigma2.var <- get_psi(treat_var, "psi.sigma2.s", k_var)
       psi.theta.var  <- get_psi(treat_var, "psi.theta.s",  k_var)
 
-      scaled.var    <- isTRUE(fitted_models[[covar]]$info$scaled)
-      chi2.var      <- to_chi2(nu2.var, scaled.var)
+      centered.var    <- isTRUE(fitted_models[[covar]]$info$centered)
+      chi2.var      <- to_chi2(nu2.var, centered.var)
       obs_imbalance <- sqrt(max(0, chi2.var))
       imbalance_se  <- if (obs_imbalance > 0) se.nu2.var / (2 * obs_imbalance) else NA_real_
 

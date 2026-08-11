@@ -12,7 +12,7 @@ dml_diagnostic(
   type = c("cond", "uncond"),
   target = c("att", "atu"),
   x_list = NULL,
-  scaled = FALSE,
+  centered = FALSE,
   model = c("npm", "plm"),
   cf.folds = 5,
   cf.reps = 1,
@@ -62,7 +62,7 @@ benchmark a group of columns that are already in \code{x} (such as a
 factor's dummies), prefer passing them as one entry of
 \code{diagnostic_covariates}.}
 
-\item{scaled}{logical. Passed to \code{dml}. Default \code{FALSE}.
+\item{centered}{logical. Passed to \code{dml}. Default \code{FALSE}.
 When \code{FALSE}, \code{nu2.s} is the full second moment of the Riesz
 representer (\eqn{\chi^2 + 1}); when \code{TRUE}, it is the \eqn{\chi^2}
 divergence. The strength table is identical either way (the imbalance

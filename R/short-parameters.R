@@ -17,7 +17,7 @@ att.npm.cond <- function(y, d,
                          yhat1 = NULL,
                          dhat, phat,
                          trim   = 0.02,
-                         scaled = FALSE,
+                         centered = FALSE,
                          nu2.weight = NULL) {
 
   trim.summary <- trim.ps(dhat, trim = trim)
@@ -57,7 +57,7 @@ att.npm.cond <- function(y, d,
   # nu2.0s  =  conditional imbalance (propensity-score based)
   if (is.null(nu2.weight)) nu2.weight <- rep(1, length(d))
 
-  if (scaled) {
+  if (centered) {
     nu2.0s <- weighted.mean(
       (d * (phat - dhat.t) * (phat + dhat.t - 2) +
          (phat^2) * (1 - 2 * dhat.t) -
@@ -125,7 +125,7 @@ atu.npm.cond <- function(y, d,
                          yhat0 = NULL,
                          dhat, phat,
                          trim   = 0.02,
-                         scaled = FALSE,
+                         centered = FALSE,
                          nu2.weight = NULL) {
 
   trim.summary <- trim.ps(dhat, trim = trim)
@@ -166,8 +166,8 @@ atu.npm.cond <- function(y, d,
   # nu2.1s  =  conditional imbalance (propensity-score based)
   if (is.null(nu2.weight)) nu2.weight <- rep(1, length(d))
 
-  if (scaled) {
-    # ATT scaled imbalance with p -> 1-p, pi -> 1-pi, D -> 1-D
+  if (centered) {
+    # ATT centered imbalance with p -> 1-p, pi -> 1-pi, D -> 1-D
     pa <- 1 - phat     # 1 - p
     ba <- 1 - dhat.t   # 1 - pi(X)
     da <- 1 - d        # 1 - D

@@ -12,7 +12,7 @@ dml(
   model = c("plm", "npm"),
   target = "ate",
   conditional = NULL,
-  scaled = FALSE,
+  centered = FALSE,
   groups = NULL,
   cf.folds = 5,
   cf.reps = 1,
@@ -44,7 +44,7 @@ dml_gate(dml.fit, groups, ...)
 
 \item{conditional}{logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target (the DiD/panel setting, where the outcome regression is fit on one arm only and the counterfactual trend is extrapolated to the other). Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise.}
 
-\item{scaled}{logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1}; when \code{TRUE}, it is the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The target estimate and its bounds are unaffected by this choice; it only changes the reported scale of \code{nu2.s}.}
+\item{centered}{logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The target estimate and its bounds are unaffected by this choice; it only changes the reported scale of \code{nu2.s}.}
 
 \item{groups}{a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.}
 
