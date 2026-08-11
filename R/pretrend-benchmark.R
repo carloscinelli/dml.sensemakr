@@ -23,6 +23,14 @@
 ##'   \code{"median"} (default) or \code{"mean"}.
 ##' @param rho2 adversity \eqn{\rho_0^2} used when re-drawing the post-treatment
 ##'   sensitivity surface for the overlay. Default \code{1} (worst case).
+##' @param random.pre logical; whether to propagate the estimation uncertainty of
+##'   the pre-trend estimate \eqn{\hat\theta_{s,pre}} into the one-sided confidence
+##'   bounds (\code{TRUE}, default), or to treat \eqn{\hat\theta_{s,pre}} and the
+##'   pre-trend scale as \emph{fixed} so only the post-treatment estimate
+##'   contributes to the interval width (\code{FALSE}). \code{FALSE} matches the
+##'   convention used for the contour overlays in \code{main2.Rmd}. The transported
+##'   point bounds \eqn{[\theta_-,\theta_+]} are unaffected; only the confidence
+##'   bounds \eqn{[\ell,u]} (and any contour drawn at them) change.
 ##' @returns An object of class \code{dml_pretrend}: a list with the post- and
 ##'   pre-treatment estimates and scales, the scale ratio \code{scale.ratio}
 ##'   (\eqn{S_0/S_{0,pre}}), \code{bias.factor.pre}, and, for each extrapolation
@@ -44,7 +52,7 @@ pretrend_benchmark <- function(model, pre_model,
                                parameter = c("att", "ate", "atu"),
                                k = 1, level = 0.95,
                                combine.method = c("median", "mean"),
-                               rho2 = 1) {
+                               rho2 = 1, random.pre = TRUE) {
   parameter      <- match.arg(parameter)
   combine.method <- match.arg(combine.method)
 
@@ -135,11 +143,20 @@ pretrend_benchmark <- function(model, pre_model,
     psi.S0.pre <- (s2.pre  * psi.nu.pre + n2.pre  * psi.sig.pre) / (2 * S0.q)
 
     tp.mag[kk] <- th.post + k * a.pre;          tm.mag[kk] <- th.post - k * a.pre
-    se.tp.mag[kk] <- psi.sd(psi.th + k * sgn.k * psi.th.pre)
-    se.tm.mag[kk] <- psi.sd(psi.th - k * sgn.k * psi.th.pre)
-
     tp.fac[kk] <- th.post + k * r.k * a.pre;    tm.fac[kk] <- th.post - k * r.k * a.pre
-    fac.inner  <- psi.th.pre / th.pre + psi.S0 / S0.p - psi.S0.pre / S0.q
+
+    if (random.pre) {
+      # propagate the pre-trend estimate's uncertainty (Appendix C.2 IFs)
+      se.tp.mag[kk] <- psi.sd(psi.th + k * sgn.k * psi.th.pre)
+      se.tm.mag[kk] <- psi.sd(psi.th - k * sgn.k * psi.th.pre)
+      fac.inner     <- psi.th.pre / th.pre + psi.S0 / S0.p - psi.S0.pre / S0.q
+    } else {
+      # theta.s(pre) and the pre-trend scale treated as FIXED: only the post
+      # estimate is random, so both endpoints inherit just psi.theta.s(post).
+      se.tp.mag[kk] <- psi.sd(psi.th)
+      se.tm.mag[kk] <- psi.sd(psi.th)
+      fac.inner     <- psi.S0 / S0.p
+    }
     se.tp.fac[kk] <- psi.sd(psi.th + k * a.pre * r.k * fac.inner)
     se.tm.fac[kk] <- psi.sd(psi.th - k * a.pre * r.k * fac.inner)
   }
@@ -165,7 +182,7 @@ pretrend_benchmark <- function(model, pre_model,
 
   out <- list(
     parameter = parameter, k = k, level = level,
-    combine.method = combine.method, rho2 = rho2,
+    combine.method = combine.method, rho2 = rho2, random.pre = random.pre,
     theta.s.post = theta.s.post, se.theta.s.post = se.theta.s.post,
     S0.post = S0.post,
     theta.s.pre = theta.s.pre, se.theta.s.pre = se.theta.s.pre,
@@ -203,7 +220,8 @@ print.dml_pretrend <- function(x, digits = 4, ...) {
       fmt(x$bounds.magnitude["lwr"]), ", ", fmt(x$bounds.magnitude["upr"]), "]\n", sep = "")
   cat("   [factors]    theta.s +/- k(S0/S0,pre)|theta.s,pre|: [",
       fmt(x$bounds.factors["lwr"]), ", ", fmt(x$bounds.factors["upr"]), "]\n", sep = "")
-  cat("\n  one-sided ", format(100 * x$level), "% confidence bounds  [l, u]:\n", sep = "")
+  cat("\n  one-sided ", format(100 * x$level), "% confidence bounds  [l, u]  (",
+      if (isFALSE(x$random.pre)) "pre-trend fixed" else "pre-trend random", "):\n", sep = "")
   cat("   [magnitude]  [", fmt(x$confbound.magnitude["lwr"]), ", ",
       fmt(x$confbound.magnitude["upr"]), "]\n", sep = "")
   cat("   [factors]    [", fmt(x$confbound.factors["lwr"]), ", ",

@@ -12,7 +12,8 @@ pretrend_benchmark(
   k = 1,
   level = 0.95,
   combine.method = c("median", "mean"),
-  rho2 = 1
+  rho2 = 1,
+  random.pre = TRUE
 )
 
 \method{print}{dml_pretrend}(x, digits = 4, ...)
@@ -41,6 +42,15 @@ Default \code{0.95}.}
 
 \item{rho2}{adversity \eqn{\rho_0^2} used when re-drawing the post-treatment
 sensitivity surface for the overlay. Default \code{1} (worst case).}
+
+\item{random.pre}{logical; whether to propagate the estimation uncertainty of
+the pre-trend estimate \eqn{\hat\theta_{s,pre}} into the one-sided confidence
+bounds (\code{TRUE}, default), or to treat \eqn{\hat\theta_{s,pre}} and the
+pre-trend scale as \emph{fixed} so only the post-treatment estimate
+contributes to the interval width (\code{FALSE}). \code{FALSE} matches the
+convention used for the contour overlays in \code{main2.Rmd}. The transported
+point bounds \eqn{[\theta_-,\theta_+]} are unaffected; only the confidence
+bounds \eqn{[\ell,u]} (and any contour drawn at them) change.}
 
 \item{x}{an object of class \code{dml_pretrend}.}
 

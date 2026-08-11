@@ -234,6 +234,14 @@ dml <- function(y, d, x,
 
   if (dirty.tuning) {
 
+    # Seed the tuning grid search so the SELECTED hyperparameters are reproducible.
+    # Without this, tune_model()'s caret resampling consumes whatever ambient RNG
+    # state exists on entry, so the winning tune can vary run to run. The
+    # cross-fitting below re-seeds from cf.seed independently (see set.seed call
+    # further down), so its fits -- and hence the estimates -- are unchanged by
+    # this line; it only removes the ambient-state dependence of the tune search.
+    if (!is.null(cf.seed)) set.seed(cf.seed)
+
     if (verbose) {
       cat("\n")
       cat("====================================\n")
