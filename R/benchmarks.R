@@ -12,10 +12,16 @@
 ##'   dummy columns of a factor: \code{list(region = c("region3", "region4"))}).
 ##'   List element names become the row labels; unnamed elements are labelled by
 ##'   the column name (singletons) or the columns joined by \code{"+"}.
+##' @param dreg,yreg optional learner specifications (as in \code{\link{dml}}) for
+##'   the leave-one-out \emph{refit}, overriding those stored in \code{model$call}.
+##'   Use this to pin the refit hyperparameters (e.g. a single-row \code{tuneGrid}
+##'   with no \code{trControl}, i.e. \code{method = "none"}) for exact
+##'   reproducibility. \code{NULL} (default) reuses the model's own learners.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
 ##' @export
-dml_benchmark <- function(model, benchmark_covariates){
-  bench <- bench_fun(model = model, benchmark_covariates = benchmark_covariates)
+dml_benchmark <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
+  bench <- bench_fun(model = model, benchmark_covariates = benchmark_covariates,
+                     dreg = dreg, yreg = yreg)
   class(bench) <- "dml_benchmark"
   return(bench)
 }
@@ -319,7 +325,7 @@ print.dml_benchmark_bounds <- function(x, digits = 4, ...) {
 # }
 
 
-bench_fun <- function(model, benchmark_covariates){
+bench_fun <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
 
   # The benchmarking procedure is identical for ATE/ATT/ATU and for conditional
   # or unconditional models; only the results slot read from the fitted model
@@ -382,6 +388,8 @@ bench_fun <- function(model, benchmark_covariates){
     xo <- x[, -index.o, drop = FALSE]
     model.call <- model$call
     model.call["x"] <- call("xo")
+    if (!is.null(dreg)) model.call[["dreg"]] <- dreg   # pin refit treatment learner
+    if (!is.null(yreg)) model.call[["yreg"]] <- yreg   # pin refit outcome learner
     model.wo <- eval(model.call)
 
     nu.sq.wo <- extract_estimate(model.wo$results$main[[slot]], param = "nu2.s")

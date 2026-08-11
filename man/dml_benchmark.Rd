@@ -4,7 +4,7 @@
 \alias{dml_benchmark}
 \title{Benchmarks for the strength of latent variables using observed covariates}
 \usage{
-dml_benchmark(model, benchmark_covariates)
+dml_benchmark(model, benchmark_covariates, dreg = NULL, yreg = NULL)
 }
 \arguments{
 \item{model}{an object of class \code{\link{dml}}, fit with a single target
@@ -19,6 +19,12 @@ column names to drop \emph{together} in the leave-one-out refit (e.g. the
 dummy columns of a factor: \code{list(region = c("region3", "region4"))}).
 List element names become the row labels; unnamed elements are labelled by
 the column name (singletons) or the columns joined by \code{"+"}.}
+
+\item{dreg, yreg}{optional learner specifications (as in \code{\link{dml}}) for
+the leave-one-out \emph{refit}, overriding those stored in \code{model$call}.
+Use this to pin the refit hyperparameters (e.g. a single-row \code{tuneGrid}
+with no \code{trControl}, i.e. \code{method = "none"}) for exact
+reproducibility. \code{NULL} (default) reuses the model's own learners.}
 }
 \value{
 An object of class \code{dml_benchmark} containing benchmark results.

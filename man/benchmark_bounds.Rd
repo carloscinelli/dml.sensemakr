@@ -68,30 +68,13 @@ An object of class \code{dml_benchmark_bounds} (a data frame, one row
 Constructs the bias-adjusted bounds on the target parameter implied by
 benchmarking against observed covariates, together with one-sided confidence
 bounds that \emph{propagate the estimation uncertainty of the benchmarked
-gains}. This is the covariate analogue of \code{\link{pretrend_benchmark}}:
-where \code{\link{confidence_bounds}} evaluates the bound CI at a \emph{fixed}
-\code{cf.y}/\code{cf.d} (treating the gains as known -- the convention used for
-the red diamonds in the manuscript figures, cf. footnote 6), this function adds
-the delta-method term for the estimated gains, following Appendix E / Section
-5.2 of the OVB papers. Both the fixed-gain and the propagated bounds are
+gains}. Both the fixed-gain and the propagated bounds are
 returned so the two can be compared.
-
-For each benchmark covariate (or group) \eqn{j}, with relative-strength
-multipliers \eqn{k_Y, k_D}, the bias factor is
-\eqn{\widehat{BF}_j = |\hat\rho_j|\,C_{Y}\,C_{D}} where
-\eqn{C_Y = \sqrt{k_Y \hat G_{Y,j}}} and
-\eqn{C_D = \sqrt{k_D \hat G_{D,j}/(1-k_D \hat G_{D,j})}}, the point bounds are
-\eqn{\hat\theta_\pm = \hat\theta_s \pm \widehat{BF}_j\,\hat S} with
-\eqn{\hat S = \sqrt{\hat\sigma^2_s\,\hat\nu^2_s}}, and the one-sided confidence
-bounds are
-\eqn{[\ell, u] = [\hat\theta_- - \Phi^{-1}(level)\,se(\phi_-),\;
-  \hat\theta_+ + \Phi^{-1}(level)\,se(\phi_+)]} with influence function
-\eqn{\phi_\pm = \psi_{\theta_s} \pm (\widehat{BF}_j\,\psi_S + \hat S\,\psi_{BF})}.
 }
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
-  \emph{Review of Economics and Statistics} (Appendix E). Wang, J.,
+  (Appendix E). Wang, J.,
   Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026). "Omitted
   Variable Bias in Difference-in-Differences Designs" (Section 5.2).
 }
