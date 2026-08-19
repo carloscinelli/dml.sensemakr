@@ -74,9 +74,7 @@ returned so the two can be compared.
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
-  (Appendix E). Wang, J.,
-  Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026). "Omitted
-  Variable Bias in Difference-in-Differences Designs" (Section 5.2).
+  \emph{Review of Economics and Statistics} (Appendix E).
 }
 \seealso{
 \code{\link{dml_benchmark}}, \code{\link{confidence_bounds}}.
