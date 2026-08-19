@@ -500,26 +500,6 @@ dml <- function(y, d, x,
 
 }
 
-##' @description The function \code{dml_gate} is a convenience function that adds groups to a \code{dml} object after the model is fit.
-##'
-##' @param dml.fit an object of class \code{\link{dml}}.
-##' @param ... arguments passed to other methods.
-##' @rdname dml
-##' @export
-dml_gate <- function(dml.fit, groups,...){
-  call2 <- match.call()
-  groups  <- as.factor(groups)
-  model    <- dml.fit$info$model
-  dml.fit$call$groups <- call2$groups
-  gate.fun <- switch(model,
-                     plm = group.ate.plm,
-                     npm = group.ate.npm)
-  dml.fit$results$groups <- gate.fun(dml.fit, groups, ...)
-  dml.fit$coefs$groups   <- lapply(dml.fit$results$groups,
-                               combine.cross.fits)
-  return(dml.fit)
-}
-
 num <- function(v){
   if (is.factor(v)) {
     return(ifelse(v == "zero", 0, 1))

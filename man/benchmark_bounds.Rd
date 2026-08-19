@@ -39,7 +39,7 @@ uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D} are propagated --
 matching the fixed-alignment convention of the manuscript's contour figures.}
 
 \item{level}{confidence level for the one-sided bounds. Default \code{0.95}
-(critical value \eqn{\Phi^{-1}(level)}, matching \code{\link{pretrend_benchmark}}).}
+(critical value \eqn{\Phi^{-1}(level)}).}
 
 \item{combine.method}{how to combine cross-fitting repetitions,
 \code{"median"} (default) or \code{"mean"}. Each repetition's bound and its
@@ -79,6 +79,5 @@ Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
   Variable Bias in Difference-in-Differences Designs" (Section 5.2).
 }
 \seealso{
-\code{\link{dml_benchmark}}, \code{\link{pretrend_benchmark}},
-  \code{\link{confidence_bounds}}.
+\code{\link{dml_benchmark}}, \code{\link{confidence_bounds}}.
 }

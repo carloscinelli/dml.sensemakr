@@ -122,7 +122,7 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D} are propagated --
 ##'   matching the fixed-alignment convention of the manuscript's contour figures.
 ##' @param level confidence level for the one-sided bounds. Default \code{0.95}
-##'   (critical value \eqn{\Phi^{-1}(level)}, matching \code{\link{pretrend_benchmark}}).
+##'   (critical value \eqn{\Phi^{-1}(level)}).
 ##' @param combine.method how to combine cross-fitting repetitions,
 ##'   \code{"median"} (default) or \code{"mean"}. Each repetition's bound and its
 ##'   influence-function SE are combined with the same rule as
@@ -137,8 +137,7 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   \eqn{k_D \hat G_{D,j} \ge 1} (a confounder that would explain essentially all
 ##'   treatment-odds variation, so the bound diverges) return \code{NA} bounds with
 ##'   a warning.
-##' @seealso \code{\link{dml_benchmark}}, \code{\link{pretrend_benchmark}},
-##'   \code{\link{confidence_bounds}}.
+##' @seealso \code{\link{dml_benchmark}}, \code{\link{confidence_bounds}}.
 ##' @references
 ##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
 ##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."

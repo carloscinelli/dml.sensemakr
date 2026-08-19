@@ -2,7 +2,6 @@
 % Please edit documentation in R/dml.R
 \name{dml}
 \alias{dml}
-\alias{dml_gate}
 \title{Debiased Machine Learning}
 \usage{
 dml(
@@ -28,8 +27,6 @@ dml(
   verbose = TRUE,
   warnings = FALSE
 )
-
-dml_gate(dml.fit, groups, ...)
 }
 \arguments{
 \item{y}{\code{\link{numeric}} vector with the outcome.}
@@ -73,10 +70,6 @@ dml_gate(dml.fit, groups, ...)
 \item{verbose}{if \code{TRUE} (default) prints steps of the fitting procedure.}
 
 \item{warnings}{should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.}
-
-\item{dml.fit}{an object of class \code{\link{dml}}.}
-
-\item{...}{arguments passed to other methods.}
 }
 \value{
 An object of class \code{dml} with the results of the DML procedure. The object is a \code{\link{list}} containing:
@@ -91,8 +84,6 @@ An object of class \code{dml} with the results of the DML procedure. The object 
 }
 \description{
 Estimates a target parameter of interest, such as an average treatment effect (ATE), using Debiased Machine #Learning (DML).
-
-The function \code{dml_gate} is a convenience function that adds groups to a \code{dml} object after the model is fit.
 }
 \examples{
 # loads package
