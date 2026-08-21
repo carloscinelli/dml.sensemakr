@@ -287,9 +287,7 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
 ##'
 ##'
 ##' @export
-extreme_robustness_value <- function(model, ...) {
-  UseMethod("extreme_robustness_value")
-}
+extreme_robustness_value <- sensemakr::extreme_robustness_value
 
 ##' @rdname extreme_robustness_value
 ##' @param model an object of class \code{\link{dml}} or \code{\link[=dml_bounds]{dml.bounds}}.
@@ -297,7 +295,7 @@ extreme_robustness_value <- function(model, ...) {
 ##' @param alpha significance level. Default is \code{alpha = 0.05}.
 ##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
 ##' @inheritParams summary.dml
-##' @exportS3Method extreme_robustness_value dml
+##' @exportS3Method sensemakr::extreme_robustness_value dml
 extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 1,...){
   conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA,nrow(conf)), rownames(conf))
