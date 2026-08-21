@@ -10,13 +10,15 @@ extreme_robustness_value(model, ...)
 \method{extreme_robustness_value}{dml}(model, theta = 0, alpha = 0.05, rho2 = 1, ...)
 }
 \arguments{
-\item{model}{an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.}
+\item{model}{an object of class \code{\link{dml}} or \code{\link[=dml_bounds]{dml.bounds}}.}
 
 \item{...}{arguments passed to other methods.}
 
 \item{theta}{the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).}
 
 \item{alpha}{significance level. Default is \code{alpha = 0.05}.}
+
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
 }
 \description{
 This function computes the extreme robustness value of a target parameter estimated via debiased machine learning.

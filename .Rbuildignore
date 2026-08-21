@@ -9,3 +9,4 @@
 ^\.claude$
 ^README\.html$
 _cache$
+^man/figures/dml-sensemakr-logo\.png$

@@ -292,9 +292,10 @@ extreme_robustness_value <- function(model, ...) {
 }
 
 ##' @rdname extreme_robustness_value
-##' @param model an object of class \code{\link{dml}} or \code{\link{dml.bounds}}.
+##' @param model an object of class \code{\link{dml}} or \code{\link[=dml_bounds]{dml.bounds}}.
 ##' @param theta the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).
 ##' @param alpha significance level. Default is \code{alpha = 0.05}.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
 ##' @inheritParams summary.dml
 ##' @exportS3Method extreme_robustness_value dml
 extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 1,...){
