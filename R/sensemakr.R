@@ -78,8 +78,6 @@ sensemakr.dml <- function(model,
     out$conf.bounds <- conf.bounds
   }
 
-  # benchmarks: works for any single-target model (ATE/ATT/ATU), conditional or
-  # not. Only the results slot read from the model differs (all/treat/untr).
   bench.slot <- unname(.target_to_slot[model$info$target])
   if (!is.null(benchmark_covariates) &&
       length(bench.slot) == 1L && !is.na(bench.slot) &&

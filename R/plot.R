@@ -253,10 +253,7 @@ ovb_contour_plot <- function(...){
 ##' @param lim.y  sets limit for y-axis. If `NULL`, limits are computed automatically.
 ##' @param cex.label.text size of the label text.
 ##' @param xlab label of x axis. If `NULL` (default), a label matching the
-##'   target's omitted-variable-bias interpretation is chosen automatically:
-##'   the general partially-linear axis for unconditional targets, and the
-##'   conditional-arm axis for conditional `att` (controls arm, D=0)
-##'   and conditional `atu` (treated arm, D=1).
+##'   target's omitted-variable-bias interpretation is chosen automatically.
 ##' @param ylab label of y axis. If `NULL` (default), chosen automatically to
 ##'   match the target, in the same way as `xlab`.
 ##' @param list.par  arguments to be passed to \code{\link{par}}. It needs to be a named list.

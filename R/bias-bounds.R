@@ -157,7 +157,7 @@ confidence_bounds.numeric <- function(theta.s, S2,
   theta.p <- theta.s + k*sqrt(S2)
   level[level < 0.5] <- 0.5
   t_crit <- qnorm(level)
-  combine <- if (combine.method == "mean") combine.mean else combine.median   # honor combine.method (default median)
+  combine <- if (combine.method == "mean") combine.mean else combine.median
   lwr <- combine(theta.m, se.m)
   upr <- combine(theta.p, se.p)
   lwr <- unname(lwr["estimate"] - t_crit*lwr["se"])
@@ -308,10 +308,6 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
     # print(side)
     if (alpha == 1) {
-      # closed-form point XRV for row i's target: f0 = |theta - theta.s|/sqrt(S2),
-      # XRV = f0^2/(1+f0^2). Map the row's target (rowname) to its results slot
-      # (treat/all/untr) and combine S2 across cf.reps -- multi-target / multi-rep
-      # safe (main[[1]] and whole-vector coef are not).
       slot.i <- unname(.target_to_slot[rownames(conf)[i]])
       S2.i   <- stats::median(extract_estimate(model$results$main[[slot.i]], "S2"))
       f0     <- unname(abs(theta - coef(model)[rownames(conf)[i]]) / sqrt(S2.i))
@@ -321,36 +317,10 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
                                   side = side, theta = theta, alpha = alpha,
                                   rho2 = rho2)
       out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
-
-      # fn <- function(par) {
-      #   xrv <- par[1]
-      #   yrv <- par[2]
-      #   xrv_fun_2D(yrv = yrv, xrv = xrv, dml.fit = model,
-      #                                  par = names(out)[i],
-      #                             side = side, theta = theta, alpha = alpha)
-      # }
-      # # out[i] <- optim(par = c(0.01, 0.01), fn, lower = c(0, 0), upper = c(1, 1),
-      # #                 method = "L-BFGS-B")$par[2]
-      #
-      # starts <- expand.grid(yrv = c(seq(0.01,0.99,0.05),1), xrv = c(seq(0.01,0.99,0.05),0.99))
-      # best_val <- Inf
-      # best_par <- NULL
-      # for(j in 1:nrow(starts)){
-      #   res <- optim(par = as.numeric(starts[j,]), fn, lower = c(0,0), upper=c(1-1e-8,1), method="L-BFGS-B")
-      #   if(res$value < best_val){
-      #     best_val <- res$value
-      #     best_par <- res$par
-      #   }
-      # }
-      # out[i] <- best_par[1]
     }
   }
 
   return(out)
-  # grid <- seq(0, 0.99,by = 0.001)
-  # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
-  # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
-  # grid[rv.idx]
 }
 ########################################################################################
 

@@ -18,9 +18,7 @@ benchmark_bounds(
 \method{print}{dml_benchmark_bounds}(x, digits = 4, ...)
 }
 \arguments{
-\item{model}{the \code{\link{dml}} fit used for the benchmark; supplies the
-scale \eqn{\hat S=\sqrt{\hat\sigma^2_s\hat\nu^2_s}} and its influence
-function. Must be fit with a single target (\code{"ate"}/\code{"att"}/\code{"atu"}).}
+\item{model}{the \code{\link{dml}} fit used for the benchmark. Must be fit with a single target (\code{"ate"}/\code{"att"}/\code{"atu"}).}
 
 \item{benchmark}{either a \code{dml_benchmark} object (from
 \code{\link{dml_benchmark}}, re-used \emph{without} refitting) or the
@@ -33,14 +31,7 @@ the observed covariate).}
 \item{rho2}{optional fixed squared alignment \eqn{\rho^2} to use in place of
 the benchmarked \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate
 \eqn{j}'s estimated (signed) alignment and, in the propagated CI, its
-sampling uncertainty. A value in \eqn{[0, 1]} (e.g. \code{1} for the
-conservative worst case, or \code{0.09} for \eqn{|\rho| = 0.3}) pins the
-alignment magnitude to \eqn{|\rho| = \sqrt{\rho^2}}: it enters the bias
-factor but carries no uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D}
-are propagated -- matching the fixed-alignment convention of the
-manuscript's contour figures. Parameterized as \eqn{\rho^2} for consistency
-with \code{rho2} in \code{\link{dml_bounds}} and the other sensitivity
-functions.}
+sampling uncertainty. A value in \eqn{[0, 1]}.}
 
 \item{level}{confidence level for the one-sided bounds. Default \code{0.95}
 (critical value \eqn{\Phi^{-1}(level)}).}

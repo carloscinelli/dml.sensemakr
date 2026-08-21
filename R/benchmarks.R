@@ -1,10 +1,7 @@
 ##' Benchmarks for the strength of latent variables using observed covariates
 ##' @description
 ##' Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
-##' @param model an object of class \code{\link{dml}}, fit with a single target
-##'   (\code{"ate"}, \code{"att"}, or \code{"atu"}), conditional or unconditional.
-##'   The benchmarking procedure is identical across these; only the results
-##'   slot read from the model differs (\code{all}/\code{treat}/\code{untr}).
+##' @param model an object of class \code{\link{dml}}.
 ##' @param benchmark_covariates the observed covariates to benchmark. Either a
 ##'   character vector of column names in the model's \code{x} (each benchmarked
 ##'   on its own), or a named list where each element is a character vector of
@@ -14,9 +11,6 @@
 ##'   the column name (singletons) or the columns joined by \code{"+"}.
 ##' @param dreg,yreg optional learner specifications (as in \code{\link{dml}}) for
 ##'   the leave-one-out \emph{refit}, overriding those stored in \code{model$call}.
-##'   Use this to pin the refit hyperparameters (e.g. a single-row \code{tuneGrid}
-##'   with no \code{trControl}, i.e. \code{method = "none"}) for exact
-##'   reproducibility. \code{NULL} (default) reuses the model's own learners.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
 ##' @export
 dml_benchmark <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
@@ -64,8 +58,6 @@ summary.dml_benchmark <- function(object, combine.method = c("median", "mean"),
     psis <- object$benchmarks_psis[[v]]   # per-rep influence functions
     reps <- seq_len(nrow(est))
     se_of <- function(psi.list) sapply(reps, function(i) psi.sd(psi.list[[i]]))
-    # bias-contribution IF for delta = theta.s - theta.s,-j: psi(theta.s) - psi(theta.s,-j).
-    # psi.sd is sign-invariant, so the stored (theta.s,-j - theta.s) order gives the same SE.
     se.delta <- sapply(reps, function(i)
       psi.sd(psis$psi.theta.s.wo[[i]] - psis$psi.theta.s[[i]]))
     cGY <- combine(est$gain.Y, se_of(psis$psi.GY))
@@ -105,9 +97,7 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##' returned so the two can be compared.
 ##'
 ##'
-##' @param model the \code{\link{dml}} fit used for the benchmark; supplies the
-##'   scale \eqn{\hat S=\sqrt{\hat\sigma^2_s\hat\nu^2_s}} and its influence
-##'   function. Must be fit with a single target (\code{"ate"}/\code{"att"}/\code{"atu"}).
+##' @param model the \code{\link{dml}} fit used for the benchmark. Must be fit with a single target (\code{"ate"}/\code{"att"}/\code{"atu"}).
 ##' @param benchmark either a \code{dml_benchmark} object (from
 ##'   \code{\link{dml_benchmark}}, re-used \emph{without} refitting) or the
 ##'   \code{benchmark_covariates} to pass to \code{\link{dml_benchmark}}.
@@ -117,14 +107,7 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##' @param rho2 optional fixed squared alignment \eqn{\rho^2} to use in place of
 ##'   the benchmarked \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate
 ##'   \eqn{j}'s estimated (signed) alignment and, in the propagated CI, its
-##'   sampling uncertainty. A value in \eqn{[0, 1]} (e.g. \code{1} for the
-##'   conservative worst case, or \code{0.09} for \eqn{|\rho| = 0.3}) pins the
-##'   alignment magnitude to \eqn{|\rho| = \sqrt{\rho^2}}: it enters the bias
-##'   factor but carries no uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D}
-##'   are propagated -- matching the fixed-alignment convention of the
-##'   manuscript's contour figures. Parameterized as \eqn{\rho^2} for consistency
-##'   with \code{rho2} in \code{\link{dml_bounds}} and the other sensitivity
-##'   functions.
+##'   sampling uncertainty. A value in \eqn{[0, 1]}.
 ##' @param level confidence level for the one-sided bounds. Default \code{0.95}
 ##'   (critical value \eqn{\Phi^{-1}(level)}).
 ##' @param combine.method how to combine cross-fitting repetitions,
@@ -337,12 +320,6 @@ bench_fun <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
     stop("dml_benchmark() requires a model fit with a single target ",
          "('ate', 'att', or 'atu').")
 
-  # Sign of the alignment rho in the OVB decomposition of delta = theta - theta_s:
-  #   ATT:      delta = -rho * sqrt(V.g * V.a)
-  #   ATE/ATU:  delta = +rho * sqrt(V.g * V.a)
-  # The leave-one-out formula below (delta = -Bias, rho = sign(Bias)*|Bias|/sqrt)
-  # returns the ATT-correct rho; flip it for the other targets so that rho is the
-  # true error correlation for every target.
   align.sign <- if (slot == "treat") 1 else -1
 
   x <- model$data$x
