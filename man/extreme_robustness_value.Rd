@@ -5,7 +5,7 @@
 \alias{extreme_robustness_value.dml}
 \title{Computes Extreme Robustness Values for Debiased Machine Learning}
 \usage{
-extreme_robustness_value(model, ...)
+extreme_robustness_value(...)
 
 \method{extreme_robustness_value}{dml}(model, theta = 0, alpha = 0.05, rho2 = 1, ...)
 }
