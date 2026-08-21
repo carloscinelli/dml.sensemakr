@@ -10,7 +10,7 @@ benchmark_bounds(
   benchmark,
   kY = 1,
   kD = 1,
-  rho = NULL,
+  rho2 = NULL,
   level = 0.95,
   combine.method = c("median", "mean")
 )
@@ -30,13 +30,17 @@ function. Must be fit with a single target (\code{"ate"}/\code{"att"}/\code{"atu
 latent-vs-observed gains. Default \code{1} (a latent confounder as strong as
 the observed covariate).}
 
-\item{rho}{optional fixed alignment to use in place of the benchmarked
-\eqn{\hat\rho_j}. \code{NULL} (default) uses covariate \eqn{j}'s estimated
-alignment and, in the propagated CI, its sampling uncertainty. A value in
-\eqn{[-1, 1]} (e.g. \code{1} for the conservative worst case, or \code{0.3})
-pins \eqn{\rho} to that constant: it enters the bias factor but carries no
-uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D} are propagated --
-matching the fixed-alignment convention of the manuscript's contour figures.}
+\item{rho2}{optional fixed squared alignment \eqn{\rho^2} to use in place of
+the benchmarked \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate
+\eqn{j}'s estimated (signed) alignment and, in the propagated CI, its
+sampling uncertainty. A value in \eqn{[0, 1]} (e.g. \code{1} for the
+conservative worst case, or \code{0.09} for \eqn{|\rho| = 0.3}) pins the
+alignment magnitude to \eqn{|\rho| = \sqrt{\rho^2}}: it enters the bias
+factor but carries no uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D}
+are propagated -- matching the fixed-alignment convention of the
+manuscript's contour figures. Parameterized as \eqn{\rho^2} for consistency
+with \code{rho2} in \code{\link{dml_bounds}} and the other sensitivity
+functions.}
 
 \item{level}{confidence level for the one-sided bounds. Default \code{0.95}
 (critical value \eqn{\Phi^{-1}(level)}).}

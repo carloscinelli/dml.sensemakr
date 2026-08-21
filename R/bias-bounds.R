@@ -79,7 +79,7 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##' @param model an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.
 ##' @param cf.y (nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).
 ##' @param cf.d how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.
-##' @param rho2 degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
 ##' @param ... arguments passed to other methods.
 ##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
 ##' @param level confidence level. Default is \code{0.95}.

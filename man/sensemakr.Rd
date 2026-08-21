@@ -30,7 +30,7 @@ sensemakr(model, ...)
 
 \item{cf.d}{(optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2026). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.}
 
-\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.}
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
 
 \item{bound_label}{label to bounds provided manually in \code{cf.y} and \code{cf.d}.}
 

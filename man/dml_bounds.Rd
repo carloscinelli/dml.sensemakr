@@ -54,7 +54,7 @@ confidence_bounds(...)
 
 \item{cf.d}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
 
-\item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
 
 \item{...}{arguments passed to other methods.}
 

@@ -11,7 +11,7 @@ sensemakr <- function(model, ...) {
 }
 
 ##' @param model a model created with the function \code{\link{dml}}.
-##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
 ##' @param ... arguments passed to other methods.
 ##' @param benchmark_covariates  character vector of the names of covariates that will be used to bound the plausible strength of the latent variables.
 ##' @param cf.y (optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2026). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.

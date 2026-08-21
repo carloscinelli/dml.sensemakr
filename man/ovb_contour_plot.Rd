@@ -56,7 +56,7 @@ ovb_contour_plot(...)
 
 \item{combine.method}{method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.}
 
-\item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
 
 \item{cf.y}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
 

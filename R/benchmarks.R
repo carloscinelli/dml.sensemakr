@@ -114,13 +114,17 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##' @param kY,kD relative-strength multipliers \eqn{k_{Y,j}}, \eqn{k_{D,j}} of the
 ##'   latent-vs-observed gains. Default \code{1} (a latent confounder as strong as
 ##'   the observed covariate).
-##' @param rho optional fixed alignment to use in place of the benchmarked
-##'   \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate \eqn{j}'s estimated
-##'   alignment and, in the propagated CI, its sampling uncertainty. A value in
-##'   \eqn{[-1, 1]} (e.g. \code{1} for the conservative worst case, or \code{0.3})
-##'   pins \eqn{\rho} to that constant: it enters the bias factor but carries no
-##'   uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D} are propagated --
-##'   matching the fixed-alignment convention of the manuscript's contour figures.
+##' @param rho2 optional fixed squared alignment \eqn{\rho^2} to use in place of
+##'   the benchmarked \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate
+##'   \eqn{j}'s estimated (signed) alignment and, in the propagated CI, its
+##'   sampling uncertainty. A value in \eqn{[0, 1]} (e.g. \code{1} for the
+##'   conservative worst case, or \code{0.09} for \eqn{|\rho| = 0.3}) pins the
+##'   alignment magnitude to \eqn{|\rho| = \sqrt{\rho^2}}: it enters the bias
+##'   factor but carries no uncertainty, so only the gains \eqn{G_Y}, \eqn{G_D}
+##'   are propagated -- matching the fixed-alignment convention of the
+##'   manuscript's contour figures. Parameterized as \eqn{\rho^2} for consistency
+##'   with \code{rho2} in \code{\link{dml_bounds}} and the other sensitivity
+##'   functions.
 ##' @param level confidence level for the one-sided bounds. Default \code{0.95}
 ##'   (critical value \eqn{\Phi^{-1}(level)}).
 ##' @param combine.method how to combine cross-fitting repetitions,
@@ -143,12 +147,12 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
 ##'   \emph{Review of Economics and Statistics} (Appendix E).
 ##' @export
-benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho = NULL,
+benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
                              level = 0.95, combine.method = c("median", "mean")) {
   combine.method <- match.arg(combine.method)
-  if (!is.null(rho) && (length(rho) != 1L || !is.finite(rho) || abs(rho) > 1))
-    stop("`rho` must be NULL or a single value in [-1, 1].")
-  rho.fixed <- !is.null(rho)
+  if (!is.null(rho2) && (length(rho2) != 1L || !is.finite(rho2) || rho2 < 0 || rho2 > 1))
+    stop("`rho2` must be NULL or a single value in [0, 1].")
+  rho2.fixed <- !is.null(rho2)
   cmb <- function(v) if (combine.method == "median") stats::median(v) else mean(v)
 
   bench <- if (inherits(benchmark, "dml_benchmark")) benchmark
@@ -178,7 +182,7 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho = NULL,
 
     # combined benchmark gains -> the (fixed) bias factor, as in confidence_bounds()
     GY <- cmb(est$gain.Y); GD <- cmb(est$gain.D)
-    rho.use <- if (rho.fixed) rho else cmb(est$rho)   # fixed alignment, or benchmarked
+    rho.use <- if (rho2.fixed) sqrt(rho2) else cmb(est$rho)   # fixed |rho| = sqrt(rho2), or benchmarked (signed)
     kGY <- kY * GY; kGD <- kD * GD
     if (is.finite(kGD) && kGD >= 1) {                     # bound diverges
       diverged <<- c(diverged, v)
@@ -203,7 +207,7 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho = NULL,
         # gain-uncertainty terms (always propagated); rho term only when rho is estimated
         gains <- abs(rho.use) * CD * (kY * psis$psi.GY[[k]]) / (2 * CY) +
                  abs(rho.use) * CY * (kD * psis$psi.GD[[k]]) / (2 * sqrt(kGD) * (1 - kGD)^(3/2))
-        if (rho.fixed) gains else gains + sign(rho.use) * CY * CD * psis$psi.rho[[k]]
+        if (rho2.fixed) gains else gains + sign(rho.use) * CY * CD * psis$psi.rho[[k]]
       }
       tm[k] <- th - BF * S.k;                     tp[k] <- th + BF * S.k
       sm[k] <- psi.sd(psi.th - BF * psi.S - S.k * psi.BF)   # full-propagation SE
@@ -230,7 +234,7 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho = NULL,
             "so the bound diverges (NA returned). Lower kD to obtain a finite bound.")
 
   out <- do.call(rbind, rows)
-  attr(out, "kY") <- kY; attr(out, "kD") <- kD; attr(out, "rho") <- rho
+  attr(out, "kY") <- kY; attr(out, "kD") <- kD; attr(out, "rho2") <- rho2
   attr(out, "level") <- level; attr(out, "combine.method") <- combine.method
   attr(out, "theta.s") <- cmb(theta.s.rep)
   attr(out, "S") <- sqrt(cmb(sigma2.s.rep) * cmb(nu2.s.rep))
@@ -245,8 +249,8 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho = NULL,
 ##' @export
 print.dml_benchmark_bounds <- function(x, digits = 4, ...) {
   fmt <- function(v) formatC(v, digits = digits, format = "f")
-  rho.txt <- if (is.null(attr(x, "rho"))) "rho = benchmarked" else
-             paste0("rho = ", attr(x, "rho"), " (fixed)")
+  rho.txt <- if (is.null(attr(x, "rho2"))) "rho2 = benchmarked" else
+             paste0("rho2 = ", attr(x, "rho2"), " (fixed)")
   cat("Covariate benchmark bounds  (kY = ", attr(x, "kY"), ", kD = ", attr(x, "kD"),
       ", ", rho.txt, ";  ", format(100 * attr(x, "level")), "% one-sided)\n", sep = "")
   cat("theta.s = ", fmt(attr(x, "theta.s")), ",  S = ", fmt(attr(x, "S")),
