@@ -1,4 +1,4 @@
-# Test conditional (DiD-style) ATT/ATU estimation for NPM.
+# Test conditional ATT/ATU estimation for NPM.
 # The outcome regression is fit on a single treatment arm and used to impute the
 # counterfactual mean for the other arm.
 

@@ -10,7 +10,7 @@ psi.sd <- function(psi, w = NULL){
   sqrt(Ew_psi2) / sqrt(n_eff)
 }
 
-# computes conditional ATT for npm (conditional/DiD version)
+# computes conditional ATT for npm (single-arm imputation)
 # returns estimates and influence functions for theta.s, sigma2.0s, nu2.0s, S02
 att.npm.cond <- function(y, d,
                          yhat0,
@@ -114,7 +114,7 @@ att.npm.cond <- function(y, d,
   )
 }
 
-# computes conditional ATU for npm (conditional/DiD version)
+# computes conditional ATU for npm (single-arm imputation)
 # Mirror of att.npm.cond() with the treated/untreated roles swapped:
 #   D -> (1 - D),  p -> (1 - p),  pi(X) -> (1 - pi(X)),  g0s -> g1s.
 # The outcome regression is fit on the TREATED units (yhat1 = g1s), and the

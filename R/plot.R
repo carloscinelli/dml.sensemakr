@@ -255,7 +255,7 @@ ovb_contour_plot <- function(...){
 ##' @param xlab label of x axis. If `NULL` (default), a label matching the
 ##'   target's omitted-variable-bias interpretation is chosen automatically:
 ##'   the general partially-linear axis for unconditional targets, and the
-##'   DiD-specific conditional axis for conditional `att` (controls arm, D=0)
+##'   conditional-arm axis for conditional `att` (controls arm, D=0)
 ##'   and conditional `atu` (treated arm, D=1).
 ##' @param ylab label of y axis. If `NULL` (default), chosen automatically to
 ##'   match the target, in the same way as `xlab`.
@@ -512,18 +512,18 @@ contour_plot <- function(grid_values.x,
 
 # Internal: default contour axis labels matching the target's OVB interpretation.
 # `target` is the user-facing label ("ate"/"att"/"atu"); `conditional` is
-# model$info$conditional. Only conditional att/atu get the DiD-specific labels;
+# model$info$conditional. Only conditional att/atu get the conditional-arm labels;
 # every other case (all unconditional targets, and any unexpected combination)
 # falls back to the general partially-linear labels.
 default_contour_labs <- function(conditional, target) {
   if (isTRUE(conditional) && identical(target, "att")) {
     # conditional ATT: controls arm (D = 0)
     list(x = expression(1 - R[O[XU]*" ~ "*O[X]*" | "*D==0]^2),
-         y = expression(eta[Delta*Y*" ~ "*U*" | "*X*","*D==0]^2))
+         y = expression(eta[Y*" ~ "*U*" | "*X*","*D==0]^2))
   } else if (isTRUE(conditional) && identical(target, "atu")) {
     # conditional ATU: treated arm (D = 1), reciprocal Riesz representer
     list(x = expression(1 - R[1/O[XU]*" ~ "*1/O[X]*" | "*D==1]^2),
-         y = expression(eta[Delta*Y*" ~ "*U*" | "*X*","*D==1]^2))
+         y = expression(eta[Y*" ~ "*U*" | "*X*","*D==1]^2))
   } else {
     # unconditional (ate/att/atu), and safe fallback for any other case
     list(x = expression(paste("1-", R[alpha%~%alpha[s]]^2)),
