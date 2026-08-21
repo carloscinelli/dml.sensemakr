@@ -320,7 +320,13 @@ bench_fun <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
     stop("dml_benchmark() requires a model fit with a single target ",
          "('ate', 'att', or 'atu').")
 
-  align.sign <- if (slot == "treat") 1 else -1
+  # Sign that maps the leave-one-out shift delta = theta.s - theta.s,-j to the
+  # reported alignment rho. For the ATE, ATU and the unconditional ATT the
+  # decomposition is delta = +rho * M, so rho = delta / M (align.sign = -1).
+  # The conditional (single-arm / DiD-style) ATT imputes the subtracted
+  # counterfactual, mirroring the conditional ATU: delta = -rho * M there, so
+  # its reported rho keeps the opposite sign (align.sign = +1).
+  align.sign <- if (slot == "treat" && isTRUE(model$info$conditional)) 1 else -1
 
   x <- model$data$x
 
