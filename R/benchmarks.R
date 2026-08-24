@@ -117,6 +117,10 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   influence-function SE are combined with the same rule as
 ##'   \code{\link{confidence_bounds}}, so the reported SE folds in the
 ##'   across-repetition spread of the estimate.
+##' @param na.rm logical. Should repetitions with a missing benchmark gain be
+##'   dropped before the repetitions are combined? Default is \code{TRUE}. With
+##'   \code{FALSE}, a single failed repetition makes the combined gain
+##'   \code{NA}.
 ##' @returns An object of class \code{dml_benchmark_bounds} (a data frame, one row
 ##'   per benchmark covariate) with the bias factor \code{BF}, the point bounds
 ##'   \code{theta.minus}/\code{theta.plus}, the fixed-gain confidence bounds
@@ -133,12 +137,13 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   \emph{Review of Economics and Statistics} (Appendix E).
 ##' @export
 benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
-                             level = 0.95, combine.method = c("median", "mean")) {
+                             level = 0.95, combine.method = c("median", "mean"),
+                             na.rm = TRUE) {
   combine.method <- match.arg(combine.method)
   if (!is.null(rho2) && (length(rho2) != 1L || !is.finite(rho2) || rho2 < 0 || rho2 > 1))
     stop("`rho2` must be NULL or a single value in [0, 1].")
   rho2.fixed <- !is.null(rho2)
-  cmb <- function(v) if (combine.method == "median") stats::median(v) else mean(v)
+  cmb <- function(v) if (combine.method == "median") stats::median(v, na.rm = na.rm) else mean(v, na.rm = na.rm)
 
   bench <- if (inherits(benchmark, "dml_benchmark")) benchmark
            else dml_benchmark(model, benchmark)
@@ -156,7 +161,10 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
   nu2.s.rep    <- extract_estimate(post, "nu2.s")
   theta.s.rep  <- extract_estimate(post, "theta.s")
   R       <- length(theta.s.rep)                          # cross-fitting repetitions
-  combine <- if (combine.method == "mean") combine.mean else combine.median
+  combine <- function(est, se) {
+    if (combine.method == "mean") combine.mean(est, se, na.rm = na.rm)
+    else combine.median(est, se, na.rm = na.rm)
+  }
   z       <- stats::qnorm(level)
 
   diverged <- character(0)

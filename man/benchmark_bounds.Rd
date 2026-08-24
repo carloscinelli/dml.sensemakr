@@ -12,7 +12,8 @@ benchmark_bounds(
   kD = 1,
   rho2 = NULL,
   level = 0.95,
-  combine.method = c("median", "mean")
+  combine.method = c("median", "mean"),
+  na.rm = TRUE
 )
 
 \method{print}{dml_benchmark_bounds}(x, digits = 4, ...)
@@ -42,6 +43,11 @@ sampling uncertainty. A value in \eqn{[0, 1]}.}
 influence-function SE are combined with the same rule as
 \code{\link{confidence_bounds}}, so the reported SE folds in the
 across-repetition spread of the estimate.}
+
+\item{na.rm}{logical. Should repetitions with a missing benchmark gain be
+dropped before the repetitions are combined? Default is \code{TRUE}. With
+\code{FALSE}, a single failed repetition makes the combined gain
+\code{NA}.}
 
 \item{x}{an object of class \code{dml_benchmark_bounds}.}
 
