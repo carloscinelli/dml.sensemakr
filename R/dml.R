@@ -19,8 +19,8 @@
 ##' @param save.models should the fitted models of each iterated be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.
 ##' @param y.class when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
 ##' @param d.class when \code{d} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
-##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases (when no \code{groups} are requested, since group effects need both outcome arms) and \code{FALSE} otherwise.
-##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}.
+##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise. The conditional parameterization is the recommended one (Wang et al., 2026); \code{conditional = FALSE} gives the unconditional parameterization of Chernozhukov et al. (2026), retained so those results can be reproduced.
+##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Note the centered version can yield negative estimates of \code{nu2.s} in finite samples.
 ##' @param verbose if \code{TRUE} (default) prints steps of the fitting procedure.
 ##' @param warnings should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.
 ##' @returns
@@ -168,12 +168,12 @@ dml <- function(y, d, x,
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
 
-  # auto-set conditional: TRUE when the only target is "att"/"atu", the model is
-  # "npm", and no groups are requested (group effects need both outcome arms)
+  # auto-set conditional: TRUE whenever the target admits it (single "att"/"atu"
+  # target under "npm"). This is the parameterization of Wang et al. (2026); the
+  # unconditional one is only ever used when explicitly requested.
   if (is.null(conditional)) {
     conditional <- (model == "npm" &&
-                      (identical(target, "att") || identical(target, "atu")) &&
-                      is.null(groups))
+                      (identical(target, "att") || identical(target, "atu")))
   }
   if (conditional && model != "npm") {
     warning("conditional = TRUE is only supported for model = 'npm'; setting conditional = FALSE.")
@@ -182,11 +182,6 @@ dml <- function(y, d, x,
   if (conditional && !(identical(target, "att") || identical(target, "atu"))) {
     warning("conditional = TRUE requires a single target = 'att' or 'atu'; setting conditional = FALSE.")
     conditional <- FALSE
-  }
-  if (conditional && !is.null(groups)) {
-    stop("Group average effects require predictions from both outcome arms, ",
-         "but conditional = TRUE fits the outcome model on a single arm. ",
-         "Refit with conditional = FALSE to use `groups`.")
   }
 
 
@@ -237,9 +232,11 @@ dml <- function(y, d, x,
     cat("", "Model:", ifelse(out$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
     cat("", "Target:", out$info$target, if (conditional) "(conditional)" else "(unconditional)", "\n")
     cat("", "Cross-Fitting:", out$info$cf.folds, "folds,", out$info$cf.reps, "reps", "\n")
-    # conditional ATT uses yreg0 only; conditional ATU uses yreg1 only
-    yreg0_label <- if (conditional && identical(target, "atu")) "(not used)" else attr(out$info$yreg$yreg0$method, "name")
-    yreg1_label <- if (conditional && identical(target, "att")) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
+    # conditional ATT uses yreg0 only; conditional ATU uses yreg1 only -- unless
+    # groups are requested, which need both arms for the group estimand
+    drop.arm    <- conditional && is.null(groups)
+    yreg0_label <- if (drop.arm && identical(target, "atu")) "(not used)" else attr(out$info$yreg$yreg0$method, "name")
+    yreg1_label <- if (drop.arm && identical(target, "att")) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
     cat("", "ML Method:",
         "outcome", paste0("(yreg0:", yreg0_label,
                           ", yreg1:", yreg1_label, "),"),
@@ -332,8 +329,9 @@ dml <- function(y, d, x,
       if (verbose) cat("- Tuning Model for Y (non-parametric).\n")
       # conditional ATT tunes yreg0 (controls) only; conditional ATU tunes
       # yreg1 (treated) only; otherwise both sides are tuned.
-      cond.att <- conditional && identical(target, "att")
-      cond.atu <- conditional && identical(target, "atu")
+      # groups need both arms, so only skip the unused arm when none are requested
+      cond.att <- conditional && identical(target, "att") && is.null(groups)
+      cond.atu <- conditional && identical(target, "atu") && is.null(groups)
 
       if (!cond.atu) {
         yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
@@ -363,7 +361,11 @@ dml <- function(y, d, x,
 
   # conditional fits never use the counterfactual arm's outcome model; drop its
   # spec on every path (not just under dirty.tuning) so it is never trained
-  if (model == "npm" && conditional) {
+  # A conditional fit needs only one outcome arm, so drop the other arm's spec on
+  # every path (not just under dirty tuning) and skip training it entirely.
+  # Group effects are a separate estimand computed from both arms, so when groups
+  # are requested both arms are trained -- the main estimand stays conditional.
+  if (model == "npm" && conditional && is.null(groups)) {
     if (is.list(yreg) &&
         isTRUE(all.equal(tolower(names(yreg)), c("yreg0", "yreg1")))) {
       yreg0.use <- yreg$yreg0

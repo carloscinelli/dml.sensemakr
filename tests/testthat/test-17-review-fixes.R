@@ -34,7 +34,7 @@ setup_rf <- local({
   fit.grp <- dml(y, d, x, model = "npm", groups = g,
                  cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
-  # npm ATT with groups (auto-backs off to a full fit; also used by plot tests)
+  # npm ATT with groups: stays conditional, but trains both arms for the gates
   fit.attg <- dml(y, d, x, model = "npm", target = "att", groups = g,
                   cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
@@ -111,21 +111,49 @@ test_that("conditional ATT fit has no stale unconditional 'all' slot", {
   expect_error(ovb_contour_plot(fit, parameter = "ate"), "ate")
 })
 
-# === finding 6: groups + conditional cannot silently produce NA gates ===
-test_that("group effects and conditional fits are kept apart explicitly", {
-  # auto-set backs off to a full fit when groups are requested: gates are real
+# === finding 6: groups never silently downgrade the main parameterization ===
+test_that("requesting groups keeps the conditional parameterization for the main target", {
   fit <- setup_rf$fit.attg
-  expect_false(isTRUE(fit$info$conditional))
+  # the recommended (conditional) parameterization survives a groups request ...
+  expect_true(isTRUE(fit$info$conditional))
+  # ... and the group estimand, which needs both arms, is computed rather than NA
   gates <- sapply(fit$coefs$groups, function(z) z["median", "estimate"])
   expect_true(all(is.finite(gates)))
-  # explicitly forcing the combination is an error, not NAs
-  expect_error(
-    dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
-        conditional = TRUE, groups = setup_rf$g, cf.folds = 2, verbose = FALSE),
-    "both outcome arms"
-  )
-  # and so is adding groups to a conditional fit after the fact
+  expect_false(all(is.na(fit$fits[[1]]$preds$yhat1)))   # second arm trained for the gates
+
+  # the main slot must match a conditional fit, NOT the unconditional one: nu2.s
+  # differs by roughly a factor of five between the two parameterizations
+  nu2 <- function(z) z$results$main$treat[[1]]$estimates$nu2.s
+  uncond <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
+                conditional = FALSE, groups = setup_rf$g, cf.folds = 2, cf.reps = 1,
+                cf.seed = 123, verbose = FALSE)
+  expect_equal(nu2(fit), nu2(setup_rf$fit.att), tolerance = 0.1)
+  expect_gt(abs(nu2(uncond) - nu2(fit)), 1)
+})
+
+test_that("dml_gate still refuses a conditional fit with only one arm predicted", {
+  # fit.att has no groups, so the treated arm was never trained: gates are
+  # impossible and must error rather than come back NA
   expect_error(dml_gate(setup_rf$fit.att, groups = setup_rf$g), "both outcome arms")
+})
+
+# === both parameterizations stay available for reproduction ===
+test_that("unconditional and centered parameterizations remain reachable", {
+  # unconditional: Chernozhukov et al. (2026) parameterization
+  uncond <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
+                conditional = FALSE, cf.folds = 2, cf.reps = 1, cf.seed = 123,
+                verbose = FALSE)
+  expect_false(isTRUE(uncond$info$conditional))
+  expect_true(is.finite(uncond$results$main$treat[[1]]$estimates$nu2.s))
+
+  # centered: Huang and Pimentel (2025) parameterization, nu2 shifted by exactly 1
+  cent <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
+              centered = TRUE, cf.folds = 2, cf.reps = 1, cf.seed = 123,
+              verbose = FALSE)
+  expect_true(isTRUE(cent$info$centered))
+  expect_equal(cent$results$main$treat[[1]]$estimates$nu2.s + 1,
+               setup_rf$fit.att$results$main$treat[[1]]$estimates$nu2.s,
+               tolerance = 1e-8)
 })
 
 # === finding 7: the alpha = 1 closed form honors rho2 ===
@@ -189,6 +217,7 @@ test_that("benchmark_bounds accepts one k per benchmark covariate", {
 
 # === finding 12: dirty.tuning = FALSE also skips the unused outcome arm ===
 test_that("conditional ATT never trains the treated-arm outcome model", {
+  # no groups requested, so the second arm is genuinely unused
   fit <- setup_rf$fit.att   # dirty.tuning = FALSE, save.models = TRUE
   expect_true(all(is.na(fit$fits[[1]]$preds$yhat1)))
   expect_null(fit$fits[[1]]$model.y1[[1]])
