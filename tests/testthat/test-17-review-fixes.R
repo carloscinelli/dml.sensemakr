@@ -34,12 +34,17 @@ setup_rf <- local({
   fit.grp <- dml(y, d, x, model = "npm", groups = g,
                  cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
+  # npm ATT with groups (auto-backs off to a full fit; also used by plot tests)
+  fit.attg <- dml(y, d, x, model = "npm", target = "att", groups = g,
+                  cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
+
   # benchmark on two covariates; y/d/x resolve through the stored call
   # environment (this local() frame), with no .GlobalEnv workaround
   bench2 <- dml_benchmark(fit.plm, c("age", "inc"))
 
   list(y = y, d = d, x = x, g = g,
-       fit.plm = fit.plm, fit.att = fit.att, fit.grp = fit.grp, bench2 = bench2)
+       fit.plm = fit.plm, fit.att = fit.att, fit.grp = fit.grp,
+       fit.attg = fit.attg, bench2 = bench2)
 })
 
 # a copy of the benchmark with known positive gains, so the k-multiplier tests
@@ -109,9 +114,7 @@ test_that("conditional ATT fit has no stale unconditional 'all' slot", {
 # === finding 6: groups + conditional cannot silently produce NA gates ===
 test_that("group effects and conditional fits are kept apart explicitly", {
   # auto-set backs off to a full fit when groups are requested: gates are real
-  fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
-             groups = setup_rf$g, cf.folds = 2, cf.reps = 1, cf.seed = 123,
-             verbose = FALSE)
+  fit <- setup_rf$fit.attg
   expect_false(isTRUE(fit$info$conditional))
   gates <- sapply(fit$coefs$groups, function(z) z["median", "estimate"])
   expect_true(all(is.finite(gates)))
@@ -190,6 +193,30 @@ test_that("conditional ATT never trains the treated-arm outcome model", {
   expect_true(all(is.na(fit$fits[[1]]$preds$yhat1)))
   expect_null(fit$fits[[1]]$model.y1[[1]])
   expect_null(fit$info$yreg$yreg1)
+})
+
+# === review round 2: plots follow the fit's own target ===
+test_that("contour and sensemakr plots work on conditional and grouped fits", {
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  # default parameter resolves to the fit's own target (no "ate" slot needed)
+  expect_no_error(ovb_contour_plot(setup_rf$fit.att, cf.y = 0.03, cf.d = 0.03))
+  expect_no_error(plot(sensemakr(setup_rf$fit.att, cf.y = 0.03, cf.d = 0.03)))
+  # explicitly requesting a never-estimated target still refuses clearly
+  expect_error(ovb_contour_plot(setup_rf$fit.att, parameter = "ate"), "ate")
+  # group plots do not require the (absent) main "ate" slot
+  expect_no_error(ovb_contour_plot(setup_rf$fit.attg, group = TRUE, group.number = 1))
+})
+
+# === review round 2: dml() keeps the 0.2.0 positional argument order ===
+test_that("conditional/centered come after all 0.2.0 parameters", {
+  f <- names(formals(dml))
+  expect_equal(f[1:16],
+               c("y", "d", "x", "model", "target", "groups", "cf.folds",
+                 "cf.reps", "cf.seed", "ps.trim", "reg", "yreg", "dreg",
+                 "dirty.tuning", "save.models", "y.class"))
+  expect_gt(match("conditional", f), match("d.class", f))
+  expect_gt(match("centered", f), match("d.class", f))
 })
 
 # === finding 15: trimmed-observation bookkeeping keeps x a matrix ===

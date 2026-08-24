@@ -215,6 +215,11 @@ plot.dml.sensemakr <- function(x,
                                level = 0.95,
                                combine.method = "median",
                                ...){
+  # default to the fit's own (single) target, mirroring ovb_contour_plot.dml
+  if (missing(parameter) && length(x$model$info$target) == 1L &&
+      x$model$info$target %in% c("ate", "att", "atu")) {
+    parameter <- x$model$info$target
+  }
   if (!"bound.label" %in% names(list(...))) {
     ovb_contour_plot(x$model,
                      parameter = parameter,

@@ -343,15 +343,18 @@ ovb_contour_plot.dml <- function(model,
     label.bump.y <- lim.y*(1/15)
   }
 
+  # when no parameter is given, default to the fit's own (single) target, so
+  # e.g. conditional att/atu fits -- which carry no "ate" slot -- plot directly
+  if (missing(parameter) && length(model$info$target) == 1L &&
+      model$info$target %in% c("ate", "att", "atu")) {
+    parameter <- model$info$target
+  }
   parameter <- match.arg(parameter)
   target_label <- parameter                        # user-facing label ("ate"/"att"/"atu")
-  parameter <- switch(parameter,
-    ate = "all",
-    att = "treat",
-    atu = "untr"
-  )
+  parameter <- unname(.target_to_slot[parameter])
   results <- model$results$main[[parameter]]
-  if (is.null(results))
+  # group plots use results$groups (assigned below), so the main slot may be absent
+  if (is.null(results) && !group)
     stop(sprintf("Parameter '%s' (slot '%s') was not computed for this model (target = '%s').",
                  target_label, parameter, paste(model$info$target, collapse="/")))
 
