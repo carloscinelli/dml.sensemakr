@@ -7,7 +7,7 @@
 ##' @param x \code{\link{numeric}} vector or \code{\link{matrix}} with covariates. We suggest constructing \code{x} using \code{\link{model.matrix}}.
 ##' @param model specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.
 ##' @param target specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.
-##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise.
+##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases (when no \code{groups} are requested, since group effects need both outcome arms) and \code{FALSE} otherwise.
 ##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The target estimate and its bounds are unaffected by this choice; it only changes the reported scale of \code{nu2.s}.
 ##' @param groups a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.
 ##' @param cf.folds number of cross-fitting folds. Default is \code{5}.
@@ -110,6 +110,13 @@ dml <- function(y, d, x,
   target  <- match.arg(target,
                        choices = c("ate", "att", "atu"),
                        several.ok = TRUE)
+
+  # plm estimates a single average effect; "att"/"atu" targets are not available
+  if (model == "plm" && any(target %in% c("att", "atu"))) {
+    warning("model = 'plm' estimates a single average effect and cannot ",
+            "target 'att'/'atu'; reporting the ATE.")
+    target <- "ate"
+  }
   # check if x is numeric but not a matrix and converts to matrix.
   # this is for the case where x is a single covariate
   if (is.numeric(x) && !is.matrix(x)) {
@@ -161,9 +168,12 @@ dml <- function(y, d, x,
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
 
-  # auto-set conditional: TRUE when the only target is "att"/"atu" and model is "npm"
+  # auto-set conditional: TRUE when the only target is "att"/"atu", the model is
+  # "npm", and no groups are requested (group effects need both outcome arms)
   if (is.null(conditional)) {
-    conditional <- (model == "npm" && (identical(target, "att") || identical(target, "atu")))
+    conditional <- (model == "npm" &&
+                      (identical(target, "att") || identical(target, "atu")) &&
+                      is.null(groups))
   }
   if (conditional && model != "npm") {
     warning("conditional = TRUE is only supported for model = 'npm'; setting conditional = FALSE.")
@@ -173,11 +183,19 @@ dml <- function(y, d, x,
     warning("conditional = TRUE requires a single target = 'att' or 'atu'; setting conditional = FALSE.")
     conditional <- FALSE
   }
+  if (conditional && !is.null(groups)) {
+    stop("Group average effects require predictions from both outcome arms, ",
+         "but conditional = TRUE fits the outcome model on a single arm. ",
+         "Refit with conditional = FALSE to use `groups`.")
+  }
 
 
   out <- list()
   out$data <- list(y = y, d = d, x = x)
   out$call <-   match.call()
+  # environment of the original call, so functions that re-evaluate the call
+  # (e.g. dml_benchmark) can resolve the user's variables
+  out$call.env <- parent.frame()
 
   if (y.class) {
     y <- factor(y, levels = c(0,1), labels = c("zero", "one"))
@@ -337,8 +355,28 @@ dml <- function(y, d, x,
     }
       out$dreg <- dreg
       out$yreg <- yreg
-      out$info$yreg <- yreg   # update info to reflect final tuned specs (yreg1=NULL if conditional)
+      # update info to reflect the final tuned specs; plm tuning returns a flat
+      # spec, so re-wrap it in the yreg0/yreg1 structure the record expects
+      out$info$yreg <- if (model == "plm") list(yreg0 = yreg, yreg1 = yreg) else yreg
 
+  }
+
+  # conditional fits never use the counterfactual arm's outcome model; drop its
+  # spec on every path (not just under dirty.tuning) so it is never trained
+  if (model == "npm" && conditional) {
+    if (is.list(yreg) &&
+        isTRUE(all.equal(tolower(names(yreg)), c("yreg0", "yreg1")))) {
+      yreg0.use <- yreg$yreg0
+      yreg1.use <- yreg$yreg1
+    } else {
+      yreg0.use <- yreg1.use <- yreg
+    }
+    yreg <- if (identical(target, "att")) {
+      list(yreg0 = yreg0.use, yreg1 = NULL)
+    } else {
+      list(yreg0 = NULL, yreg1 = yreg1.use)
+    }
+    out$info$yreg <- yreg
   }
 
   if (!is.null(cf.seed)) set.seed(cf.seed)
@@ -367,7 +405,8 @@ dml <- function(y, d, x,
                                     dreg         = dreg,
                                     verbose      = verbose,
                                     warnings     = warnings,
-                                    save.models  = save.models)
+                                    save.models  = save.models,
+                                    predict.all  = !is.null(groups))
 
     fits[[i]] <- cross.fit.i
 
@@ -391,20 +430,8 @@ dml <- function(y, d, x,
                               parameter = "all",
                               yhat1, yhat0, dhat, phat, trim = ps.trim)
 
-      trimmed.all.idx <- results[[i]]$trim.summary$trimmed_indices$all
-      trimmed.low.idx <- results[[i]]$trim.summary$trimmed_indices$low
-      trimmed.high.idx <- results[[i]]$trim.summary$trimmed_indices$high
-      results[[i]]$trim.summary$trimmed_obs <- list(
-        all = list(y.trimmed = y[trimmed.all.idx],
-                   d.trimmed = d[trimmed.all.idx],
-                   x.trimmed = x[trimmed.all.idx, ]),
-        low = list(y.trimmed = y[trimmed.low.idx],
-                   d.trimmed = d[trimmed.low.idx],
-                   x.trimmed = x[trimmed.low.idx, ]),
-        high = list(y.trimmed = y[trimmed.high.idx],
-                    d.trimmed = d[trimmed.high.idx],
-                    x.trimmed = x[trimmed.high.idx, ])
-      )
+      results[[i]]$trim.summary$trimmed_obs <-
+        collect.trimmed.obs(y, d, x, results[[i]]$trim.summary$trimmed_indices)
     }
     if (verbose) cat("\n")
   }
@@ -447,24 +474,14 @@ dml <- function(y, d, x,
             centered = centered
           )
         }
-        trimmed.all.idx  <- cond_results[[i]]$trim.summary$trimmed_indices$all
-        trimmed.low.idx  <- cond_results[[i]]$trim.summary$trimmed_indices$low
-        trimmed.high.idx <- cond_results[[i]]$trim.summary$trimmed_indices$high
-        cond_results[[i]]$trim.summary$trimmed_obs <- list(
-          all  = list(y.trimmed = y[trimmed.all.idx],
-                      d.trimmed = d[trimmed.all.idx],
-                      x.trimmed = x[trimmed.all.idx, ]),
-          low  = list(y.trimmed = y[trimmed.low.idx],
-                      d.trimmed = d[trimmed.low.idx],
-                      x.trimmed = x[trimmed.low.idx, ]),
-          high = list(y.trimmed = y[trimmed.high.idx],
-                      d.trimmed = d[trimmed.high.idx],
-                      x.trimmed = x[trimmed.high.idx, ])
-        )
+        cond_results[[i]]$trim.summary$trimmed_obs <-
+          collect.trimmed.obs(y, d, x, cond_results[[i]]$trim.summary$trimmed_indices)
       }
       cond_slot <- if (identical(target, "att")) "treat" else "untr"
-      out$results$main[[cond_slot]] <- cond_results
-      out$coefs$main[[cond_slot]]   <- combine.cross.fits(cond_results)
+      # the conditional target is the only estimand actually computed; replace
+      # main entirely so the half-fit unconditional "all" slot does not linger
+      out$results$main <- setNames(list(cond_results), cond_slot)
+      out$coefs$main   <- setNames(list(combine.cross.fits(cond_results)), cond_slot)
     } else {
       out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
       out$coefs$main   <- lapply(out$results$main, combine.cross.fits)
@@ -502,6 +519,20 @@ dml <- function(y, d, x,
 ##' @export
 dml_gate <- function(dml.fit, groups,...){
   call2 <- match.call()
+  if (isTRUE(dml.fit$info$conditional)) {
+    stop("Group average effects require predictions from both outcome arms, ",
+         "but this model was fit with conditional = TRUE. ",
+         "Refit with conditional = FALSE before calling dml_gate().")
+  }
+  if (dml.fit$info$model == "npm") {
+    preds1 <- dml.fit$fits[[1]]$preds
+    if (anyNA(preds1$yhat0) || anyNA(preds1$yhat1)) {
+      stop("Group average effects require both outcome arms predicted for ",
+           "every observation, but this fit's predictions are incomplete ",
+           "(att/atu fits only predict where their own scores need it). ",
+           "Refit passing `groups` to dml() directly.")
+    }
+  }
   groups  <- as.factor(groups)
   model    <- dml.fit$info$model
   dml.fit$call$groups <- call2$groups
@@ -560,6 +591,16 @@ combine.cross.fits <- function(results, param = "theta.s"){
   out <- rbind(mean =   combine.mean(thetas, ses),
                median = combine.median(thetas, ses))
   out
+}
+
+# records the observations dropped by propensity-score trimming
+collect.trimmed.obs <- function(y, d, x, trimmed_indices) {
+  grab <- function(idx) list(y.trimmed = y[idx],
+                             d.trimmed = d[idx],
+                             x.trimmed = x[idx, , drop = FALSE])
+  list(all  = grab(trimmed_indices$all),
+       low  = grab(trimmed_indices$low),
+       high = grab(trimmed_indices$high))
 }
 
 combine.median <- function(thetas, ses){
