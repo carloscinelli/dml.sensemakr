@@ -27,7 +27,7 @@ test_that("dml_gate() attaches group ATEs to a fitted dml object", {
   gated <- dml_gate(setup_gate$fit_nogrp, groups = setup_gate$g)
   expect_s3_class(gated, "dml")
   expect_false(is.null(gated$coefs$groups))
-  expect_equal(names(gated$coefs$groups), levels(setup_gate$g))
+  expect_equal(names(gated$coefs$groups), paste0("ate.", levels(setup_gate$g)))
 })
 
 # === dml_gate matches the inline dml(groups=) path ===

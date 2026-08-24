@@ -46,13 +46,13 @@ test_that("dml() with groups produces group coefficients", {
 test_that("coef.dml returns both ATE and GATE", {
   cf <- coef(setup_npm$fit)
   expect_true(any(grepl("^ate", names(cf))))
-  expect_true(any(grepl("^gate", names(cf))))
+  expect_true(any(grepl("^g\\.", names(cf))))
 })
 
 test_that("se.dml returns SEs for ATE and GATE", {
   s <- se(setup_npm$fit)
   expect_true(any(grepl("^ate", names(s))))
-  expect_true(any(grepl("^gate", names(s))))
+  expect_true(any(grepl("^g\\.", names(s))))
   expect_true(all(s > 0))
 })
 
@@ -73,7 +73,7 @@ test_that("coef.dml.bounds with groups returns matrix with GATE rows", {
   bounds <- dml_bounds(setup_npm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   cf <- coef(bounds)
   expect_true(is.matrix(cf))
-  expect_true(any(grepl("^gate", colnames(cf))))
+  expect_true(any(grepl("^g\\.", colnames(cf))))
   expect_true(any(grepl("^ate", colnames(cf))))
 })
 

@@ -410,7 +410,9 @@ ovb_contour_plot.dml <- function(model,
 
   points(0, 0, pch = 17, col = "black", cex = 1)
 
-  idx <- ifelse(group, group.number + 1, target_label)
+  idx <- if (group) {
+    paste0(.group_marker, names(model$results$groups)[group.number])
+  } else target_label
   plot_estimate <- confint(model,
                            combine.method = combine.method,
                            level = level)[idx, ifelse(which.bound == "lwr", 1, 2)]

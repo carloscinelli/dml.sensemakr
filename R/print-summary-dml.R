@@ -75,7 +75,7 @@ summary.dml <- function(object, combine.method = "median", ...){
   if (!no.groups) {
     groups <- lapply(object$coefs$groups, function(x) x[combine.method, ])
     groups <- do.call("rbind", groups)
-    rownames(groups) <- paste0(.group_prefix(object$info$target), ".", rownames(groups))
+    rownames(groups) <- paste0(.group_marker, rownames(groups))
     groups <- expand.cmat(groups)
     out$groups <- groups
   }
@@ -89,24 +89,21 @@ summary.dml <- function(object, combine.method = "median", ...){
 .slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
 .target_to_slot <- c(ate = "all", att = "treat", atu = "untr")
 
-# Row-name prefix for group effects: the group estimand follows the fit's target,
-# so an ATT fit reports group ATTs ("gatt."), not group ATEs.
-.group_prefix <- function(target) {
-  if (length(target) == 1L && !is.na(p <- c(ate = "gate", att = "gatt", atu = "gatu")[target])) {
-    unname(p)
-  } else {
-    "gate"
-  }
-}
-.group_prefixes <- c("gate.", "gatt.", "gatu.")
+# Group rows are named "g.<estimand>.<group level>". The "g." marker selects
+# them: grepl("^g\\.", names(coef(fit))).
+.group_marker <- "g."
 
-# Printed heading for the group block, matching the estimand actually reported.
-.group_label <- function(target) {
+# Heading for a group block, one block per estimand.
+.group_label <- function(estimand) {
   lab <- c(ate = "Group Average Treatment Effect",
            att = "Group Average Treatment Effect on the Treated",
            atu = "Group Average Treatment Effect on the Untreated")
-  if (length(target) == 1L && !is.na(lab[target])) unname(lab[target]) else lab[["ate"]]
+  if (length(estimand) == 1L && !is.na(lab[estimand])) unname(lab[estimand]) else lab[["ate"]]
 }
+
+# Estimand token of a group row name: "g.att.single" -> "att"
+.group_estimand <- function(nm) sub("^g\\.([^.]+)\\..*$", "\\1", nm)
+
 
 # Internal: return only the coefs$main slots that match the requested target(s);
 # fall back to whatever was actually computed so a fitted object always prints.
@@ -126,7 +123,7 @@ coef.dml <- function(object, combine.method = "median", ...){
   names(ate) <- .slot_to_target[names(ate)]
   if (!is.null(object$coefs$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "estimate"])
-    names(gate) <- paste0(.group_prefix(object$info$target), ".", names(gate))
+    names(gate) <- paste0(.group_marker, names(gate))
   } else{
     gate = NULL
   }
@@ -148,7 +145,7 @@ se.dml <- function(object, combine.method = "median", ...){
   names(ate) <- .slot_to_target[names(ate)]
   if (!is.null(object$coefs$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "se"])
-    names(gate) <- paste0(.group_prefix(object$info$target), ".", names(gate))
+    names(gate) <- paste0(.group_marker, names(gate))
   } else{
     gate = NULL
   }
@@ -222,9 +219,14 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
 
   no.groups <- is.null(x$groups)
   if (!no.groups) {
-    cat("\n")
-    cat(paste0(.group_label(x$info$target), ":"), "\n\n")
-    print(x$groups, digits = digits)
+    est <- .group_estimand(rownames(x$groups))
+    for (e in unique(est)) {
+      cat("\n")
+      cat(paste0(.group_label(e), ":"), "\n\n")
+      blk <- x$groups[est == e, , drop = FALSE]
+      class(blk) <- class(x$groups)
+      print(blk, digits = digits)
+    }
     cat("\n")
   }
   cat("Note: DML estimates combined using the", x$combine.method, "method.")

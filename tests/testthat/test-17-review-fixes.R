@@ -30,11 +30,11 @@ setup_rf <- local({
                  dirty.tuning = FALSE, save.models = TRUE,
                  cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
-  # npm ATE with groups (for the alpha = 1 closed form on gate rows)
+  # npm ATE with groups (for the alpha = 1 closed form on group rows)
   fit.grp <- dml(y, d, x, model = "npm", groups = g,
                  cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
-  # npm ATT with groups: stays conditional, but trains both arms for the gates
+  # npm ATT with groups: stays conditional, but trains both arms for the groups
   fit.attg <- dml(y, d, x, model = "npm", target = "att", groups = g,
                   cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
@@ -116,10 +116,12 @@ test_that("requesting groups keeps the conditional parameterization for the main
   fit <- setup_rf$fit.attg
   # the recommended (conditional) parameterization survives a groups request ...
   expect_true(isTRUE(fit$info$conditional))
-  # ... and the group estimand, which needs both arms, is computed rather than NA
+  # ... and the group rows report the ATT within each group, named g.att.<level>
+  expect_named(fit$coefs$groups, c("att.single", "att.married"))
   gates <- sapply(fit$coefs$groups, function(z) z["median", "estimate"])
   expect_true(all(is.finite(gates)))
-  expect_false(all(is.na(fit$fits[[1]]$preds$yhat1)))   # second arm trained for the gates
+  expect_identical(names(coef(fit)), c("att", "g.att.single", "g.att.married"))
+  expect_false(all(is.na(fit$fits[[1]]$preds$yhat1)))   # second arm trained
 
   # the main slot must match a conditional fit, NOT the unconditional one: nu2.s
   # differs by roughly a factor of five between the two parameterizations
@@ -172,7 +174,7 @@ test_that("extreme_robustness_value at alpha = 1 handles gate rows", {
   # must not error on gate rows (it used to crash); a gate whose estimated S2
   # comes out non-positive on this small subsample is NA with a warning
   xrv <- suppressWarnings(extreme_robustness_value(setup_rf$fit.grp, alpha = 1))
-  expect_true(all(c("ate", "gate.single", "gate.married") %in% names(xrv)))
+  expect_true(all(c("ate", "g.ate.single", "g.ate.married") %in% names(xrv)))
   expect_true(is.finite(xrv[["ate"]]))
   ok <- is.na(xrv) | (xrv >= 0 & xrv <= 1)
   expect_true(all(ok))
@@ -257,4 +259,26 @@ test_that("collect.trimmed.obs keeps a single trimmed row as a matrix", {
   expect_true(is.matrix(tr$all$x.trimmed))
   expect_identical(nrow(tr$all$x.trimmed), 1L)
   expect_identical(nrow(tr$high$x.trimmed), 0L)
+})
+
+# === review round 3: group rows follow every requested target ===
+test_that("each requested target gets its own group block", {
+  fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm",
+             target = c("att", "atu"), groups = setup_rf$g,
+             cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
+  expect_identical(names(coef(fit)),
+                   c("att", "atu",
+                     "g.att.single", "g.att.married",
+                     "g.atu.single", "g.atu.married"))
+  # no group ATE appears, because no ATE was requested
+  expect_false(any(grepl("^g\\.ate\\.", names(coef(fit)))))
+  # the "g." marker selects every group row
+  expect_length(coef(fit)[grepl("^g\\.", names(coef(fit)))], 4L)
+})
+
+test_that("group rows carry the estimand and the level in their names", {
+  fit <- setup_rf$fit.grp   # target = "ate"
+  expect_identical(names(coef(fit)), c("ate", "g.ate.single", "g.ate.married"))
+  out <- paste(capture.output(print(summary(fit))), collapse = "\n")
+  expect_match(out, "Group Average Treatment Effect")
 })

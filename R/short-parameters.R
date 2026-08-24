@@ -423,63 +423,67 @@ ate.att.atu.npm <- function(dml, target, trim = 0.02) {
 
 # computes ate for each group npm
 group.ate.npm <- function(dml, groups, trim = 0.02) {
-  g       <- levels(groups)
-  ate.g   <- list()
+  lev     <- levels(groups)
   cf.reps <- dml$info$cf.reps
   y       <- dml$data$y
   d       <- dml$data$d
   x       <- dml$data$x
 
-  # Group effects estimate the *requested* target within each group: asking for
-  # the ATT by group returns group ATTs, not group ATEs.
-  target      <- dml$info$target
   conditional <- isTRUE(dml$info$conditional)
   centered    <- isTRUE(dml$info$centered)
-  single      <- length(target) == 1L && target %in% c("ate", "att", "atu")
-  param       <- if (single) unname(.target_to_slot[target]) else "all"
 
-  for(j in g){
-    idx <- groups == j
-    res <- list()
-    for(i in 1:cf.reps){
-      phat   <- dml$fits[[i]]$preds$phat
-      dhat   <- dml$fits[[i]]$preds$dhat
-      yhat0  <- dml$fits[[i]]$preds$yhat0
-      yhat1  <- dml$fits[[i]]$preds$yhat1
+  # One set of group effects per requested target. A fit that asks for the ATT
+  # reports group ATTs; a multi-target fit reports one set for each target.
+  targets <- dml$info$target
+  targets <- targets[targets %in% c("ate", "att", "atu")]
+  if (!length(targets)) targets <- "ate"
 
-      # ATT/ATU weights are normalized by the treated (untreated) share; within a
-      # group that share is the group's own, not the sample-wide one. (The ATE
-      # weights are identically one, so this does not affect param = "all".)
-      phat.g <- rep(mean(num(d)[idx]), sum(idx))
+  out <- list()
+  for (tg in targets) {
+    param <- unname(.target_to_slot[tg])
+    for (j in lev) {
+      idx <- groups == j
+      res <- list()
+      for (i in 1:cf.reps) {
+        phat   <- dml$fits[[i]]$preds$phat
+        dhat   <- dml$fits[[i]]$preds$dhat
+        yhat0  <- dml$fits[[i]]$preds$yhat0
+        yhat1  <- dml$fits[[i]]$preds$yhat1
 
-      res[[i]] <-
-        if (conditional && param == "treat") {
-          att.npm.cond(y = num(y)[idx], d = num(d)[idx],
-                       yhat0 = yhat0[idx], yhat1 = NULL,
-                       dhat  = dhat[idx],  phat  = phat.g,
-                       trim  = trim, centered = centered)
-        } else if (conditional && param == "untr") {
-          atu.npm.cond(y = num(y)[idx], d = num(d)[idx],
-                       yhat1 = yhat1[idx], yhat0 = NULL,
-                       dhat  = dhat[idx],  phat  = phat.g,
-                       trim  = trim, centered = centered)
-        } else {
-          ate.npm(y = y[idx], d = d[idx],
-                  parameter = param,
-                  yhat1 = yhat1[idx],
-                  yhat0 = yhat0[idx],
-                  dhat  = dhat[idx],
-                  phat  = if (param == "all") phat[idx] else phat.g,
-                  trim = trim)
-        }
+        # The ATT and ATU weights use the treated (untreated) share. Within a
+        # group that share is the group's own share, not the sample-wide share.
+        # The ATE weights are one, so this does not change param = "all".
+        phat.g <- rep(mean(num(d)[idx]), sum(idx))
 
-      res[[i]]$trim.summary$trimmed_obs <-
-        collect.trimmed.obs(y[idx], d[idx], x[idx, , drop = FALSE],
-                            res[[i]]$trim.summary$trimmed_indices)
+        res[[i]] <-
+          if (conditional && param == "treat") {
+            att.npm.cond(y = num(y)[idx], d = num(d)[idx],
+                         yhat0 = yhat0[idx], yhat1 = NULL,
+                         dhat  = dhat[idx],  phat  = phat.g,
+                         trim  = trim, centered = centered)
+          } else if (conditional && param == "untr") {
+            atu.npm.cond(y = num(y)[idx], d = num(d)[idx],
+                         yhat1 = yhat1[idx], yhat0 = NULL,
+                         dhat  = dhat[idx],  phat  = phat.g,
+                         trim  = trim, centered = centered)
+          } else {
+            ate.npm(y = y[idx], d = d[idx],
+                    parameter = param,
+                    yhat1 = yhat1[idx],
+                    yhat0 = yhat0[idx],
+                    dhat  = dhat[idx],
+                    phat  = if (param == "all") phat[idx] else phat.g,
+                    trim = trim)
+          }
+
+        res[[i]]$trim.summary$trimmed_obs <-
+          collect.trimmed.obs(y[idx], d[idx], x[idx, , drop = FALSE],
+                              res[[i]]$trim.summary$trimmed_indices)
+      }
+      out[[paste0(tg, ".", j)]] <- res
     }
-    ate.g[[j]] <- res
   }
-  return(ate.g)
+  return(out)
 }
 
 # computes ate for each group plm
@@ -497,7 +501,7 @@ group.ate.plm <- function(dml, groups) {
       yhat  <-   dml$fits[[i]]$preds$yhat
       res[[i]] <- ate.plm(y[idx], d[idx], yhat[idx], dhat[idx])
     }
-    ate.g[[j]] <- res
+    ate.g[[paste0("ate.", j)]] <- res
   }
   return(ate.g)
 }

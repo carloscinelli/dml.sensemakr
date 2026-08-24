@@ -163,8 +163,8 @@ test_that("calc_confint produces correct confidence intervals", {
 })
 
 test_that("calc_confint filters by parm argument", {
-  cf <- c(ate = 5, gate.q1 = 3)
-  ses <- c(ate = 1, gate.q1 = 2)
+  cf <- c(ate = 5, g.ate.q1 = 3)
+  ses <- c(ate = 1, g.ate.q1 = 2)
   ci <- dml.sensemakr:::calc_confint(cf, ses, parm = "ate", level = 0.95)
   expect_equal(nrow(ci), 1)
   expect_equal(rownames(ci), "ate")
