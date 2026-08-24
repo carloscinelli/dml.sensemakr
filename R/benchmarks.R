@@ -51,17 +51,7 @@ summary.dml_benchmark <- function(object, combine.method = c("median", "mean"),
                                   na.rm = TRUE, ...){
   combine.method <- match.arg(combine.method)
   combine.base <- if (combine.method == "mean") combine.mean else combine.median
-  # with na.rm = TRUE, drop repetitions with NA estimates or SEs (e.g. a failed
-  # refit) before combining, instead of letting one NA poison the summary
-  combine <- function(est, se) {
-    if (na.rm) {
-      keep <- is.finite(est) & is.finite(se)
-      est <- est[keep]
-      se  <- se[keep]
-    }
-    if (!length(est)) return(c(estimate = NA_real_, se = NA_real_))
-    combine.base(est, se)
-  }
+  combine <- function(est, se) combine.base(est, se, na.rm = na.rm)
   covars  <- names(object$benchmarks)
 
   rows <- lapply(covars, function(v) {

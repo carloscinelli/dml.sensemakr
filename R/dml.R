@@ -605,17 +605,18 @@ collect.trimmed.obs <- function(y, d, x, trimmed_indices) {
        high = grab(trimmed_indices$high))
 }
 
-combine.median <- function(thetas, ses){
-  median.theta  <- median(thetas)
-  ss <- c((thetas - mean(thetas)) %*% (thetas - mean(thetas)))
-  se.median.theta <- sqrt(median(ses^2 + c(ss)))
+combine.median <- function(thetas, ses, na.rm = FALSE){
+  median.theta  <- median(thetas, na.rm = na.rm)
+  ss <- sum((thetas - mean(thetas, na.rm = na.rm))^2, na.rm = na.rm)
+  se.median.theta <- sqrt(median(ses^2 + ss, na.rm = na.rm))
   c(estimate = median.theta, se = se.median.theta)
 }
 
-combine.mean <- function(thetas, ses){
-  mean.theta    <- mean(thetas)
-  ss <- c((thetas - mean(thetas)) %*% (thetas - mean(thetas)))
-  se.mean.theta   <- sqrt(mean(ses^2) + ss/length(ses))
+combine.mean <- function(thetas, ses, na.rm = FALSE){
+  mean.theta    <- mean(thetas, na.rm = na.rm)
+  ss <- sum((thetas - mean.theta)^2, na.rm = na.rm)
+  R  <- if (na.rm) sum(!is.na(thetas)) else length(thetas)
+  se.mean.theta   <- sqrt(mean(ses^2, na.rm = na.rm) + ss/R)
   c(estimate = mean.theta,   se = se.mean.theta)
 }
 
