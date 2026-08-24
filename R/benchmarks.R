@@ -265,9 +265,9 @@ print.dml_benchmark_bounds <- function(x, digits = 4, ...) {
       "\n\n", sep = "")
   cols <- c("BF", "theta.minus", "theta.plus", "lwr.fixed", "upr.fixed", "lwr", "upr")
   print(round(as.data.frame(x)[, cols], digits))
-  cat("\n [theta.minus, theta.plus] point bounds  theta.s +/- BF * S\n")
-  cat(" [lwr.fixed, upr.fixed]    CI with gains held FIXED (= confidence_bounds; manuscript convention)\n")
-  cat(" [lwr, upr]                CI PROPAGATING benchmark-gain uncertainty (Appendix E)\n")
+  cat("\n [theta.minus, theta.plus] point estimates of the bounds\n")
+  cat(" [lwr.fixed, upr.fixed]    confidence bounds treating benchmark as fixed\n")
+  cat(" [lwr, upr]                confidence bounds accounting for benchmark uncertainty\n")
   invisible(x)
 }
 
