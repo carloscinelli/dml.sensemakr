@@ -7,8 +7,6 @@
 ##' @param x \code{\link{numeric}} vector or \code{\link{matrix}} with covariates. We suggest constructing \code{x} using \code{\link{model.matrix}}.
 ##' @param model specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.
 ##' @param target specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.
-##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases (when no \code{groups} are requested, since group effects need both outcome arms) and \code{FALSE} otherwise.
-##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The target estimate and its bounds are unaffected by this choice; it only changes the reported scale of \code{nu2.s}.
 ##' @param groups a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.
 ##' @param cf.folds number of cross-fitting folds. Default is \code{5}.
 ##' @param cf.reps number of cross-fitting repetitions. Default is \code{1}.
@@ -21,6 +19,8 @@
 ##' @param save.models should the fitted models of each iterated be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.
 ##' @param y.class when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
 ##' @param d.class when \code{d} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
+##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases (when no \code{groups} are requested, since group effects need both outcome arms) and \code{FALSE} otherwise.
+##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}.
 ##' @param verbose if \code{TRUE} (default) prints steps of the fitting procedure.
 ##' @param warnings should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.
 ##' @returns
@@ -88,8 +88,6 @@
 dml <- function(y, d, x,
                 model  = c("plm", "npm"),
                 target = "ate",
-                conditional = NULL,
-                centered = FALSE,
                 groups = NULL,
                 cf.folds = 5,
                 cf.reps  = 1,
@@ -102,6 +100,8 @@ dml <- function(y, d, x,
                 save.models = FALSE,
                 y.class = FALSE,
                 d.class = FALSE,
+                conditional = NULL,
+                centered = FALSE,
                 verbose = TRUE,
                 warnings = FALSE){
 

@@ -11,8 +11,6 @@ dml(
   x,
   model = c("plm", "npm"),
   target = "ate",
-  conditional = NULL,
-  centered = FALSE,
   groups = NULL,
   cf.folds = 5,
   cf.reps = 1,
@@ -25,6 +23,8 @@ dml(
   save.models = FALSE,
   y.class = FALSE,
   d.class = FALSE,
+  conditional = NULL,
+  centered = FALSE,
   verbose = TRUE,
   warnings = FALSE
 )
@@ -41,10 +41,6 @@ dml_gate(dml.fit, groups, ...)
 \item{model}{specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.}
 
 \item{target}{specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.}
-
-\item{conditional}{logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases (when no \code{groups} are requested, since group effects need both outcome arms) and \code{FALSE} otherwise.}
-
-\item{centered}{logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The target estimate and its bounds are unaffected by this choice; it only changes the reported scale of \code{nu2.s}.}
 
 \item{groups}{a \code{\link{factor}} or \code{\link{numeric}} vector indicating group membership. Groups must be a deterministic function of \code{x}.}
 
@@ -69,6 +65,10 @@ dml_gate(dml.fit, groups, ...)
 \item{y.class}{when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.}
 
 \item{d.class}{when \code{d} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.}
+
+\item{conditional}{logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases (when no \code{groups} are requested, since group effects need both outcome arms) and \code{FALSE} otherwise.}
+
+\item{centered}{logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}.}
 
 \item{verbose}{if \code{TRUE} (default) prints steps of the fitting procedure.}
 
