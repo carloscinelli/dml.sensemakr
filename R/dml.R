@@ -421,7 +421,8 @@ dml <- function(y, d, x,
                               dhat)
     }
 
-    if (model == "npm") {
+    # a conditional npm fit builds its own results below, so skip the score here
+    if (model == "npm" && !conditional) {
       phat   <- cross.fit.i$preds$phat
       dhat   <- cross.fit.i$preds$dhat
       yhat0  <- cross.fit.i$preds$yhat0
