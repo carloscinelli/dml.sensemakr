@@ -219,14 +219,9 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
 
   no.groups <- is.null(x$groups)
   if (!no.groups) {
-    est <- .group_estimand(rownames(x$groups))
-    for (e in unique(est)) {
-      cat("\n")
-      cat(paste0(.group_label(e), ":"), "\n\n")
-      blk <- x$groups[est == e, , drop = FALSE]
-      class(blk) <- class(x$groups)
-      print(blk, digits = digits)
-    }
+    cat("\n")
+    cat("Group Average Treatment Effect:", "\n\n")
+    print(x$groups, digits = digits)
     cat("\n")
   }
   cat("Note: DML estimates combined using the", x$combine.method, "method.")

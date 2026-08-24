@@ -34,7 +34,7 @@ setup_rf <- local({
   fit.grp <- dml(y, d, x, model = "npm", groups = g,
                  cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
-  # npm ATT with groups: stays conditional, but trains both arms for the groups
+  # npm ATT with groups: stays conditional, and needs only the untreated arm
   fit.attg <- dml(y, d, x, model = "npm", target = "att", groups = g,
                   cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
 
@@ -121,7 +121,9 @@ test_that("requesting groups keeps the conditional parameterization for the main
   gates <- sapply(fit$coefs$groups, function(z) z["median", "estimate"])
   expect_true(all(is.finite(gates)))
   expect_identical(names(coef(fit)), c("att", "g.att.single", "g.att.married"))
-  expect_false(all(is.na(fit$fits[[1]]$preds$yhat1)))   # second arm trained
+  # the group ATT needs only the untreated arm, so the treated arm is not fitted
+  expect_true(all(is.na(fit$fits[[1]]$preds$yhat1)))
+  expect_null(fit$info$yreg$yreg1)
 
   # the main slot must match a conditional fit, NOT the unconditional one: nu2.s
   # differs by roughly a factor of five between the two parameterizations
@@ -133,10 +135,12 @@ test_that("requesting groups keeps the conditional parameterization for the main
   expect_gt(abs(nu2(uncond) - nu2(fit)), 1)
 })
 
-test_that("dml_gate still refuses a conditional fit with only one arm predicted", {
-  # fit.att has no groups, so the treated arm was never trained: gates are
-  # impossible and must error rather than come back NA
-  expect_error(dml_gate(setup_rf$fit.att, groups = setup_rf$g), "both outcome arms")
+test_that("dml_gate reproduces the inline groups= estimates on a conditional fit", {
+  # the group ATT needs only the untreated arm, so a conditional fit made
+  # without groups can still be gated after the fact
+  gated <- dml_gate(setup_rf$fit.att, groups = setup_rf$g)
+  expect_identical(names(coef(gated)), c("att", "g.att.single", "g.att.married"))
+  expect_true(all(is.finite(coef(gated))))
 })
 
 # === both parameterizations stay available for reproduction ===

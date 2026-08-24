@@ -234,7 +234,7 @@ dml <- function(y, d, x,
     cat("", "Cross-Fitting:", out$info$cf.folds, "folds,", out$info$cf.reps, "reps", "\n")
     # conditional ATT uses yreg0 only; conditional ATU uses yreg1 only -- unless
     # groups are requested, which need both arms for the group estimand
-    drop.arm    <- conditional && is.null(groups)
+    drop.arm    <- conditional
     yreg0_label <- if (drop.arm && identical(target, "atu")) "(not used)" else attr(out$info$yreg$yreg0$method, "name")
     yreg1_label <- if (drop.arm && identical(target, "att")) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
     cat("", "ML Method:",
@@ -329,9 +329,8 @@ dml <- function(y, d, x,
       if (verbose) cat("- Tuning Model for Y (non-parametric).\n")
       # conditional ATT tunes yreg0 (controls) only; conditional ATU tunes
       # yreg1 (treated) only; otherwise both sides are tuned.
-      # groups need both arms, so only skip the unused arm when none are requested
-      cond.att <- conditional && identical(target, "att") && is.null(groups)
-      cond.atu <- conditional && identical(target, "atu") && is.null(groups)
+      cond.att <- conditional && identical(target, "att")
+      cond.atu <- conditional && identical(target, "atu")
 
       if (!cond.atu) {
         yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
@@ -361,11 +360,10 @@ dml <- function(y, d, x,
 
   # conditional fits never use the counterfactual arm's outcome model; drop its
   # spec on every path (not just under dirty.tuning) so it is never trained
-  # A conditional fit needs only one outcome arm, so drop the other arm's spec on
-  # every path (not just under dirty tuning) and skip training it entirely.
-  # Group effects are a separate estimand computed from both arms, so when groups
-  # are requested both arms are trained -- the main estimand stays conditional.
-  if (model == "npm" && conditional && is.null(groups)) {
+  # A conditional fit needs one outcome arm, so drop the other arm's spec on every
+  # path, not only under dirty tuning. The group rows report the same estimand
+  # within each group, so they do not need the dropped arm either.
+  if (model == "npm" && conditional) {
     if (is.list(yreg) &&
         isTRUE(all.equal(tolower(names(yreg)), c("yreg0", "yreg1")))) {
       yreg0.use <- yreg$yreg0
@@ -407,8 +405,7 @@ dml <- function(y, d, x,
                                     dreg         = dreg,
                                     verbose      = verbose,
                                     warnings     = warnings,
-                                    save.models  = save.models,
-                                    predict.all  = !is.null(groups))
+                                    save.models  = save.models)
 
     fits[[i]] <- cross.fit.i
 
@@ -521,20 +518,6 @@ dml <- function(y, d, x,
 ##' @export
 dml_gate <- function(dml.fit, groups,...){
   call2 <- match.call()
-  if (isTRUE(dml.fit$info$conditional)) {
-    stop("Group average effects require predictions from both outcome arms, ",
-         "but this model was fit with conditional = TRUE. ",
-         "Refit with conditional = FALSE before calling dml_gate().")
-  }
-  if (dml.fit$info$model == "npm") {
-    preds1 <- dml.fit$fits[[1]]$preds
-    if (anyNA(preds1$yhat0) || anyNA(preds1$yhat1)) {
-      stop("Group average effects require both outcome arms predicted for ",
-           "every observation, but this fit's predictions are incomplete ",
-           "(att/atu fits only predict where their own scores need it). ",
-           "Refit passing `groups` to dml() directly.")
-    }
-  }
   groups  <- as.factor(groups)
   model    <- dml.fit$info$model
   dml.fit$call$groups <- call2$groups

@@ -14,8 +14,7 @@ cross.fitting <- function(y, d, x,
                                       tuneGrid = data.frame(mtry = sqrt(ncol(x)), splitrule = "variance", min.node.size = 5)),
                           verbose = TRUE,
                           warnings = FALSE,
-                          save.models = FALSE,
-                          predict.all = FALSE
+                          save.models = FALSE
 ){
 
   model   <- match.arg(model)
@@ -174,14 +173,12 @@ cross.fitting <- function(y, d, x,
         out$model.d[[b]]  <- model.dx
       }
 
-      # predict.all forces both arms to be predicted for every unit (needed by
-      # group ATEs); otherwise att/atu only predict where their scores need it
-      if (all(target == "att") && !predict.all) {
+      if (all(target == "att")) {
         if (!is.null(model.y0x))
           yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
         if (!is.null(model.y1x))
           yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = FALSE])*sdy1 + muy1
-      } else if (all(target == "atu") && !predict.all) {
+      } else if (all(target == "atu")) {
         if (!is.null(model.y0x))
           yhat0[Id[[b]]][num(d[Id[[b]]]) == 0] <- safe.predict(model.y0x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 0], ,drop = FALSE])*sdy0 + muy0
         if (!is.null(model.y1x))
