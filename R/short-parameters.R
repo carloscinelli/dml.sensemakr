@@ -429,6 +429,15 @@ group.ate.npm <- function(dml, groups, trim = 0.02) {
   y       <- dml$data$y
   d       <- dml$data$d
   x       <- dml$data$x
+
+  # Group effects estimate the *requested* target within each group: asking for
+  # the ATT by group returns group ATTs, not group ATEs.
+  target      <- dml$info$target
+  conditional <- isTRUE(dml$info$conditional)
+  centered    <- isTRUE(dml$info$centered)
+  single      <- length(target) == 1L && target %in% c("ate", "att", "atu")
+  param       <- if (single) unname(.target_to_slot[target]) else "all"
+
   for(j in g){
     idx <- groups == j
     res <- list()
@@ -437,12 +446,32 @@ group.ate.npm <- function(dml, groups, trim = 0.02) {
       dhat   <- dml$fits[[i]]$preds$dhat
       yhat0  <- dml$fits[[i]]$preds$yhat0
       yhat1  <- dml$fits[[i]]$preds$yhat1
-      res[[i]] <- ate.npm(y = y[idx], d = d[idx],
-                          yhat1 = yhat1[idx],
-                          yhat0 = yhat0[idx],
-                          dhat  = dhat[idx],
-                          phat  = phat[idx],
-                          trim = trim)
+
+      # ATT/ATU weights are normalized by the treated (untreated) share; within a
+      # group that share is the group's own, not the sample-wide one. (The ATE
+      # weights are identically one, so this does not affect param = "all".)
+      phat.g <- rep(mean(num(d)[idx]), sum(idx))
+
+      res[[i]] <-
+        if (conditional && param == "treat") {
+          att.npm.cond(y = num(y)[idx], d = num(d)[idx],
+                       yhat0 = yhat0[idx], yhat1 = NULL,
+                       dhat  = dhat[idx],  phat  = phat.g,
+                       trim  = trim, centered = centered)
+        } else if (conditional && param == "untr") {
+          atu.npm.cond(y = num(y)[idx], d = num(d)[idx],
+                       yhat1 = yhat1[idx], yhat0 = NULL,
+                       dhat  = dhat[idx],  phat  = phat.g,
+                       trim  = trim, centered = centered)
+        } else {
+          ate.npm(y = y[idx], d = d[idx],
+                  parameter = param,
+                  yhat1 = yhat1[idx],
+                  yhat0 = yhat0[idx],
+                  dhat  = dhat[idx],
+                  phat  = if (param == "all") phat[idx] else phat.g,
+                  trim = trim)
+        }
 
       res[[i]]$trim.summary$trimmed_obs <-
         collect.trimmed.obs(y[idx], d[idx], x[idx, , drop = FALSE],

@@ -75,7 +75,7 @@ summary.dml <- function(object, combine.method = "median", ...){
   if (!no.groups) {
     groups <- lapply(object$coefs$groups, function(x) x[combine.method, ])
     groups <- do.call("rbind", groups)
-    rownames(groups) <- paste0("gate.", rownames(groups))
+    rownames(groups) <- paste0(.group_prefix(object$info$target), ".", rownames(groups))
     groups <- expand.cmat(groups)
     out$groups <- groups
   }
@@ -88,6 +88,25 @@ summary.dml <- function(object, combine.method = "median", ...){
 # Maps internal slot names to user-facing target labels and vice-versa.
 .slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
 .target_to_slot <- c(ate = "all", att = "treat", atu = "untr")
+
+# Row-name prefix for group effects: the group estimand follows the fit's target,
+# so an ATT fit reports group ATTs ("gatt."), not group ATEs.
+.group_prefix <- function(target) {
+  if (length(target) == 1L && !is.na(p <- c(ate = "gate", att = "gatt", atu = "gatu")[target])) {
+    unname(p)
+  } else {
+    "gate"
+  }
+}
+.group_prefixes <- c("gate.", "gatt.", "gatu.")
+
+# Printed heading for the group block, matching the estimand actually reported.
+.group_label <- function(target) {
+  lab <- c(ate = "Group Average Treatment Effect",
+           att = "Group Average Treatment Effect on the Treated",
+           atu = "Group Average Treatment Effect on the Untreated")
+  if (length(target) == 1L && !is.na(lab[target])) unname(lab[target]) else lab[["ate"]]
+}
 
 # Internal: return only the coefs$main slots that match the requested target(s);
 # fall back to whatever was actually computed so a fitted object always prints.
@@ -107,10 +126,11 @@ coef.dml <- function(object, combine.method = "median", ...){
   names(ate) <- .slot_to_target[names(ate)]
   if (!is.null(object$coefs$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "estimate"])
+    names(gate) <- paste0(.group_prefix(object$info$target), ".", names(gate))
   } else{
     gate = NULL
   }
-  c(ate, gate = gate)
+  c(ate, gate)
 }
 
 ##' @rdname summary.dml
@@ -126,12 +146,13 @@ se.dml <- function(object, combine.method = "median", ...){
   tc   <- .target_coefs(object)
   ate  <- sapply(tc, function(x) x[combine.method, "se"])
   names(ate) <- .slot_to_target[names(ate)]
-  if(!is.null(object$coefs$groups)){
+  if (!is.null(object$coefs$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "se"])
+    names(gate) <- paste0(.group_prefix(object$info$target), ".", names(gate))
   } else{
     gate = NULL
   }
-  c(ate, gate = gate)
+  c(ate, gate)
 }
 
 ##' @rdname summary.dml
@@ -202,7 +223,7 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
   no.groups <- is.null(x$groups)
   if (!no.groups) {
     cat("\n")
-    cat("Group Average Treatment Effect:", "\n\n")
+    cat(paste0(.group_label(x$info$target), ":"), "\n\n")
     print(x$groups, digits = digits)
     cat("\n")
   }

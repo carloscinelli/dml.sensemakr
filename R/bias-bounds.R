@@ -306,8 +306,8 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
       # estimate bound: theta.s +/- sqrt(rho2 * x/(1-x)) * S, so the XRV solves
       # f0^2 = rho2 * x/(1-x). Group ("gate.") rows live in results$groups.
       par.i <- rownames(conf)[i]
-      res.i <- if (startsWith(par.i, "gate.")) {
-        model$results$groups[[sub("^gate\\.", "", par.i)]]
+      res.i <- if (any(startsWith(par.i, .group_prefixes))) {
+        model$results$groups[[sub("^gat[etu]\\.", "", par.i)]]
       } else {
         model$results$main[[unname(.target_to_slot[par.i])]]
       }

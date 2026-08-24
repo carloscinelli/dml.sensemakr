@@ -90,7 +90,7 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   if (!is.null(groups)) {
     cat("\n")
     for (i in seq_along(groups)) {
-      cat("\nBounds on Group Average Treatment Effect:","Group", names(groups)[i], "\n\n")
+      cat(paste0("\nBounds on ", .group_label(x$info$target), ":"), "Group", names(groups)[i], "\n\n")
       print(groups[[i]], digits = digits)
     }
   }
@@ -111,7 +111,7 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
   if (!is.null(object$coefs$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     gate <- do.call("rbind", gate)
-    rownames(gate) <- paste0("gate.", rownames(gate))
+    rownames(gate) <- paste0(.group_prefix(object$dml.fit$info$target), ".", rownames(gate))
   } else{
     gate = NULL
   }
@@ -132,7 +132,7 @@ se.dml.bounds <- function(object, combine.method = "median", ...){
   if (!is.null(object$coefs$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "se"]))
     gate <- do.call("rbind", gate)
-    rownames(gate) <- paste0("gate.", rownames(gate))
+    rownames(gate) <- paste0(.group_prefix(object$dml.fit$info$target), ".", rownames(gate))
   } else{
     gate = NULL
   }
