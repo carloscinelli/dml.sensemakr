@@ -443,6 +443,18 @@ group.ate.npm <- function(dml, groups, trim = 0.02) {
     param <- unname(.target_to_slot[tg])
     for (j in lev) {
       idx <- groups == j
+
+      # The group ATT needs treated units in the group, and the group ATU needs
+      # untreated units. Without them the estimand does not exist: report NA and
+      # say why, instead of returning the 0/0 that the weights would produce.
+      p.g <- mean(num(d)[idx])
+      if ((param == "treat" && p.g <= 0) || (param == "untr" && p.g >= 1)) {
+        warning("Group '", j, "' has no ",
+                if (param == "treat") "treated" else "untreated",
+                " units, so its ", toupper(tg), " is not identified. ",
+                "Returning NA for this group.", call. = FALSE)
+      }
+
       res <- list()
       for (i in 1:cf.reps) {
         phat   <- dml$fits[[i]]$preds$phat

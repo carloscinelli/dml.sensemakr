@@ -345,9 +345,9 @@ ovb_contour_plot.dml <- function(model,
 
   # when no parameter is given, default to the fit's own (single) target, so
   # e.g. conditional att/atu fits -- which carry no "ate" slot -- plot directly
-  if (missing(parameter) && length(model$info$target) == 1L &&
-      model$info$target %in% c("ate", "att", "atu")) {
-    parameter <- model$info$target
+  if (missing(parameter) && length(model$info$target) >= 1L &&
+      model$info$target[1] %in% c("ate", "att", "atu")) {
+    parameter <- model$info$target[1]
   }
   parameter <- match.arg(parameter)
   target_label <- parameter                        # user-facing label ("ate"/"att"/"atu")

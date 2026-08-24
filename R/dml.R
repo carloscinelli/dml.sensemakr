@@ -188,9 +188,11 @@ dml <- function(y, d, x,
   out <- list()
   out$data <- list(y = y, d = d, x = x)
   out$call <-   match.call()
-  # environment of the original call, so functions that re-evaluate the call
-  # (e.g. dml_benchmark) can resolve the user's variables
-  out$call.env <- parent.frame()
+  # Snapshot the variables the stored call names, so functions that re-evaluate
+  # it (e.g. dml_benchmark) resolve the user's objects. Copy the named variables
+  # rather than the caller's frame, which would keep every local alive and would
+  # be serialized with the fit.
+  out$call.env <- snapshot.call.env(out$call, parent.frame())
 
   if (y.class) {
     y <- factor(y, levels = c(0,1), labels = c("zero", "one"))
@@ -436,8 +438,11 @@ dml <- function(y, d, x,
   }
 
   out$fits <- fits
-  out$results$main$all <- results
-  out$coefs$main$all   <- combine.cross.fits(results)
+  # a conditional npm fit replaces main below, so skip the score it would discard
+  if (!(model == "npm" && conditional)) {
+    out$results$main$all <- results
+    out$coefs$main$all   <- combine.cross.fits(results)
+  }
 
   if (model == "npm") {
     if (conditional) {
@@ -576,6 +581,17 @@ combine.cross.fits <- function(results, param = "theta.s"){
   out <- rbind(mean =   combine.mean(thetas, ses),
                median = combine.median(thetas, ses))
   out
+}
+
+# Copies the variables a stored call names, so a fit can be re-evaluated later
+# without holding a reference to the caller's frame (which would keep every
+# local alive and would be serialized with the fit).
+snapshot.call.env <- function(call, env) {
+  vars  <- all.vars(call)
+  found <- mget(vars, envir = env, inherits = TRUE,
+                ifnotfound = vector("list", length(vars)))
+  found <- found[!vapply(found, is.null, logical(1))]
+  list2env(found, parent = globalenv())
 }
 
 # records the observations dropped by propensity-score trimming

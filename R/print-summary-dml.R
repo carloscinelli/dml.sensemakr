@@ -93,16 +93,7 @@ summary.dml <- function(object, combine.method = "median", ...){
 # them: grepl("^g\\.", names(coef(fit))).
 .group_marker <- "g."
 
-# Heading for a group block, one block per estimand.
-.group_label <- function(estimand) {
-  lab <- c(ate = "Group Average Treatment Effect",
-           att = "Group Average Treatment Effect on the Treated",
-           atu = "Group Average Treatment Effect on the Untreated")
-  if (length(estimand) == 1L && !is.na(lab[estimand])) unname(lab[estimand]) else lab[["ate"]]
-}
 
-# Estimand token of a group row name: "g.att.single" -> "att"
-.group_estimand <- function(nm) sub("^g\\.([^.]+)\\..*$", "\\1", nm)
 
 
 # Internal: return only the coefs$main slots that match the requested target(s);

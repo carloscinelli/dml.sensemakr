@@ -286,3 +286,42 @@ test_that("group rows carry the estimand and the level in their names", {
   out <- paste(capture.output(print(summary(fit))), collapse = "\n")
   expect_match(out, "Group Average Treatment Effect")
 })
+
+# === review round 4: findings introduced by the earlier fixes ===
+test_that("a group that cannot identify the target returns NA with a warning", {
+  # a group with no treated units has no ATT; report it rather than return 0/0
+  g.deg <- factor(ifelse(setup_rf$d == 1, "hasT", "noT"))
+  expect_warning(
+    fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
+               groups = g.deg, cf.folds = 2, cf.reps = 1, cf.seed = 123,
+               verbose = FALSE),
+    "no treated units"
+  )
+  expect_true(is.na(coef(fit)[["g.att.noT"]]))
+  expect_true(is.finite(coef(fit)[["g.att.hasT"]]))
+})
+
+test_that("call.env stores the call's variables, not the caller's frame", {
+  f <- function() {
+    big <- numeric(2e5)                  # a local the call does not name
+    dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "plm",
+        cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
+  }
+  fit <- f()
+  expect_false("big" %in% ls(fit$call.env))
+  expect_identical(parent.env(fit$call.env), globalenv())
+})
+
+test_that("the default contour parameter follows a multi-target fit", {
+  fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm",
+             target = c("att", "atu"), cf.folds = 2, cf.reps = 1,
+             cf.seed = 123, verbose = FALSE)
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  expect_no_error(ovb_contour_plot(fit))
+})
+
+test_that("a conditional fit does not build the estimand it discards", {
+  expect_named(setup_rf$fit.att$results$main, "treat")
+  expect_named(setup_rf$fit.att$coefs$main, "treat")
+})
