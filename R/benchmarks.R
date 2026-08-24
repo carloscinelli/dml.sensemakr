@@ -50,7 +50,18 @@ print.dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L),
 summary.dml_benchmark <- function(object, combine.method = c("median", "mean"),
                                   na.rm = TRUE, ...){
   combine.method <- match.arg(combine.method)
-  combine <- if (combine.method == "mean") combine.mean else combine.median
+  combine.base <- if (combine.method == "mean") combine.mean else combine.median
+  # with na.rm = TRUE, drop repetitions with NA estimates or SEs (e.g. a failed
+  # refit) before combining, instead of letting one NA poison the summary
+  combine <- function(est, se) {
+    if (na.rm) {
+      keep <- is.finite(est) & is.finite(se)
+      est <- est[keep]
+      se  <- se[keep]
+    }
+    if (!length(est)) return(c(estimate = NA_real_, se = NA_real_))
+    combine.base(est, se)
+  }
   covars  <- names(object$benchmarks)
 
   rows <- lapply(covars, function(v) {
@@ -102,8 +113,9 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   \code{\link{dml_benchmark}}, re-used \emph{without} refitting) or the
 ##'   \code{benchmark_covariates} to pass to \code{\link{dml_benchmark}}.
 ##' @param kY,kD relative-strength multipliers \eqn{k_{Y,j}}, \eqn{k_{D,j}} of the
-##'   latent-vs-observed gains. Default \code{1} (a latent confounder as strong as
-##'   the observed covariate).
+##'   latent-vs-observed gains. Either a single number or a vector with one entry
+##'   per benchmark covariate (in the order of \code{benchmark}). Default \code{1}
+##'   (a latent confounder as strong as the observed covariate).
 ##' @param rho2 optional fixed squared alignment \eqn{\rho^2} to use in place of
 ##'   the benchmarked \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate
 ##'   \eqn{j}'s estimated (signed) alignment and, in the propagated CI, its
@@ -159,7 +171,18 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
 
   diverged <- character(0)
   covs <- names(bench$benchmarks)
-  rows <- lapply(covs, function(v) {
+  if (!is.numeric(kY) || !(length(kY) %in% c(1L, length(covs))) || anyNA(kY) || any(kY < 0))
+    stop("`kY` must be a single non-negative number, or one per benchmark covariate (",
+         length(covs), " here).")
+  if (!is.numeric(kD) || !(length(kD) %in% c(1L, length(covs))) || anyNA(kD) || any(kD < 0))
+    stop("`kD` must be a single non-negative number, or one per benchmark covariate (",
+         length(covs), " here).")
+  kY.j <- rep_len(kY, length(covs))
+  kD.j <- rep_len(kD, length(covs))
+  rows <- lapply(seq_along(covs), function(j) {
+    v    <- covs[j]
+    kY   <- kY.j[j]
+    kD   <- kD.j[j]
     est  <- bench$benchmarks[[v]]
     psis <- bench$benchmarks_psis[[v]]
 
@@ -174,7 +197,8 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
                         lwr = NA_real_, upr = NA_real_,
                         se.minus = NA_real_, se.plus = NA_real_, row.names = v))
     }
-    gain.zero <- !is.finite(GY) || !is.finite(GD) || GY <= 0 || GD <= 0
+    gain.zero <- !is.finite(GY) || !is.finite(GD) || GY <= 0 || GD <= 0 ||
+                 kGY <= 0 || kGD <= 0
     if (gain.zero) { CY <- CD <- BF <- 0 } else {
       CY <- sqrt(kGY); CD <- sqrt(kGD / (1 - kGD)); BF <- abs(rho.use) * CY * CD
     }
@@ -234,7 +258,8 @@ print.dml_benchmark_bounds <- function(x, digits = 4, ...) {
   fmt <- function(v) formatC(v, digits = digits, format = "f")
   rho.txt <- if (is.null(attr(x, "rho2"))) "rho2 = benchmarked" else
              paste0("rho2 = ", attr(x, "rho2"), " (fixed)")
-  cat("Covariate benchmark bounds  (kY = ", attr(x, "kY"), ", kD = ", attr(x, "kD"),
+  cat("Covariate benchmark bounds  (kY = ", paste(attr(x, "kY"), collapse = ", "),
+      ", kD = ", paste(attr(x, "kD"), collapse = ", "),
       ", ", rho.txt, ";  ", format(100 * attr(x, "level")), "% one-sided)\n", sep = "")
   cat("theta.s = ", fmt(attr(x, "theta.s")), ",  S = ", fmt(attr(x, "S")),
       "\n\n", sep = "")
@@ -371,10 +396,16 @@ bench_fun <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
     index.o <- which(colnames(x) %in% cols)   # drop all columns in the group
     xo <- x[, -index.o, drop = FALSE]
     model.call <- model$call
-    model.call["x"] <- call("xo")
+    model.call[["x"]] <- quote(xo)
     if (!is.null(dreg)) model.call[["dreg"]] <- dreg   # pin refit treatment learner
     if (!is.null(yreg)) model.call[["yreg"]] <- yreg   # pin refit outcome learner
-    model.wo <- eval(model.call)
+    # evaluate the stored call where the user originally made it (with the
+    # reduced covariate matrix spliced in), so their variables -- including any
+    # named `x`, `yreg`, or `dreg` -- resolve to their objects, not our locals
+    eval.env <- new.env(parent = if (is.environment(model$call.env))
+                                   model$call.env else globalenv())
+    eval.env$xo <- xo
+    model.wo <- eval(model.call, eval.env)
 
     nu.sq.wo <- extract_estimate(model.wo$results$main[[slot]], param = "nu2.s")
     sigma.sq.wo <- extract_estimate(model.wo$results$main[[slot]], param = "sigma2.s")

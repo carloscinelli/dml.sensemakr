@@ -25,8 +25,9 @@ benchmark_bounds(
 \code{benchmark_covariates} to pass to \code{\link{dml_benchmark}}.}
 
 \item{kY, kD}{relative-strength multipliers \eqn{k_{Y,j}}, \eqn{k_{D,j}} of the
-latent-vs-observed gains. Default \code{1} (a latent confounder as strong as
-the observed covariate).}
+latent-vs-observed gains. Either a single number or a vector with one entry
+per benchmark covariate (in the order of \code{benchmark}). Default \code{1}
+(a latent confounder as strong as the observed covariate).}
 
 \item{rho2}{optional fixed squared alignment \eqn{\rho^2} to use in place of
 the benchmarked \eqn{\hat\rho_j}. \code{NULL} (default) uses covariate
