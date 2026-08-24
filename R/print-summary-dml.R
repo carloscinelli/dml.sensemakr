@@ -89,10 +89,12 @@ summary.dml <- function(object, combine.method = "median", ...){
 .slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
 .target_to_slot <- c(ate = "all", att = "treat", atu = "untr")
 
-# Internal: return only the coefs$main slots that match the requested target(s).
+# Internal: return only the coefs$main slots that match the requested target(s);
+# fall back to whatever was actually computed so a fitted object always prints.
 .target_coefs <- function(object) {
   keep <- unname(.target_to_slot[object$info$target])
   keep <- keep[keep %in% names(object$coefs$main)]
+  if (!length(keep)) keep <- names(object$coefs$main)
   object$coefs$main[keep]
 }
 

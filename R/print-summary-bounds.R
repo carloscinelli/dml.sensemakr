@@ -100,11 +100,10 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
 #' @rdname print.dml.bounds
 #' @export
 coef.dml.bounds <- function(object, combine.method = "median", ...){
-  slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
   if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     ate <- do.call("rbind", ate)
-    rownames(ate) <- slot_to_target[rownames(ate)]
+    rownames(ate) <- .slot_to_target[rownames(ate)]
   } else{
     ate = NULL
   }
@@ -123,11 +122,10 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
 #' @rdname print.dml.bounds
 #' @export
 se.dml.bounds <- function(object, combine.method = "median", ...){
-  slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
   if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "se"]))
     ate <- do.call("rbind", ate)
-    rownames(ate) <- slot_to_target[rownames(ate)]
+    rownames(ate) <- .slot_to_target[rownames(ate)]
   } else{
     ate = NULL
   }
