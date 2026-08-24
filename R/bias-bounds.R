@@ -234,10 +234,6 @@ xrv_fun <- function(dml.fit, xrv, par, side = "lwr", theta = 0, alpha = 0.05, rh
   (confidence_bounds(dml.fit, rho2 = rho2, cf.y = 1,cf.d = xrv, level = 1 - alpha)[par,side] - theta)^2
 }
 
-xrv_fun_2D <- function(dml.fit, yrv, xrv, par, side = "lwr", theta = 0, alpha = 1){
-  (confidence_bounds(dml.fit,  cf.y = yrv,cf.d = xrv, level = 1 - alpha)[par,side] - theta)^2
-}
-
 
 ##' Computes Robustness Values for Debiased Machine Learning
 ##'
@@ -302,14 +298,30 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
   for (i in 1:nrow(conf)) {
     if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
+      next
     }
     side <- ifelse(theta < conf[i,1], "lwr", "upr")
     # print(side)
     if (alpha == 1) {
-      slot.i <- unname(.target_to_slot[rownames(conf)[i]])
-      S2.i   <- stats::median(extract_estimate(model$results$main[[slot.i]], "S2"))
-      f0     <- unname(abs(theta - coef(model)[rownames(conf)[i]]) / sqrt(S2.i))
-      out[i] <- f0^2 / (1 + f0^2)
+      # estimate bound: theta.s +/- sqrt(rho2 * x/(1-x)) * S, so the XRV solves
+      # f0^2 = rho2 * x/(1-x). Group ("gate.") rows live in results$groups.
+      par.i <- rownames(conf)[i]
+      res.i <- if (startsWith(par.i, "gate.")) {
+        model$results$groups[[sub("^gate\\.", "", par.i)]]
+      } else {
+        model$results$main[[unname(.target_to_slot[par.i])]]
+      }
+      S2.i   <- stats::median(extract_estimate(res.i, "S2"))
+      if (!is.finite(S2.i) || S2.i <= 0) {
+        # small subsamples can estimate the (theoretically positive) S2
+        # negative; be explicit instead of returning NaN
+        warning("The S2 estimate for '", par.i, "' is not positive; ",
+                "returning NA for its extreme robustness value.")
+        out[i] <- NA_real_
+        next
+      }
+      f0     <- unname(abs(theta - coef(model)[par.i]) / sqrt(S2.i))
+      out[i] <- (f0^2 / rho2) / (1 + f0^2 / rho2)
     } else {
       fn <- function(xrv) xrv_fun(xrv, dml.fit = model, par = names(out)[i],
                                   side = side, theta = theta, alpha = alpha,
