@@ -197,9 +197,14 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
       unmeasured <<- c(unmeasured, v)
       return(na.row)
     }
-    if (is.finite(kGD) && kGD >= 1) {                     # bound diverges
+    if (is.finite(kGD) && kGD >= 1) {
+      # the bound genuinely diverges: the interval is the whole real line.
+      # Report that as -Inf/Inf, distinct from the NA of an unmeasured gain.
       diverged <<- c(diverged, v)
-      return(na.row)
+      return(data.frame(BF = Inf, theta.minus = -Inf, theta.plus = Inf,
+                        lwr.fixed = -Inf, upr.fixed = Inf,
+                        lwr = -Inf, upr = Inf,
+                        se.minus = NA_real_, se.plus = NA_real_, row.names = v))
     }
     gain.zero <- GY <= 0 || GD <= 0 || kGY <= 0 || kGD <= 0
     if (gain.zero) { CY <- CD <- BF <- 0 } else {
@@ -248,7 +253,7 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
   if (length(diverged))
     warning("k_D * gain.D >= 1 for: ", paste(diverged, collapse = ", "),
             " -- the implied confounder explains ~all treatment-odds variation, ",
-            "so the bound diverges (NA returned). Lower kD to obtain a finite bound.")
+            "so the bound diverges (-Inf/Inf returned). Lower kD for a finite bound.")
 
   out <- do.call(rbind, rows)
   attr(out, "kY") <- kY; attr(out, "kD") <- kD; attr(out, "rho2") <- rho2

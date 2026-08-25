@@ -48,11 +48,15 @@ test_that("benchmark_bounds accepts a dml_benchmark object", {
 })
 
 # === divergence when kD * gain.D >= 1 ===
-test_that("benchmark_bounds returns NA with a warning when kD * gain.D >= 1", {
+test_that("benchmark_bounds returns -Inf/Inf with a warning when kD * gain.D >= 1", {
   expect_warning(bb <- benchmark_bounds(bb_fit, benchmark = "inc", kD = 100),
                  "diverges")
-  expect_true(is.na(bb["inc", "lwr"]))
-  expect_true(is.na(bb["inc", "upr"]))
+  expect_equal(bb["inc", "lwr"], -Inf)
+  expect_equal(bb["inc", "upr"], Inf)
+  expect_equal(bb["inc", "theta.minus"], -Inf)
+  expect_equal(bb["inc", "theta.plus"], Inf)
+  expect_equal(bb["inc", "BF"], Inf)
+  expect_true(is.na(bb["inc", "se.minus"]))
 })
 
 # === input validation ===
