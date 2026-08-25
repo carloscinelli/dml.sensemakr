@@ -39,13 +39,17 @@ cross.fitting <- function(y, d, x,
   # predictions
   dhat <- yhat <- yhat1 <-  yhat0 <- phat <- rep(NA, nobs)
 
+  # d is a factor when d.class = TRUE, and mean() of a factor is NA. Use the
+  # numeric treatment for the propensity score.
+  d.num <- num(d)
+
   if (verbose) cat(" -- Folds: ")
 
   for (b in 1:length(Id)) {
 
     if (verbose) cat(b," ")
 
-    phat[Id[[b]]] <- mean(d[ -Id[[b]] ])
+    phat[Id[[b]]] <- mean(d.num[ -Id[[b]] ])
 
     if (model == "plm") {
       # d model

@@ -358,3 +358,26 @@ test_that("combine.mean matches the CCDDHNR mean rule", {
   expect_equal(unname(ca(th, se)["se"]),
                sqrt(mean(se^2 + (th - mean(th))^2)))
 })
+
+# ---------------------------------------------------------------------------
+# d.class = TRUE turns the treatment into a factor. cross.fitting() took its
+# mean for the propensity score, and mean() of a factor is NA, so every ATT and
+# ATU came back NA with only a mean.default warning to show for it.
+# ---------------------------------------------------------------------------
+test_that("d.class = TRUE gives a usable propensity score and finite ATT/ATU", {
+  skip_if_not_installed("glmnet")
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
+
+  expect_silent(
+    fit <- dml(y, d, x, model = "npm", d.class = TRUE,
+               target = c("ate", "att", "atu"), cf.folds = 2, cf.reps = 1,
+               cf.seed = 1, verbose = FALSE, yreg = "glmnet", dreg = "glmnet")
+  )
+  phat <- fit$fits[[1]]$preds$phat
+  expect_false(anyNA(phat))
+  expect_true(all(phat > 0 & phat < 1))
+  expect_true(all(is.finite(coef(fit))))
+})
