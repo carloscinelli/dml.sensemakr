@@ -517,3 +517,25 @@ test_that("combine.mean drops incomplete pairs, matching combine.median", {
   expect_equal(unname(ca(th, se2)["se"]),
                sqrt(mean(se2^2) + sum((th - mean(th))^2) / 4))
 })
+
+# ---------------------------------------------------------------------------
+# benchmark_bounds(): a level below one half made qnorm(level) negative and
+# put the lower confidence bound above the upper. Clamp at 0.5, the same
+# convention confidence_bounds() uses.
+# ---------------------------------------------------------------------------
+test_that("benchmark_bounds clamps level at 0.5 like confidence_bounds", {
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
+  fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 2, cf.seed = 7,
+             verbose = FALSE)
+  b <- suppressMessages(dml_benchmark(fit, "inc"))
+
+  lo  <- as.data.frame(benchmark_bounds(fit, b, level = 0.05))
+  mid <- as.data.frame(benchmark_bounds(fit, b, level = 0.5))
+  expect_true(lo$lwr.fixed <= lo$upr.fixed)
+  expect_true(lo$lwr <= lo$upr)
+  expect_equal(lo$lwr.fixed, mid$lwr.fixed)
+  expect_equal(attr(benchmark_bounds(fit, b, level = 0.05), "level"), 0.5)
+})

@@ -165,6 +165,7 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
     if (combine.method == "mean") combine.mean(est, se, na.rm = na.rm)
     else combine.median(est, se, na.rm = na.rm)
   }
+  level[level < 0.5] <- 0.5              # one-sided; same clamp as confidence_bounds()
   z       <- stats::qnorm(level)
 
   diverged <- character(0)
