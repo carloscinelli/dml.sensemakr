@@ -24,6 +24,7 @@ test_that("sensemakr builds the postulated and benchmark tables", {
   expect_s3_class(b, "dml_ovb_bounds")
   expect_equal(nrow(b), 1L)
   expect_equal(b$rho2, 1)
+  expect_equal(b$bound.label, "Confounding Scenario")
   expect_equal(b$cf.y, 0.03)
   cb <- confidence_bounds(fit1, cf.y = 0.03, cf.d = 0.03, rho2 = 1)
   expect_equal(b$lwr, unname(cb["ate", "lwr"]))

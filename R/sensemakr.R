@@ -91,6 +91,7 @@ sensemakr.dml <- function(model,
     cf <- coef(pt)
     tg <- rownames(conf.bounds)
     rows <- data.frame(target = tg,
+                       bound.label = bound_label,
                        cf.y = cf.y, cf.d = cf.d, rho2 = rho2,
                        theta.minus = unname(cf["theta.m", tg]),
                        theta.plus  = unname(cf["theta.p", tg]),
