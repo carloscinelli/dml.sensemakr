@@ -423,3 +423,85 @@ test_that("benchmark_bounds separates a missing gain from a zero gain", {
   expect_silent(zero <- benchmark_bounds(fit, b3))
   expect_equal(zero$BF, 0)
 })
+
+# ---------------------------------------------------------------------------
+# The partially linear outcome model must use the learner the user asked for.
+# dml() hands cross.fitting() a yreg0/yreg1 pair. The plm branch passed that
+# pair straight to caret::train(), which found no `method`, took yreg0 and
+# yreg1 into its `...`, and silently fitted its own default random forest.
+# Only dirty.tuning = FALSE was affected, because dirty tuning overwrites yreg
+# with a flat tuned spec before cross.fitting() ever sees it.
+# ---------------------------------------------------------------------------
+learner_used <- function(fit, arm = "y") {
+  m <- switch(arm, y = fit$fits[[1]]$model.y[[1]], y0 = fit$fits[[1]]$model.y0[[1]])
+  lib <- m$modelInfo$library
+  if (is.null(lib)) lib <- m$method
+  lib
+}
+
+test_that("plm fits the requested outcome learner under both tuning settings", {
+  skip_if_not_installed("glmnet")
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 300)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ, data = pension[i, ])
+
+  fit_plm <- function(yreg, dirty)
+    suppressWarnings(dml(y, d, x, model = "plm", yreg = yreg, dreg = "glmnet",
+                         dirty.tuning = dirty, cf.folds = 2, cf.reps = 1,
+                         cf.seed = 1, verbose = FALSE, save.models = TRUE))
+
+  specs <- list(
+    'character'   = "glmnet",
+    'caret list'  = list(method = "glmnet"),
+    'equal arms'  = list(yreg0 = "glmnet", yreg1 = "glmnet"),
+    'differing'   = list(yreg0 = "glmnet", yreg1 = "ranger")
+  )
+  for (nm in names(specs)) {
+    for (dirty in c(TRUE, FALSE)) {
+      used <- learner_used(fit_plm(specs[[nm]], dirty))
+      expect_true("glmnet" %in% used,
+                  info = paste0(nm, ", dirty.tuning = ", dirty,
+                                ": fitted ", paste(used, collapse = "/")))
+      expect_false("randomForest" %in% used,
+                   info = paste0(nm, ", dirty.tuning = ", dirty,
+                                 ": fell back to caret's default"))
+    }
+  }
+})
+
+test_that("plm still warns when the two outcome arms differ", {
+  skip_if_not_installed("glmnet")
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 300)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ, data = pension[i, ])
+
+  expect_warning(
+    dml(y, d, x, model = "plm", yreg = list(yreg0 = "glmnet", yreg1 = "ranger"),
+        dreg = "glmnet", dirty.tuning = FALSE, cf.folds = 2, cf.reps = 1,
+        cf.seed = 1, verbose = FALSE),
+    "Only one method should be specified for yreg"
+  )
+  # and no warning when they agree
+  expect_silent(
+    dml(y, d, x, model = "plm", yreg = "glmnet", dreg = "glmnet",
+        dirty.tuning = FALSE, cf.folds = 2, cf.reps = 1, cf.seed = 1,
+        verbose = FALSE)
+  )
+})
+
+test_that("npm fits the requested outcome learner under both tuning settings", {
+  skip_if_not_installed("glmnet")
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 300)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ, data = pension[i, ])
+  for (dirty in c(TRUE, FALSE)) {
+    f <- suppressWarnings(dml(y, d, x, model = "npm", yreg = "glmnet", dreg = "glmnet",
+                              dirty.tuning = dirty, cf.folds = 2, cf.reps = 1,
+                              cf.seed = 1, verbose = FALSE, save.models = TRUE))
+    expect_true("glmnet" %in% learner_used(f, arm = "y0"),
+                info = paste("npm, dirty.tuning =", dirty))
+  }
+})

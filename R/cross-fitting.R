@@ -85,11 +85,13 @@ cross.fitting <- function(y, d, x,
       }
 
       if (!isTRUE(all.equal(yreg0, yreg1))) {
-        yreg <- yreg0
-        warning("Only one method should be specified for yreg when using 'plm'; setting 'yreg' to 'yreg0'.")
+        warning("Only one method should be specified for yreg when using 'plm'; using 'yreg0'.")
       }
 
-      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE], y = ytil ), yreg)
+      # Use yreg0, the unpacked spec, exactly as the treatment side uses dreg.
+      # yreg itself may still hold the yreg0/yreg1 pair, which train() cannot
+      # read: it would take both as ... and fall back to its default method.
+      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE], y = ytil ), yreg0)
       model.yx <- silent.do.call(what = "train", args = args.yx, warnings = warnings)
       metric.y <- model.yx$metric
 
