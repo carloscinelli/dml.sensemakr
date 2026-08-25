@@ -252,8 +252,9 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
             call. = FALSE)
   if (length(diverged))
     warning("k_D * gain.D >= 1 for: ", paste(diverged, collapse = ", "),
-            " -- the implied confounder explains ~all treatment-odds variation, ",
-            "so the bound diverges (-Inf/Inf returned). Lower kD for a finite bound.")
+            " -- the implied cf.d reaches 1, so latent variables would account ",
+            "for all the variation in the Riesz representer and the bound ",
+            "diverges (-Inf/Inf returned). Lower kD for a finite bound.")
 
   out <- do.call(rbind, rows)
   attr(out, "kY") <- kY; attr(out, "kD") <- kD; attr(out, "rho2") <- rho2
