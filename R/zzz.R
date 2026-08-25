@@ -1,5 +1,5 @@
 #' @importFrom graphics contour par points text
-#' @importFrom stats coef confint median optim pnorm predict printCoefmat qnorm setNames var weighted.mean
+#' @importFrom stats coef confint median optim pnorm predict printCoefmat qnorm setNames var
 #' @importFrom utils capture.output
 NULL
 

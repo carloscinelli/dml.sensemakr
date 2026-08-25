@@ -17,8 +17,7 @@ att.npm.cond <- function(y, d,
                          yhat1 = NULL,
                          dhat, phat,
                          trim   = 0.02,
-                         centered = FALSE,
-                         nu2.weight = NULL) {
+                         centered = FALSE) {
 
   trim.summary <- trim.ps(dhat, trim = trim)
   dhat.t       <- trim.summary$ps
@@ -55,15 +54,13 @@ att.npm.cond <- function(y, d,
   }
 
   # nu2.0s  =  conditional imbalance (propensity-score based)
-  if (is.null(nu2.weight)) nu2.weight <- rep(1, length(d))
 
   if (centered) {
-    nu2.0s <- weighted.mean(
+    nu2.0s <- mean(
       (d * (phat - dhat.t) * (phat + dhat.t - 2) +
          (phat^2) * (1 - 2 * dhat.t) -
          (dhat.t^2) * (1 - 2 * phat)) /
-        ((phat^2) * (1 - phat) * (1 - dhat.t)^2),
-      w = nu2.weight) / weighted.mean(2 * l - lc, w = nu2.weight)
+        ((phat^2) * (1 - phat) * (1 - dhat.t)^2)) / mean(2 * l - lc)
 
     psi.nu2.0s <- (
       (d * (phat - dhat.t) * (phat + dhat.t - 2) +
@@ -71,14 +68,14 @@ att.npm.cond <- function(y, d,
          (dhat.t^2) * (1 - 2 * phat)) /
         ((phat^2) * (1 - phat) * (1 - dhat.t)^2) -
         (2 * l - lc) * nu2.0s
-    ) / weighted.mean(2 * l - lc, w = nu2.weight)
+    ) / mean(2 * l - lc)
   } else {
     OX <- dhat.t / (1 - dhat.t)
     O  <- phat   / (1 - phat)
-    nu2.0s     <- weighted.mean(2 * l * (OX / O) - lc * (OX / O)^2, w = nu2.weight) /
-                  weighted.mean(2 * l - lc, w = nu2.weight)
+    nu2.0s     <- mean(2 * l * (OX / O) - lc * (OX / O)^2) /
+                  mean(2 * l - lc)
     psi.nu2.0s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.0s) /
-                  weighted.mean(2 * l - lc, w = nu2.weight)
+                  mean(2 * l - lc)
   }
 
   # S02 = sigma2.0s * nu2.0s
@@ -105,7 +102,7 @@ att.npm.cond <- function(y, d,
       sigma2.s     = sigma2.0s,
       se.sigma2.s  = psi.sd(psi.sigma2.0s),
       nu2.s        = nu2.0s,
-      se.nu2.s     = psi.sd(psi.nu2.0s, w = nu2.weight),
+      se.nu2.s     = psi.sd(psi.nu2.0s),
       S2           = S02,
       se.S2        = psi.sd(psi.S02),
       cov.theta.S2 = mean(psi.theta.s * psi.S02) / length(psi.S02)
@@ -125,8 +122,7 @@ atu.npm.cond <- function(y, d,
                          yhat0 = NULL,
                          dhat, phat,
                          trim   = 0.02,
-                         centered = FALSE,
-                         nu2.weight = NULL) {
+                         centered = FALSE) {
 
   trim.summary <- trim.ps(dhat, trim = trim)
   dhat.t       <- trim.summary$ps
@@ -164,7 +160,6 @@ atu.npm.cond <- function(y, d,
   }
 
   # nu2.1s  =  conditional imbalance (propensity-score based)
-  if (is.null(nu2.weight)) nu2.weight <- rep(1, length(d))
 
   if (centered) {
     # ATT centered imbalance with p -> 1-p, pi -> 1-pi, D -> 1-D
@@ -176,17 +171,17 @@ atu.npm.cond <- function(y, d,
                  (ba^2) * (1 - 2 * pa)) /
               ((pa^2) * (1 - pa) * (1 - ba)^2)
 
-    nu2.1s     <- weighted.mean(num.nu, w = nu2.weight) /
-                  weighted.mean(2 * l - lc, w = nu2.weight)
+    nu2.1s     <- mean(num.nu) /
+                  mean(2 * l - lc)
     psi.nu2.1s <- (num.nu - (2 * l - lc) * nu2.1s) /
-                  weighted.mean(2 * l - lc, w = nu2.weight)
+                  mean(2 * l - lc)
   } else {
     OX <- (1 - dhat.t) / dhat.t   # (1 - pi)/pi  = 1 / O_X
     O  <- (1 - phat)   / phat     # (1 - p)/p    = 1 / O
-    nu2.1s     <- weighted.mean(2 * l * (OX / O) - lc * (OX / O)^2, w = nu2.weight) /
-                  weighted.mean(2 * l - lc, w = nu2.weight)
+    nu2.1s     <- mean(2 * l * (OX / O) - lc * (OX / O)^2) /
+                  mean(2 * l - lc)
     psi.nu2.1s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.1s) /
-                  weighted.mean(2 * l - lc, w = nu2.weight)
+                  mean(2 * l - lc)
   }
 
   # S12 = sigma2.1s * nu2.1s
@@ -213,7 +208,7 @@ atu.npm.cond <- function(y, d,
       sigma2.s     = sigma2.1s,
       se.sigma2.s  = psi.sd(psi.sigma2.1s),
       nu2.s        = nu2.1s,
-      se.nu2.s     = psi.sd(psi.nu2.1s, w = nu2.weight),
+      se.nu2.s     = psi.sd(psi.nu2.1s),
       S2           = S12,
       se.S2        = psi.sd(psi.S12),
       cov.theta.S2 = mean(psi.theta.s * psi.S12) / length(psi.S12)
