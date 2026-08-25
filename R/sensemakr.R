@@ -124,7 +124,11 @@ sensemakr.dml <- function(model,
           cf.y        = unname(kY.v[i] * gains[, "gain.Y"]),
           cf.d        = unname(kD.v[i] * gains[, "gain.D"]),
           rho         = unname(gains[, "rho"]),
-          bound.label = paste0(kD.v[i], "x ", rownames(gains)),
+          bound.label = if (kY.v[i] == kD.v[i]) {
+            paste0(kD.v[i], "x ", rownames(gains))
+          } else {
+            paste0(kY.v[i], "xY/", kD.v[i], "xD ", rownames(gains))
+          },
           theta.minus = bb$theta.minus, theta.plus = bb$theta.plus,
           lwr = bb$lwr.fixed, upr = bb$upr.fixed, row.names = NULL))
       }

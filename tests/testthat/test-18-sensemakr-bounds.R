@@ -44,6 +44,15 @@ test_that("sensemakr builds one bounds table with manual and benchmark rows", {
   expect_false(any(grepl("Confidence Bounds for Sensitivity Scenario", out)))
 })
 
+test_that("asymmetric multipliers get an unambiguous label", {
+  s <- suppressWarnings(suppressMessages(
+    sensemakr(fit1, benchmark_covariates = "inc",
+              cf.y = 0.03, cf.d = 0.03, kD = c(1, 1), kY = c(1, 3))))
+  expect_equal(s$bounds$bound.label[-1], c("1x inc", "3xY/1xD inc"))
+  expect_equal(s$bounds$cf.y[3], 3 * s$bounds$cf.y[2])
+  expect_equal(s$bounds$cf.d[3], s$bounds$cf.d[2])
+})
+
 test_that("a diverging multiplier shows infinite bounds in the table", {
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
