@@ -608,13 +608,13 @@ collect.trimmed.obs <- function(y, d, x, trimmed_indices) {
 # Chernozhukov et al. (2018), Def. 3.3: the across-repetition term is the
 # squared deviation of each repetition from the aggregated median, and it is
 # taken inside the median, not added to it as a constant.
-combine.median <- function(thetas, ses, na.rm = FALSE){
+combine.median <- function(thetas, ses, na.rm = TRUE){
   median.theta    <- median(thetas, na.rm = na.rm)
   se.median.theta <- sqrt(median(ses^2 + (thetas - median.theta)^2, na.rm = na.rm))
   c(estimate = median.theta, se = se.median.theta)
 }
 
-combine.mean <- function(thetas, ses, na.rm = FALSE){
+combine.mean <- function(thetas, ses, na.rm = TRUE){
   mean.theta    <- mean(thetas, na.rm = na.rm)
   ss <- sum((thetas - mean.theta)^2, na.rm = na.rm)
   R  <- if (na.rm) sum(!is.na(thetas)) else length(thetas)
