@@ -72,6 +72,19 @@ bounds that \emph{propagate the estimation uncertainty of the benchmarked
 gains}. Both the fixed-gain and the propagated bounds are
 returned so the two can be compared.
 }
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# bounds implied by a latent variable as strong as income
+bench <- dml_benchmark(fit, benchmark_covariates = "inc")
+benchmark_bounds(fit, bench, kY = 1, kD = 1)
+}
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."

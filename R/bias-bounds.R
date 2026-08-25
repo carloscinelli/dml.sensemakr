@@ -92,6 +92,18 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
 ##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
 ##'   (Conditional ATT/ATU formulation.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # bounds on the ATE under postulated confounding strength
+##' dml_bounds(fit, cf.y = 0.03, cf.d = 0.03)
+##' confidence_bounds(fit, cf.y = 0.03, cf.d = 0.03, level = 0.95)
 ##' @export
 dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 
@@ -260,6 +272,17 @@ xrv_fun <- function(dml.fit, xrv, par, side = "lwr", theta = 0, alpha = 0.05, rh
 ##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
 ##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
 ##'   (Conditional ATT/ATU formulation.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # smallest confounding strength that would overturn the conclusion
+##' robustness_value(fit, theta = 0, alpha = 0.05)
 ##' @export
 robustness_value <- sensemakr::robustness_value
 
@@ -306,6 +329,17 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
 ##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
 ##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
 ##'   (Conditional ATT/ATU formulation.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # extreme robustness value: confounding acting on the Riesz representer alone
+##' extreme_robustness_value(fit, theta = 0, alpha = 0.05)
 ##' @export
 extreme_robustness_value <- sensemakr::extreme_robustness_value
 

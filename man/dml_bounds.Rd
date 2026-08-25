@@ -80,6 +80,19 @@ For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidenc
 \description{
 Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
 }
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# bounds on the ATE under postulated confounding strength
+dml_bounds(fit, cf.y = 0.03, cf.d = 0.03)
+confidence_bounds(fit, cf.y = 0.03, cf.d = 0.03, level = 0.95)
+}
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."

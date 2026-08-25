@@ -28,6 +28,18 @@ This function computes the extreme robustness value of a target parameter estima
 
 The extreme robustness value describes the minimum strength of association (parameterized in terms of partial R2) that omitted variables would need to have with the Riesz Representer alone so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
 }
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# extreme robustness value: confounding acting on the Riesz representer alone
+extreme_robustness_value(fit, theta = 0, alpha = 0.05)
+}
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."

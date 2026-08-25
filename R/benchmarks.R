@@ -12,6 +12,18 @@
 ##' @param dreg,yreg optional learner specifications (as in \code{\link{dml}}) for
 ##'   the \emph{refit}, overriding those stored in \code{model$call}.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # observed gains of income, from a refit without it
+##' bench <- dml_benchmark(fit, benchmark_covariates = "inc")
+##' summary(bench)
 ##' @export
 dml_benchmark <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
   bench <- bench_fun(model = model, benchmark_covariates = benchmark_covariates,
@@ -135,6 +147,18 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
 ##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
 ##'   (Benchmarking for the conditional ATT/ATU.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # bounds implied by a latent variable as strong as income
+##' bench <- dml_benchmark(fit, benchmark_covariates = "inc")
+##' benchmark_bounds(fit, bench, kY = 1, kD = 1)
 ##' @export
 benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
                              level = 0.95, combine.method = c("median", "mean"),

@@ -26,3 +26,16 @@ An object of class \code{dml_benchmark} containing benchmark results.
 \description{
 Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
 }
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# observed gains of income, from a refit without it
+bench <- dml_benchmark(fit, benchmark_covariates = "inc")
+summary(bench)
+}
