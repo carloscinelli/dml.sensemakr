@@ -39,12 +39,9 @@ print.dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L),
 ##' @returns For \code{print}: the object, printed to console. For \code{summary}:
 ##'   an object of class \code{summary_dml_benchmark} holding a table of the
 ##'   benchmark components -- the gains \code{gain.Y} and
-##'   \code{gain.D}, the alignment \code{rho}, and the bias contribution
+##'   \code{gain.D}, the alignment \code{rho}, and the change in estimate
 ##'   \code{delta} -- each with a standard error derived from its influence
-##'   function and combined across cross-fitting repetitions. \code{delta} is
-##'   reported in the convention \code{delta = theta - theta_s}, so that
-##'   \code{delta = -rho * M} for ATT and \code{delta = +rho * M} for ATU/ATE
-##'   (with \code{M = sqrt(V.g * V.a)}), matching the OVB decomposition.
+##'   function and combined across cross-fitting repetitions.
 ##' @rdname summary.dml_benchmark
 ##' @export
 summary.dml_benchmark <- function(object, combine.method = c("median", "mean"),
