@@ -168,6 +168,7 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
   z       <- stats::qnorm(level)
 
   diverged <- character(0)
+  unmeasured <- character(0)
   covs <- names(bench$benchmarks)
   if (!is.numeric(kY) || !(length(kY) %in% c(1L, length(covs))) || anyNA(kY) || any(kY < 0))
     stop("`kY` must be a single non-negative number, or one per benchmark covariate (",
@@ -188,15 +189,21 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
     GY <- cmb(est$gain.Y); GD <- cmb(est$gain.D)
     rho.use <- if (rho2.fixed) sqrt(rho2) else cmb(est$rho)   # fixed |rho| = sqrt(rho2), or benchmarked (signed)
     kGY <- kY * GY; kGD <- kD * GD
+    na.row <- data.frame(BF = NA_real_, theta.minus = NA_real_, theta.plus = NA_real_,
+                         lwr.fixed = NA_real_, upr.fixed = NA_real_,
+                         lwr = NA_real_, upr = NA_real_,
+                         se.minus = NA_real_, se.plus = NA_real_, row.names = v)
+    if (!is.finite(GY) || !is.finite(GD) || !is.finite(rho.use)) {
+      # no gain could be measured at all -- not the same as a measured gain of
+      # zero, so do not fall into the gain.zero branch below
+      unmeasured <<- c(unmeasured, v)
+      return(na.row)
+    }
     if (is.finite(kGD) && kGD >= 1) {                     # bound diverges
       diverged <<- c(diverged, v)
-      return(data.frame(BF = NA_real_, theta.minus = NA_real_, theta.plus = NA_real_,
-                        lwr.fixed = NA_real_, upr.fixed = NA_real_,
-                        lwr = NA_real_, upr = NA_real_,
-                        se.minus = NA_real_, se.plus = NA_real_, row.names = v))
+      return(na.row)
     }
-    gain.zero <- !is.finite(GY) || !is.finite(GD) || GY <= 0 || GD <= 0 ||
-                 kGY <= 0 || kGD <= 0
+    gain.zero <- GY <= 0 || GD <= 0 || kGY <= 0 || kGD <= 0
     if (gain.zero) { CY <- CD <- BF <- 0 } else {
       CY <- sqrt(kGY); CD <- sqrt(kGD / (1 - kGD)); BF <- abs(rho.use) * CY * CD
     }
@@ -233,6 +240,13 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
       upr = unname(cp["estimate"] + z * cp["se"]),
       se.minus = unname(cm["se"]), se.plus = unname(cp["se"]), row.names = v)
   })
+  if (length(unmeasured))
+    warning("The combined benchmark gain is missing for: ",
+            paste(unmeasured, collapse = ", "),
+            " -- NA is returned, which is not the same as a measured gain of ",
+            "zero. With na.rm = TRUE this means every cross-fitting repetition ",
+            "returned NA; with na.rm = FALSE a single one is enough.",
+            call. = FALSE)
   if (length(diverged))
     warning("k_D * gain.D >= 1 for: ", paste(diverged, collapse = ", "),
             " -- the implied confounder explains ~all treatment-odds variation, ",

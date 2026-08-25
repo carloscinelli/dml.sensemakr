@@ -381,3 +381,45 @@ test_that("d.class = TRUE gives a usable propensity score and finite ATT/ATU", {
   expect_true(all(phat > 0 & phat < 1))
   expect_true(all(is.finite(coef(fit))))
 })
+
+# ---------------------------------------------------------------------------
+# benchmark_bounds(): a gain that could not be measured is NA, not zero. The
+# old code sent a missing gain into the gain.zero branch, which set the bias
+# factor to zero and printed the plain confidence interval as a bound.
+# ---------------------------------------------------------------------------
+test_that("benchmark_bounds separates a missing gain from a zero gain", {
+  data("pension", package = "dml.sensemakr")
+  set.seed(505); i <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
+  fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 2, cf.seed = 11,
+             verbose = FALSE)
+  b <- suppressMessages(dml_benchmark(fit, "inc"))
+  b$benchmarks$inc$gain.Y[] <- 0.2
+  b$benchmarks$inc$gain.D[] <- 0.3
+  b$benchmarks$inc$rho[]    <- 0.5
+
+  good <- benchmark_bounds(fit, b)
+  expect_true(good$BF > 0)
+
+  # one repetition of two missing: na.rm keeps the other one
+  b1 <- b; b1$benchmarks$inc$gain.Y[1] <- NA
+  part <- benchmark_bounds(fit, b1)
+  expect_equal(part$BF, good$BF)
+
+  # every repetition missing: NA with a warning, never a zero bias factor
+  b2 <- b; b2$benchmarks$inc$gain.Y[] <- NA
+  expect_warning(all.na <- benchmark_bounds(fit, b2), "not the same as a measured gain")
+  expect_true(is.na(all.na$BF))
+  expect_true(all(is.na(unlist(all.na))))
+
+  # na.rm = FALSE: one missing repetition is enough to give NA, still not zero
+  expect_warning(strict <- benchmark_bounds(fit, b1, na.rm = FALSE),
+                 "not the same as a measured gain")
+  expect_true(is.na(strict$BF))
+
+  # a genuinely zero gain still gives a zero bias factor, with no warning
+  b3 <- b; b3$benchmarks$inc$gain.Y[] <- 0
+  expect_silent(zero <- benchmark_bounds(fit, b3))
+  expect_equal(zero$BF, 0)
+})
