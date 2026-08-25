@@ -1,7 +1,7 @@
-# sensemakr() bounds-on-OVB table (issue #11): kY/kD multipliers, one table
-# holding the manual scenario and one row per benchmark multiplier, printed
-# under a single heading. Multi-target fits warn instead of silently dropping
-# the benchmark.
+# sensemakr() bounds on omitted variable bias, split into two tables:
+# the postulated scenario (cf.y/cf.d/rho2, one row per target, groups
+# included) and the benchmark scenarios (one row per multiplier per
+# covariate, both the fixed-benchmark and benchmark-uncertainty CIs).
 
 library(testthat)
 library(dml.sensemakr)
@@ -14,55 +14,59 @@ x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
 fit1 <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 1, cf.seed = 7,
             verbose = FALSE)
 
-test_that("sensemakr builds one bounds table with manual and benchmark rows", {
+test_that("sensemakr builds the postulated and benchmark tables", {
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
               cf.y = 0.03, cf.d = 0.03, kD = 1:2)))
 
+  # postulated table: user's parameters, matches confidence_bounds()
   b <- s$bounds
   expect_s3_class(b, "dml_ovb_bounds")
-  expect_equal(nrow(b), 3L)                        # manual + 1x + 2x
-  expect_equal(b$bound.label, c("Confounding Scenario", "1x inc", "2x inc"))
-
-  # manual row carries the user's parameters and matches confidence_bounds()
-  expect_equal(b$cf.y[1], 0.03)
-  expect_equal(b$rho[1], 1)
+  expect_equal(nrow(b), 1L)
+  expect_equal(b$rho2, 1)
+  expect_equal(b$cf.y, 0.03)
   cb <- confidence_bounds(fit1, cf.y = 0.03, cf.d = 0.03, rho2 = 1)
-  expect_equal(b$lwr[1], unname(cb["ate", "lwr"]))
-  expect_equal(b$upr[1], unname(cb["ate", "upr"]))
+  expect_equal(b$lwr, unname(cb["ate", "lwr"]))
+  expect_equal(b$upr, unname(cb["ate", "upr"]))
 
-  # benchmark rows scale the gains by the multiplier
-  expect_equal(b$cf.y[3], 2 * b$cf.y[2])
-  expect_equal(b$cf.d[3], 2 * b$cf.d[2])
-  # and agree with benchmark_bounds() at the same k
+  # benchmark table: one row per multiplier, both CI pairs, matches
+  # benchmark_bounds() at the same k
+  bt <- s$bench.table
+  expect_s3_class(bt, "dml_bench_bounds")
+  expect_equal(bt$bound.label, c("1x inc", "2x inc"))
+  expect_equal(bt$cf.y[2], 2 * bt$cf.y[1])
+  expect_equal(bt$cf.d[2], 2 * bt$cf.d[1])
   bb1 <- as.data.frame(benchmark_bounds(fit1, s$bench.bounds, kY = 1, kD = 1))
-  expect_equal(b$lwr[2], bb1$lwr.fixed)
-  expect_equal(b$upr[2], bb1$upr.fixed)
+  expect_equal(bt$lwr.fixed[1], bb1$lwr.fixed)
+  expect_equal(bt$upr.fixed[1], bb1$upr.fixed)
+  expect_equal(bt$lwr[1], bb1$lwr)          # propagated pair now shown too
+  expect_equal(bt$upr[1], bb1$upr)
+  expect_true(bt$lwr[1] <= bt$lwr.fixed[1]) # propagated is wider
 
   out <- capture.output(print(s))
-  expect_true(any(grepl("Bounds on omitted variable bias", out)))
-  expect_false(any(grepl("Confidence Bounds for Sensitivity Scenario", out)))
+  expect_true(any(grepl("postulated scenario", out)))
+  expect_true(any(grepl("Benchmark bounds", out)))
 })
 
 test_that("asymmetric multipliers get an unambiguous label", {
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
               cf.y = 0.03, cf.d = 0.03, kD = c(1, 1), kY = c(1, 3))))
-  expect_equal(s$bounds$bound.label[-1], c("1x inc", "3xY/1xD inc"))
-  expect_equal(s$bounds$cf.y[3], 3 * s$bounds$cf.y[2])
-  expect_equal(s$bounds$cf.d[3], s$bounds$cf.d[2])
+  expect_equal(s$bench.table$bound.label, c("1x inc", "3xY/1xD inc"))
+  expect_equal(s$bench.table$cf.y[2], 3 * s$bench.table$cf.y[1])
+  expect_equal(s$bench.table$cf.d[2], s$bench.table$cf.d[1])
 })
 
-test_that("a diverging multiplier shows infinite bounds in the table", {
+test_that("a diverging multiplier shows infinite bounds", {
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
               cf.y = 0.03, cf.d = 0.03, kD = 100)))
-  b <- s$bounds
-  expect_equal(b$lwr[b$bound.label == "100x inc"], -Inf)
-  expect_equal(b$upr[b$bound.label == "100x inc"], Inf)
+  row <- s$bench.table[s$bench.table$bound.label == "100x inc", ]
+  expect_equal(row$lwr.fixed, -Inf)
+  expect_equal(row$upr.fixed, Inf)
 })
 
-test_that("multi-target fits warn and keep the manual rows for every target", {
+test_that("multi-target fits warn and keep the postulated rows per target", {
   fit2 <- dml(y, d, x, model = "npm", target = c("ate", "att"),
               cf.folds = 2, cf.reps = 1, cf.seed = 7, verbose = FALSE)
   expect_warning(
@@ -70,13 +74,14 @@ test_that("multi-target fits warn and keep the manual rows for every target", {
                                      cf.y = 0.03, cf.d = 0.03)),
     "one target at a time")
   expect_equal(sort(s2$bounds$target), c("ate", "att"))
-  expect_true(all(s2$bounds$bound.label == "Confounding Scenario"))
+  expect_null(s2$bench.table)
   expect_null(s2$bench.bounds)
 })
 
-test_that("no cf.y and no benchmarks means no bounds table", {
+test_that("no cf.y and no benchmarks means no bounds tables", {
   s <- sensemakr(fit1)
   expect_null(s$bounds)
+  expect_null(s$bench.table)
   expect_false(any(grepl("Bounds on omitted variable bias",
                          capture.output(print(s)))))
 })

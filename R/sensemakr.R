@@ -78,9 +78,10 @@ sensemakr.dml <- function(model,
   rvs <- cbind(rv, rva)
   out$sensitivity_stats <- rvs
 
-  # bounds on omitted variable bias: one table, one row per scenario, as in
-  # sensemakr for lm. The manual scenario (cf.y/cf.d/rho2) comes first; each
-  # benchmark multiplier adds one row per covariate, labelled "<k>x <name>".
+  # bounds on omitted variable bias, in two tables: the postulated scenario
+  # (cf.y/cf.d/rho2, one row per target, groups included), and the benchmark
+  # scenarios (one row per multiplier per covariate, labelled "<k>x <name>",
+  # carrying both the fixed-benchmark and benchmark-uncertainty CIs).
   rows <- NULL
 
   if (!is.null(cf.y)) {
@@ -90,8 +91,7 @@ sensemakr.dml <- function(model,
     cf <- coef(pt)
     tg <- rownames(conf.bounds)
     rows <- data.frame(target = tg,
-                       cf.y = cf.y, cf.d = cf.d, rho = sqrt(rho2),
-                       bound.label = bound_label,
+                       cf.y = cf.y, cf.d = cf.d, rho2 = rho2,
                        theta.minus = unname(cf["theta.m", tg]),
                        theta.plus  = unname(cf["theta.p", tg]),
                        lwr = unname(conf.bounds[tg, "lwr"]),
@@ -116,22 +116,25 @@ sensemakr.dml <- function(model,
       gains <- summary(bench)$benchmarks
       kD.v  <- kD
       kY.v  <- rep_len(kY, length(kD.v))
+      bt    <- NULL
       for (i in seq_along(kD.v)) {
         bb <- as.data.frame(benchmark_bounds(model, bench,
                                              kY = kY.v[i], kD = kD.v[i]))
-        rows <- rbind(rows, data.frame(
-          target      = model$info$target,
-          cf.y        = unname(kY.v[i] * gains[, "gain.Y"]),
-          cf.d        = unname(kD.v[i] * gains[, "gain.D"]),
-          rho         = unname(gains[, "rho"]),
+        bt <- rbind(bt, data.frame(
           bound.label = if (kY.v[i] == kD.v[i]) {
             paste0(kD.v[i], "x ", rownames(gains))
           } else {
             paste0(kY.v[i], "xY/", kD.v[i], "xD ", rownames(gains))
           },
+          cf.y = unname(kY.v[i] * gains[, "gain.Y"]),
+          cf.d = unname(kD.v[i] * gains[, "gain.D"]),
+          rho  = unname(gains[, "rho"]),
           theta.minus = bb$theta.minus, theta.plus = bb$theta.plus,
-          lwr = bb$lwr.fixed, upr = bb$upr.fixed, row.names = NULL))
+          lwr.fixed = bb$lwr.fixed, upr.fixed = bb$upr.fixed,
+          lwr = bb$lwr, upr = bb$upr, row.names = NULL))
       }
+      class(bt) <- c("dml_bench_bounds", "data.frame")
+      out$bench.table <- bt
     }
   }
 
@@ -174,8 +177,14 @@ print.dml.sensemakr <- function(x,
   print(rvs)
 
   if (!is.null(x$bounds)) {
-    cat("\nBounds on omitted variable bias:\n\n")
+    cat("\nBounds on omitted variable bias (postulated scenario):\n\n")
     .print_ovb_bounds(x$bounds, digits)
+    cat("\n")
+  }
+
+  if (!is.null(x$bench.table)) {
+    cat("\nBenchmark bounds (latent variable k times as strong as the covariate):\n\n")
+    .print_ovb_bounds(x$bench.table, digits)
     cat("\n")
   }
 
@@ -212,10 +221,15 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
 
 
   if (!is.null(object$bounds)) {
-    cat("\nBounds on omitted variable bias:\n\n")
+    cat("\nBounds on omitted variable bias (postulated scenario):\n\n")
     .print_ovb_bounds(object$bounds, digits)
-    cat("\nVerbal interpretation of the bounds:\n\n")
-    cat("-- Each row is one confounding scenario: the manually postulated one (cf.y, cf.d and rho2, when supplied), and one per benchmark multiplier, where a latent variable's gains in explanatory power are k times the observed gains of the benchmark covariate and rho is the covariate's estimated alignment. theta.minus and theta.plus are the point bounds on the target; lwr and upr are one-sided 95% confidence bounds treating the scenario's sensitivity parameters as fixed.")
+    cat("\n-- Bounds on each target parameter under latent variables with the postulated sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds; lwr and upr are one-sided 95% confidence bounds treating those parameters as fixed.\n")
+  }
+
+  if (!is.null(object$bench.table)) {
+    cat("\nBenchmark bounds (latent variable k times as strong as the covariate):\n\n")
+    .print_ovb_bounds(object$bench.table, digits)
+    cat("\n-- Each row postulates a latent variable whose gains in explanatory power are k times the observed gains of the benchmark covariate; rho is the covariate's estimated alignment. [lwr.fixed, upr.fixed] are confidence bounds treating the benchmark as fixed; [lwr, upr] account for benchmark uncertainty.\n")
   }
 
   if (object$model$info$model == "npm") {
