@@ -3,11 +3,14 @@
 \name{extreme_robustness_value}
 \alias{extreme_robustness_value}
 \alias{extreme_robustness_value.dml}
+\alias{extreme_robustness_value.dml.bounds}
 \title{Computes Extreme Robustness Values for Debiased Machine Learning}
 \usage{
 extreme_robustness_value(...)
 
 \method{extreme_robustness_value}{dml}(model, theta = 0, alpha = 0.05, rho2 = 1, ...)
+
+\method{extreme_robustness_value}{dml.bounds}(model, theta = 0, alpha = 0.05, rho2 = 1, ...)
 }
 \arguments{
 \item{...}{arguments passed to other methods.}

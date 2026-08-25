@@ -332,6 +332,12 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
 
   return(out)
 }
+##' @rdname extreme_robustness_value
+##' @exportS3Method sensemakr::extreme_robustness_value dml.bounds
+extreme_robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, rho2 = 1, ...){
+  extreme_robustness_value(model$dml.fit, theta = theta, alpha = alpha, rho2 = rho2, ...)
+}
+
 ########################################################################################
 
 ##' @rdname robustness_value

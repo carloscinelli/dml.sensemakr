@@ -539,3 +539,21 @@ test_that("benchmark_bounds clamps level at 0.5 like confidence_bounds", {
   expect_equal(lo$lwr.fixed, mid$lwr.fixed)
   expect_equal(attr(benchmark_bounds(fit, b, level = 0.05), "level"), 0.5)
 })
+
+# ---------------------------------------------------------------------------
+# The help page says extreme_robustness_value() accepts a dml.bounds object,
+# as robustness_value() does. The method was never written, so the call fell
+# through to the sensemakr default and stopped with an unrelated error.
+# ---------------------------------------------------------------------------
+test_that("extreme_robustness_value accepts a dml.bounds object", {
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
+  fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 2, cf.seed = 7,
+             verbose = FALSE)
+  bd <- dml_bounds(fit, cf.y = 0.03, cf.d = 0.03)
+
+  expect_equal(extreme_robustness_value(bd), extreme_robustness_value(fit))
+  expect_equal(robustness_value(bd), robustness_value(fit))
+})
