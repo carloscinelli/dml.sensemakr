@@ -325,3 +325,36 @@ test_that("a conditional fit does not build the estimand it discards", {
   expect_named(setup_rf$fit.att$results$main, "treat")
   expect_named(setup_rf$fit.att$coefs$main, "treat")
 })
+
+# ---------------------------------------------------------------------------
+# combine.median follows Chernozhukov et al. (2018, Def. 3.3): the squared
+# deviation is per repetition, measured from the aggregated median, and taken
+# inside the median. The earlier code summed the deviations from the mean and
+# added the sum as a constant, so the SE grew with the number of repetitions.
+# ---------------------------------------------------------------------------
+test_that("combine.median matches the CCDDHNR median rule", {
+  cm <- dml.sensemakr:::combine.median
+  th <- c(10.0, 10.4, 9.7, 10.2, 9.9)
+  se <- c(1.00, 1.05, 0.98, 1.02, 1.01)
+  expect_equal(unname(cm(th, se)["estimate"]), median(th))
+  expect_equal(unname(cm(th, se)["se"]),
+               sqrt(median(se^2 + (th - median(th))^2)))
+})
+
+test_that("combine.median does not inflate the SE as repetitions grow", {
+  cm <- dml.sensemakr:::combine.median
+  ses <- vapply(c(5L, 20L, 100L), function(R) {
+    set.seed(42)
+    unname(cm(rnorm(R, 10, 0.3), rep(1, R))["se"])
+  }, numeric(1))
+  # all three within 10% of each other; the old rule grew without bound
+  expect_lt(max(ses) / min(ses), 1.1)
+})
+
+test_that("combine.mean matches the CCDDHNR mean rule", {
+  ca <- dml.sensemakr:::combine.mean
+  th <- c(10.0, 10.4, 9.7, 10.2, 9.9)
+  se <- c(1.00, 1.05, 0.98, 1.02, 1.01)
+  expect_equal(unname(ca(th, se)["se"]),
+               sqrt(mean(se^2 + (th - mean(th))^2)))
+})
