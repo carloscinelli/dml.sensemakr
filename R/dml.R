@@ -616,9 +616,9 @@ combine.median <- function(thetas, ses, na.rm = TRUE){
 
 combine.mean <- function(thetas, ses, na.rm = TRUE){
   mean.theta    <- mean(thetas, na.rm = na.rm)
-  ss <- sum((thetas - mean.theta)^2, na.rm = na.rm)
-  R  <- if (na.rm) sum(!is.na(thetas)) else length(thetas)
-  se.mean.theta   <- sqrt(mean(ses^2, na.rm = na.rm) + ss/R)
+  # elementwise, like combine.median: an NA in either member drops the pair,
+  # so both terms of the variance are averaged over the same repetitions
+  se.mean.theta <- sqrt(mean(ses^2 + (thetas - mean.theta)^2, na.rm = na.rm))
   c(estimate = mean.theta,   se = se.mean.theta)
 }
 

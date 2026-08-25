@@ -505,3 +505,15 @@ test_that("npm fits the requested outcome learner under both tuning settings", {
                 info = paste("npm, dirty.tuning =", dirty))
   }
 })
+
+test_that("combine.mean drops incomplete pairs, matching combine.median", {
+  ca <- dml.sensemakr:::combine.mean
+  th <- c(10, 10.4, 9.7, 10.2); se <- c(1, NA, 0.98, 1.02)  # NA in se only
+  m  <- mean(th)
+  expect_equal(unname(ca(th, se)["se"]),
+               sqrt(mean((se^2 + (th - m)^2)[-2])))
+  # complete data: unchanged from the closed form
+  se2 <- c(1, 1.05, 0.98, 1.02)
+  expect_equal(unname(ca(th, se2)["se"]),
+               sqrt(mean(se2^2) + sum((th - mean(th))^2) / 4))
+})
