@@ -12,8 +12,8 @@ bounds <- function(short.results, cf.y = 0.04, cf.d = 0.03, rho2 = 1){
   sigma2.s <- short.results$estimates$sigma2.s
   nu2.s    <- short.results$estimates$nu2.s
 
-  if (nu2.s < 0) {
-    warning("Unable to compute bounds because nu^2 is negative,
+  if (is.na(nu2.s) || nu2.s < 0) {
+    warning("Unable to compute bounds because nu^2 is negative or undefined,
             this is an indication of a very poor fitting of the treatment model.
             Consider choosing a different learner for the treatment.")
   }
@@ -261,6 +261,7 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
   conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA,nrow(conf)), rownames(conf))
   for (i in 1:nrow(conf)) {
+    if (any(is.na(conf[i, ]))) { out[i] <- NA; next }   # NaN bounds -> RV undefined
     if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
       next
@@ -300,6 +301,7 @@ extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 
   conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA,nrow(conf)), rownames(conf))
   for (i in 1:nrow(conf)) {
+    if (any(is.na(conf[i, ]))) { out[i] <- NA; next }   # NaN bounds -> XRV undefined
     if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
     }
@@ -329,6 +331,7 @@ robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, ...){
   conf <- confint(model, level = 1 - alpha,...)
   out <- setNames(rep(NA, nrow(conf)), rownames(conf))
   for (i in 1:nrow(conf)) {
+    if (any(is.na(conf[i, ]))) { out[i] <- NA; next }   # NaN bounds -> RV undefined
     if (conf[i,1] <= theta & theta <= conf[i,2]) {
       out[i] <- 0
       next
