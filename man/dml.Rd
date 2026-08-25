@@ -145,4 +145,8 @@ ovb_contour_plot(dml.401k, cf.y = 0.03, cf.d = 0.04,
 }
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+
+  Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Basis of the conditional ATT/ATU parameterization.)
 }

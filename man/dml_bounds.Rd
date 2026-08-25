@@ -80,3 +80,12 @@ For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidenc
 \description{
 Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
 }
+\references{
+Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+  (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+  \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+
+  Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Conditional ATT/ATU formulation.)
+}

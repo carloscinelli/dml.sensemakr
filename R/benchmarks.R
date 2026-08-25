@@ -124,14 +124,17 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   \code{lwr.fixed}/\code{upr.fixed} (\eqn{=}\code{confidence_bounds}), the
 ##'   uncertainty-propagated confidence bounds \code{lwr}/\code{upr}, and the
 ##'   propagated bound SEs \code{se.minus}/\code{se.plus}. Covariates whose implied
-##'   \eqn{k_D \hat G_{D,j} \ge 1} (a confounder that would explain essentially all
-##'   treatment-odds variation, so the bound diverges) return \code{NA} bounds with
-##'   a warning.
+##'   \eqn{k_D \hat G_{D,j} \ge 1} (\code{cf.d} reaches 1, so the bound diverges)
+##'   return \code{-Inf}/\code{Inf} bounds with a warning.
 ##' @seealso \code{\link{dml_benchmark}}, \code{\link{confidence_bounds}}.
 ##' @references
 ##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
 ##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
 ##'   \emph{Review of Economics and Statistics} (Appendix E).
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Benchmarking for the conditional ATT/ATU.)
 ##' @export
 benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
                              level = 0.95, combine.method = c("median", "mean"),

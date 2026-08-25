@@ -84,6 +84,14 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
 ##' @param level confidence level. Default is \code{0.95}.
 ##' @returns For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Conditional ATT/ATU formulation.)
 ##' @export
 dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 
@@ -244,6 +252,14 @@ xrv_fun <- function(dml.fit, xrv, par, side = "lwr", theta = 0, alpha = 0.05, rh
 ##'
 ##'
 ##' @returns A named numeric vector of robustness values.
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Conditional ATT/ATU formulation.)
 ##' @export
 robustness_value <- sensemakr::robustness_value
 
@@ -282,6 +298,14 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
 ##' The extreme robustness value describes the minimum strength of association (parameterized in terms of partial R2) that omitted variables would need to have with the Riesz Representer alone so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
 ##'
 ##'
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Conditional ATT/ATU formulation.)
 ##' @export
 extreme_robustness_value <- sensemakr::extreme_robustness_value
 

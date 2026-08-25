@@ -28,3 +28,12 @@ This function computes the extreme robustness value of a target parameter estima
 
 The extreme robustness value describes the minimum strength of association (parameterized in terms of partial R2) that omitted variables would need to have with the Riesz Representer alone so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
 }
+\references{
+Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+  (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+  \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+
+  Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Conditional ATT/ATU formulation.)
+}

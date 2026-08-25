@@ -34,6 +34,10 @@
 ##'  \item{\code{coefs}}{A \code{list} with the estimates and standard errors for each repetition.}
 ##' }
 ##' @references Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Basis of the conditional ATT/ATU parameterization.)
 ##' @examples
 ##'# loads package
 ##'library(dml.sensemakr)
