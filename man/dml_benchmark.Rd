@@ -12,13 +12,13 @@ dml_benchmark(model, benchmark_covariates, dreg = NULL, yreg = NULL)
 \item{benchmark_covariates}{the observed covariates to benchmark. Either a
 character vector of column names in the model's \code{x} (each benchmarked
 on its own), or a named list where each element is a character vector of
-column names to drop \emph{together} in the leave-one-out refit (e.g. the
+column names to drop \emph{together} in the refit (e.g. the
 dummy columns of a factor: \code{list(region = c("region3", "region4"))}).
 List element names become the row labels; unnamed elements are labelled by
 the column name (singletons) or the columns joined by \code{"+"}.}
 
 \item{dreg, yreg}{optional learner specifications (as in \code{\link{dml}}) for
-the leave-one-out \emph{refit}, overriding those stored in \code{model$call}.}
+the \emph{refit}, overriding those stored in \code{model$call}.}
 }
 \value{
 An object of class \code{dml_benchmark} containing benchmark results.

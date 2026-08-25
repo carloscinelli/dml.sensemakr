@@ -34,7 +34,7 @@
 \value{
 For \code{print}: the object, printed to console. For \code{summary}:
   an object of class \code{summary_dml_benchmark} holding a table of the
-  benchmark components -- the leave-one-out gains \code{gain.Y} and
+  benchmark components -- the gains \code{gain.Y} and
   \code{gain.D}, the alignment \code{rho}, and the bias contribution
   \code{delta} -- each with a standard error derived from its influence
   function and combined across cross-fitting repetitions. \code{delta} is

@@ -5,12 +5,12 @@
 ##' @param benchmark_covariates the observed covariates to benchmark. Either a
 ##'   character vector of column names in the model's \code{x} (each benchmarked
 ##'   on its own), or a named list where each element is a character vector of
-##'   column names to drop \emph{together} in the leave-one-out refit (e.g. the
+##'   column names to drop \emph{together} in the refit (e.g. the
 ##'   dummy columns of a factor: \code{list(region = c("region3", "region4"))}).
 ##'   List element names become the row labels; unnamed elements are labelled by
 ##'   the column name (singletons) or the columns joined by \code{"+"}.
 ##' @param dreg,yreg optional learner specifications (as in \code{\link{dml}}) for
-##'   the leave-one-out \emph{refit}, overriding those stored in \code{model$call}.
+##'   the \emph{refit}, overriding those stored in \code{model$call}.
 ##' @returns An object of class \code{dml_benchmark} containing benchmark results.
 ##' @export
 dml_benchmark <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
@@ -38,7 +38,7 @@ print.dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L),
 ##' @param ... arguments passed to other methods.
 ##' @returns For \code{print}: the object, printed to console. For \code{summary}:
 ##'   an object of class \code{summary_dml_benchmark} holding a table of the
-##'   benchmark components -- the leave-one-out gains \code{gain.Y} and
+##'   benchmark components -- the gains \code{gain.Y} and
 ##'   \code{gain.D}, the alignment \code{rho}, and the bias contribution
 ##'   \code{delta} -- each with a standard error derived from its influence
 ##'   function and combined across cross-fitting repetitions. \code{delta} is
@@ -81,7 +81,7 @@ summary.dml_benchmark <- function(object, combine.method = c("median", "mean"),
 ##' @rdname summary.dml_benchmark
 ##' @export
 print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") - 3L), ...){
-  cat("Covariate benchmarks (leave-one-out):\n\n")
+  cat("Covariate benchmarks:\n\n")
   print(round(x$benchmarks, digits))
   cat("\nCombined across cross-fitting repetitions using the",
       x$combine.method, "method.\n")
@@ -357,7 +357,7 @@ bench_fun <- function(model, benchmark_covariates, dreg = NULL, yreg = NULL){
     stop("dml_benchmark() requires a model fit with a single target ",
          "('ate', 'att', or 'atu').")
 
-  # Sign that maps the leave-one-out shift delta = theta.s - theta.s,-j to the
+  # Sign that maps the shift delta = theta.s - theta.s,-j to the
   # reported alignment rho. For the ATE, ATU and the unconditional ATT the
   # decomposition is delta = +rho * M, so rho = delta / M (align.sign = -1).
   # The conditional (single-arm / DiD-style) ATT imputes the subtracted
