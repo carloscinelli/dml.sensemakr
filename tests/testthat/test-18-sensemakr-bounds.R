@@ -33,6 +33,7 @@ test_that("sensemakr builds the postulated and benchmark tables", {
   # benchmark_bounds() at the same k
   bt <- s$bench.table
   expect_s3_class(bt, "dml_bench_bounds")
+  expect_equal(bt$target, c("ate", "ate"))
   expect_equal(bt$bound.label, c("1x inc", "2x inc"))
   expect_equal(bt$cf.y[2], 2 * bt$cf.y[1])
   expect_equal(bt$cf.d[2], 2 * bt$cf.d[1])

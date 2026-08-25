@@ -121,6 +121,7 @@ sensemakr.dml <- function(model,
         bb <- as.data.frame(benchmark_bounds(model, bench,
                                              kY = kY.v[i], kD = kD.v[i]))
         bt <- rbind(bt, data.frame(
+          target = model$info$target,
           bound.label = if (kY.v[i] == kD.v[i]) {
             paste0(kD.v[i], "x ", rownames(gains))
           } else {
@@ -298,7 +299,6 @@ plot.dml.sensemakr <- function(x,
 # the fit has a single target, print without row names.
 .print_ovb_bounds <- function(b, digits = 4) {
   tb <- as.data.frame(b)
-  if (length(unique(tb$target)) == 1L) tb$target <- NULL
   num <- vapply(tb, is.numeric, logical(1))
   tb[num] <- lapply(tb[num], round, digits = digits)
   print(tb, row.names = FALSE)
