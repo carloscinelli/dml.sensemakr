@@ -81,7 +81,13 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   if (!is.null(main)) {
     cat("\n")
     for (i in seq_along(main)) {
-      cat("\nBounds on Average Treatment Effect:", names(main)[i], "\n\n")
+      # names(main) are the internal slots (all/treat/untr); name the estimand
+      tg  <- .slot_to_target[names(main)[i]]
+      lab <- c(ate = "Average Treatment Effect",
+               att = "Average Treatment Effect on the Treated",
+               atu = "Average Treatment Effect on the Untreated")[tg]
+      if (is.na(lab)) lab <- paste("Average Treatment Effect:", names(main)[i])
+      cat("\nBounds on ", lab, "\n\n", sep = "")
       print(main[[i]], digits = digits)
     }
   }

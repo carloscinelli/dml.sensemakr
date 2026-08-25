@@ -557,3 +557,21 @@ test_that("extreme_robustness_value accepts a dml.bounds object", {
   expect_equal(extreme_robustness_value(bd), extreme_robustness_value(fit))
   expect_equal(robustness_value(bd), robustness_value(fit))
 })
+
+# ---------------------------------------------------------------------------
+# print for dml.bounds said "Bounds on Average Treatment Effect: treat" on an
+# ATT fit -- wrong estimand, internal slot name. The heading now names the
+# estimand.
+# ---------------------------------------------------------------------------
+test_that("dml.bounds print names the estimand, not the internal slot", {
+  data("pension", package = "dml.sensemakr")
+  set.seed(1); i <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
+  fit <- dml(y, d, x, model = "npm", target = "att", cf.folds = 2, cf.reps = 1,
+             cf.seed = 7, verbose = FALSE)
+  out <- capture.output(print(dml_bounds(fit, cf.y = 0.03, cf.d = 0.03)))
+
+  expect_true(any(grepl("Bounds on Average Treatment Effect on the Treated", out)))
+  expect_false(any(grepl("treat\\b", out[grepl("Bounds on", out)])))
+})
