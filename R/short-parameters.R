@@ -1,7 +1,220 @@
 
-# computes standard error using influence function psi
-psi.sd <- function(psi){
-  sqrt(mean(psi^2))/sqrt(length(psi))
+# computes standard error using influence function psi (optionally weighted)
+psi.sd <- function(psi, w = NULL){
+  if (is.null(w)) {
+    w <- rep(1, length(psi))
+  }
+  w_norm <- w / sum(w)
+  Ew_psi2 <- sum(w_norm * psi^2)
+  n_eff <- (sum(w)^2) / sum(w^2)
+  sqrt(Ew_psi2) / sqrt(n_eff)
+}
+
+# computes conditional ATT for npm (single-arm imputation)
+# returns estimates and influence functions for theta.s, sigma2.0s, nu2.0s, S02
+att.npm.cond <- function(y, d,
+                         yhat0,
+                         yhat1 = NULL,
+                         dhat, phat,
+                         trim   = 0.02,
+                         centered = FALSE) {
+
+  trim.summary <- trim.ps(dhat, trim = trim)
+  dhat.t       <- trim.summary$ps
+
+  l    <- d / phat
+  lc   <- (1 - d) / (1 - phat)
+  lbar <- dhat.t / phat
+
+  gs        <- rep(NA, length(y))
+  gs[d == 1] <- if (is.null(yhat1)) y[d == 1] else yhat1[d == 1]
+  gs[d == 0] <- yhat0[d == 0]
+
+  # ATT (same score as unconditional)
+  RRs         <- d / phat - ((1 - d) / (1 - dhat.t)) * lbar
+  Ms          <- (y - yhat0) * l
+  theta.s     <- mean(Ms + (1 - d) * (y - gs) * RRs) / mean(l)
+  psi.theta.s <- (Ms + (1 - d) * (y - gs) * RRs - theta.s * l) / mean(l)
+
+  # E[g0s | D=1]  and  E[Y | D=1]
+  theta.0s     <- mean(l * yhat0 + (((1 - d) * dhat.t) / ((1 - dhat.t) * phat)) * (y - yhat0)) / mean(l)
+  psi.theta.0s <- (l * (yhat0 - theta.0s) + (((1 - d) * dhat.t) / ((1 - dhat.t) * phat)) * (y - yhat0)) / mean(l)
+
+  theta.1s     <- mean(l * y) / mean(l)
+  psi.theta.1s <- (l * (y - theta.1s)) / mean(l)
+
+  # sigma2.0s  =  E[(Y - g0s)^2 | D=0]
+  sigma2.0s     <- mean(lc * (y - yhat0)^2) / mean(lc)
+  psi.sigma2.0s <- lc * ((y - yhat0)^2 - sigma2.0s) / mean(lc)
+
+  # sigma2.1s  (optional, requires yhat1)
+  if (!is.null(yhat1)) {
+    sigma2.1s     <- mean(l * (y - yhat1)^2, na.rm = TRUE) / mean(l)
+    psi.sigma2.1s <- l * ((y - yhat1)^2 - sigma2.1s) / mean(l)
+  }
+
+  # nu2.0s  =  conditional imbalance (propensity-score based)
+
+  if (centered) {
+    nu2.0s <- mean(
+      (d * (phat - dhat.t) * (phat + dhat.t - 2) +
+         (phat^2) * (1 - 2 * dhat.t) -
+         (dhat.t^2) * (1 - 2 * phat)) /
+        ((phat^2) * (1 - phat) * (1 - dhat.t)^2)) / mean(2 * l - lc)
+
+    psi.nu2.0s <- (
+      (d * (phat - dhat.t) * (phat + dhat.t - 2) +
+         (phat^2) * (1 - 2 * dhat.t) -
+         (dhat.t^2) * (1 - 2 * phat)) /
+        ((phat^2) * (1 - phat) * (1 - dhat.t)^2) -
+        (2 * l - lc) * nu2.0s
+    ) / mean(2 * l - lc)
+  } else {
+    OX <- dhat.t / (1 - dhat.t)
+    O  <- phat   / (1 - phat)
+    nu2.0s     <- mean(2 * l * (OX / O) - lc * (OX / O)^2) /
+                  mean(2 * l - lc)
+    psi.nu2.0s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.0s) /
+                  mean(2 * l - lc)
+  }
+
+  # S02 = sigma2.0s * nu2.0s
+  S02     <- sigma2.0s * nu2.0s
+  psi.S02 <- sigma2.0s * psi.nu2.0s + nu2.0s * psi.sigma2.0s
+
+  list(
+    psis = list(
+      psi.theta.s   = psi.theta.s,
+      psi.theta.0s  = psi.theta.0s,
+      psi.theta.1s  = psi.theta.1s,
+      psi.sigma2.s  = psi.sigma2.0s,
+      psi.sigma2.1s = if (is.null(yhat1)) 0 else psi.sigma2.1s,
+      psi.nu2.s     = psi.nu2.0s,
+      psi.S2        = psi.S02
+    ),
+    estimates = list(
+      theta.s      = theta.s,
+      theta.0s     = theta.0s,
+      theta.1s     = theta.1s,
+      se.theta.s   = psi.sd(psi.theta.s),
+      se.theta.0s  = psi.sd(psi.theta.0s),
+      se.theta.1s  = psi.sd(psi.theta.1s),
+      sigma2.s     = sigma2.0s,
+      se.sigma2.s  = psi.sd(psi.sigma2.0s),
+      nu2.s        = nu2.0s,
+      se.nu2.s     = psi.sd(psi.nu2.0s),
+      S2           = S02,
+      se.S2        = psi.sd(psi.S02),
+      cov.theta.S2 = mean(psi.theta.s * psi.S02) / length(psi.S02)
+    ),
+    trim.summary = trim.summary
+  )
+}
+
+# computes conditional ATU for npm (single-arm imputation)
+# Mirror of att.npm.cond() with the treated/untreated roles swapped:
+#   D -> (1 - D),  p -> (1 - p),  pi(X) -> (1 - pi(X)),  g0s -> g1s.
+# The outcome regression is fit on the TREATED units (yhat1 = g1s), and the
+# control regression (yhat0) is not used.
+# returns estimates and influence functions for theta.s, sigma2.1s, nu2.1s, S12
+atu.npm.cond <- function(y, d,
+                         yhat1,
+                         yhat0 = NULL,
+                         dhat, phat,
+                         trim   = 0.02,
+                         centered = FALSE) {
+
+  trim.summary <- trim.ps(dhat, trim = trim)
+  dhat.t       <- trim.summary$ps
+
+  # target = untreated: l is the (1-D)/(1-p) weight; lc is its complement
+  l    <- (1 - d) / (1 - phat)
+  lc   <- d / phat
+  lbar <- (1 - dhat.t) / (1 - phat)
+
+  gs         <- rep(NA, length(y))
+  gs[d == 0] <- if (is.null(yhat0)) y[d == 0] else yhat0[d == 0]
+  gs[d == 1] <- yhat1[d == 1]
+
+  # ATU (same score as unconditional untr)
+  RRs         <- (d / dhat.t) * lbar - ((1 - d) / (1 - phat))
+  Ms          <- (yhat1 - y) * l
+  theta.s     <- mean(Ms + d * (y - gs) * RRs) / mean(l)
+  psi.theta.s <- (Ms + d * (y - gs) * RRs - theta.s * l) / mean(l)
+
+  # E[g1s | D=0]  and  E[Y | D=0]
+  theta.1s     <- mean(l * yhat1 + (((d * (1 - dhat.t)) / (dhat.t * (1 - phat)))) * (y - yhat1)) / mean(l)
+  psi.theta.1s <- (l * (yhat1 - theta.1s) + (((d * (1 - dhat.t)) / (dhat.t * (1 - phat)))) * (y - yhat1)) / mean(l)
+
+  theta.0s     <- mean(l * y) / mean(l)
+  psi.theta.0s <- (l * (y - theta.0s)) / mean(l)
+
+  # sigma2.1s  =  E[(Y - g1s)^2 | D=1]
+  sigma2.1s     <- mean(lc * (y - yhat1)^2) / mean(lc)
+  psi.sigma2.1s <- lc * ((y - yhat1)^2 - sigma2.1s) / mean(lc)
+
+  # sigma2.0s  (optional, requires yhat0)
+  if (!is.null(yhat0)) {
+    sigma2.0s     <- mean(l * (y - yhat0)^2, na.rm = TRUE) / mean(l)
+    psi.sigma2.0s <- l * ((y - yhat0)^2 - sigma2.0s) / mean(l)
+  }
+
+  # nu2.1s  =  conditional imbalance (propensity-score based)
+
+  if (centered) {
+    # ATT centered imbalance with p -> 1-p, pi -> 1-pi, D -> 1-D
+    pa <- 1 - phat     # 1 - p
+    ba <- 1 - dhat.t   # 1 - pi(X)
+    da <- 1 - d        # 1 - D
+    num.nu <- (da * (pa - ba) * (pa + ba - 2) +
+                 (pa^2) * (1 - 2 * ba) -
+                 (ba^2) * (1 - 2 * pa)) /
+              ((pa^2) * (1 - pa) * (1 - ba)^2)
+
+    nu2.1s     <- mean(num.nu) /
+                  mean(2 * l - lc)
+    psi.nu2.1s <- (num.nu - (2 * l - lc) * nu2.1s) /
+                  mean(2 * l - lc)
+  } else {
+    OX <- (1 - dhat.t) / dhat.t   # (1 - pi)/pi  = 1 / O_X
+    O  <- (1 - phat)   / phat     # (1 - p)/p    = 1 / O
+    nu2.1s     <- mean(2 * l * (OX / O) - lc * (OX / O)^2) /
+                  mean(2 * l - lc)
+    psi.nu2.1s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.1s) /
+                  mean(2 * l - lc)
+  }
+
+  # S12 = sigma2.1s * nu2.1s
+  S12     <- sigma2.1s * nu2.1s
+  psi.S12 <- sigma2.1s * psi.nu2.1s + nu2.1s * psi.sigma2.1s
+
+  list(
+    psis = list(
+      psi.theta.s   = psi.theta.s,
+      psi.theta.0s  = psi.theta.0s,
+      psi.theta.1s  = psi.theta.1s,
+      psi.sigma2.s  = psi.sigma2.1s,
+      psi.sigma2.0s = if (is.null(yhat0)) 0 else psi.sigma2.0s,
+      psi.nu2.s     = psi.nu2.1s,
+      psi.S2        = psi.S12
+    ),
+    estimates = list(
+      theta.s      = theta.s,
+      theta.0s     = theta.0s,
+      theta.1s     = theta.1s,
+      se.theta.s   = psi.sd(psi.theta.s),
+      se.theta.0s  = psi.sd(psi.theta.0s),
+      se.theta.1s  = psi.sd(psi.theta.1s),
+      sigma2.s     = sigma2.1s,
+      se.sigma2.s  = psi.sd(psi.sigma2.1s),
+      nu2.s        = nu2.1s,
+      se.nu2.s     = psi.sd(psi.nu2.1s),
+      S2           = S12,
+      se.S2        = psi.sd(psi.S12),
+      cov.theta.S2 = mean(psi.theta.s * psi.S12) / length(psi.S12)
+    ),
+    trim.summary = trim.summary
+  )
 }
 
 # trims propensity score
@@ -194,20 +407,8 @@ ate.att.atu.npm <- function(dml, target, trim = 0.02) {
                           phat  = phat,
                           trim  = trim)
 
-      trimmed.all.idx <- res[[i]]$trim.summary$trimmed_indices$all
-      trimmed.low.idx <- res[[i]]$trim.summary$trimmed_indices$low
-      trimmed.high.idx <- res[[i]]$trim.summary$trimmed_indices$high
-      res[[i]]$trim.summary$trimmed_obs <- list(
-        all = list(y.trimmed = y[trimmed.all.idx],
-                   d.trimmed = d[trimmed.all.idx],
-                   x.trimmed = x[trimmed.all.idx, ]),
-        low = list(y.trimmed = y[trimmed.low.idx],
-                   d.trimmed = d[trimmed.low.idx],
-                   x.trimmed = x[trimmed.low.idx, ]),
-        high = list(y.trimmed = y[trimmed.high.idx],
-                    d.trimmed = d[trimmed.high.idx],
-                    x.trimmed = x[trimmed.high.idx, ])
-      )
+      res[[i]]$trim.summary$trimmed_obs <-
+        collect.trimmed.obs(y, d, x, res[[i]]$trim.summary$trimmed_indices)
     }
     ate.g[[j]] <- res
   }
@@ -217,45 +418,79 @@ ate.att.atu.npm <- function(dml, target, trim = 0.02) {
 
 # computes ate for each group npm
 group.ate.npm <- function(dml, groups, trim = 0.02) {
-  g       <- levels(groups)
-  ate.g   <- list()
+  lev     <- levels(groups)
   cf.reps <- dml$info$cf.reps
   y       <- dml$data$y
   d       <- dml$data$d
   x       <- dml$data$x
-  for(j in g){
-    idx <- groups == j
-    res <- list()
-    for(i in 1:cf.reps){
-      phat   <- dml$fits[[i]]$preds$phat
-      dhat   <- dml$fits[[i]]$preds$dhat
-      yhat0  <- dml$fits[[i]]$preds$yhat0
-      yhat1  <- dml$fits[[i]]$preds$yhat1
-      res[[i]] <- ate.npm(y = y[idx], d = d[idx],
-                          yhat1 = yhat1[idx],
-                          yhat0 = yhat0[idx],
-                          dhat  = dhat[idx],
-                          phat  = phat[idx],
-                          trim = trim)
 
-      trimmed.all.idx <- res[[i]]$trim.summary$trimmed_indices$all
-      trimmed.low.idx <- res[[i]]$trim.summary$trimmed_indices$low
-      trimmed.high.idx <- res[[i]]$trim.summary$trimmed_indices$high
-      res[[i]]$trim.summary$trimmed_obs <- list(
-        all = list(y.trimmed = y[idx][trimmed.all.idx],
-                   d.trimmed = d[idx][trimmed.all.idx],
-                   x.trimmed = x[idx, ][trimmed.all.idx, ]),
-        low = list(y.trimmed = y[idx][trimmed.low.idx],
-                   d.trimmed = d[idx][trimmed.low.idx],
-                   x.trimmed = x[idx, ][trimmed.low.idx, ]),
-        high = list(y.trimmed = y[idx][trimmed.high.idx],
-                    d.trimmed = d[idx][trimmed.high.idx],
-                    x.trimmed = x[idx, ][trimmed.high.idx, ])
-      )
+  conditional <- isTRUE(dml$info$conditional)
+  centered    <- isTRUE(dml$info$centered)
+
+  # One set of group effects per requested target. A fit that asks for the ATT
+  # reports group ATTs; a multi-target fit reports one set for each target.
+  targets <- dml$info$target
+  targets <- targets[targets %in% c("ate", "att", "atu")]
+  if (!length(targets)) targets <- "ate"
+
+  out <- list()
+  for (tg in targets) {
+    param <- unname(.target_to_slot[tg])
+    for (j in lev) {
+      idx <- groups == j
+
+      # The group ATT needs treated units in the group, and the group ATU needs
+      # untreated units. Without them the estimand does not exist: report NA and
+      # say why, instead of returning the 0/0 that the weights would produce.
+      p.g <- mean(num(d)[idx])
+      if ((param == "treat" && p.g <= 0) || (param == "untr" && p.g >= 1)) {
+        warning("Group '", j, "' has no ",
+                if (param == "treat") "treated" else "untreated",
+                " units, so its ", toupper(tg), " is not identified. ",
+                "Returning NA for this group.", call. = FALSE)
+      }
+
+      res <- list()
+      for (i in 1:cf.reps) {
+        phat   <- dml$fits[[i]]$preds$phat
+        dhat   <- dml$fits[[i]]$preds$dhat
+        yhat0  <- dml$fits[[i]]$preds$yhat0
+        yhat1  <- dml$fits[[i]]$preds$yhat1
+
+        # The ATT and ATU weights use the treated (untreated) share. Within a
+        # group that share is the group's own share, not the sample-wide share.
+        # The ATE weights are one, so this does not change param = "all".
+        phat.g <- rep(mean(num(d)[idx]), sum(idx))
+
+        res[[i]] <-
+          if (conditional && param == "treat") {
+            att.npm.cond(y = num(y)[idx], d = num(d)[idx],
+                         yhat0 = yhat0[idx], yhat1 = NULL,
+                         dhat  = dhat[idx],  phat  = phat.g,
+                         trim  = trim, centered = centered)
+          } else if (conditional && param == "untr") {
+            atu.npm.cond(y = num(y)[idx], d = num(d)[idx],
+                         yhat1 = yhat1[idx], yhat0 = NULL,
+                         dhat  = dhat[idx],  phat  = phat.g,
+                         trim  = trim, centered = centered)
+          } else {
+            ate.npm(y = y[idx], d = d[idx],
+                    parameter = param,
+                    yhat1 = yhat1[idx],
+                    yhat0 = yhat0[idx],
+                    dhat  = dhat[idx],
+                    phat  = if (param == "all") phat[idx] else phat.g,
+                    trim = trim)
+          }
+
+        res[[i]]$trim.summary$trimmed_obs <-
+          collect.trimmed.obs(y[idx], d[idx], x[idx, , drop = FALSE],
+                              res[[i]]$trim.summary$trimmed_indices)
+      }
+      out[[paste0(tg, ".", j)]] <- res
     }
-    ate.g[[j]] <- res
   }
-  return(ate.g)
+  return(out)
 }
 
 # computes ate for each group plm
@@ -273,7 +508,7 @@ group.ate.plm <- function(dml, groups) {
       yhat  <-   dml$fits[[i]]$preds$yhat
       res[[i]] <- ate.plm(y[idx], d[idx], yhat[idx], dhat[idx])
     }
-    ate.g[[j]] <- res
+    ate.g[[paste0("ate.", j)]] <- res
   }
   return(ate.g)
 }

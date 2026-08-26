@@ -54,7 +54,7 @@ confidence_bounds(...)
 
 \item{cf.d}{how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.}
 
-\item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
 
 \item{...}{arguments passed to other methods.}
 
@@ -79,4 +79,26 @@ For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidenc
 }
 \description{
 Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
+}
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# bounds on the ATE under postulated confounding strength
+dml_bounds(fit, cf.y = 0.03, cf.d = 0.03)
+confidence_bounds(fit, cf.y = 0.03, cf.d = 0.03, level = 0.95)
+}
+\references{
+Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+  (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+  \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+
+  Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Conditional ATT/ATU formulation.)
 }

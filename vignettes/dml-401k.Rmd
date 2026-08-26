@@ -152,7 +152,7 @@ The ATE varies substantially across groups, with effects ranging from approximat
 library(ggplot2)
 
 # coefficient plot under conditional ignorability
-group.names <- paste0("gate.q",1:4)
+group.names <- paste0("g.ate.q",1:4)
 df   <- data.frame(groups = 1:4, estimate = coef(dml.401k.npm)[group.names])
 cis  <- confint(dml.401k.npm)[group.names, ]
 cis  <- setNames(as.data.frame(cis), c("lwr.ci", "upr.ci"))

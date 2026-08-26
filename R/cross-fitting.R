@@ -39,17 +39,17 @@ cross.fitting <- function(y, d, x,
   # predictions
   dhat <- yhat <- yhat1 <-  yhat0 <- phat <- rep(NA, nobs)
 
-  # data for npm
-  dx   <- data.frame(d, x)
-  dx0  <- data.frame("d" = rep(d0, nobs), x)
-  dx1  <- data.frame("d" = rep(d1, nobs), x)
+  # d is a factor when d.class = TRUE, and mean() of a factor is NA. Use the
+  # numeric treatment for the propensity score.
+  d.num <- num(d)
+
   if (verbose) cat(" -- Folds: ")
 
   for (b in 1:length(Id)) {
 
     if (verbose) cat(b," ")
 
-    phat[Id[[b]]] <- mean(d[ -Id[[b]] ])
+    phat[Id[[b]]] <- mean(d.num[ -Id[[b]] ])
 
     if (model == "plm") {
       # d model
@@ -85,11 +85,13 @@ cross.fitting <- function(y, d, x,
       }
 
       if (!isTRUE(all.equal(yreg0, yreg1))) {
-        yreg <- yreg0
-        warning("Only one method should be specified for yreg when using 'plm'; setting 'yreg' to 'yreg0'.")
+        warning("Only one method should be specified for yreg when using 'plm'; using 'yreg0'.")
       }
 
-      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE], y = ytil ), yreg)
+      # Use yreg0, the unpacked spec, exactly as the treatment side uses dreg.
+      # yreg itself may still hold the yreg0/yreg1 pair, which train() cannot
+      # read: it would take both as ... and fall back to its default method.
+      args.yx  <- c(list(x = x[ -Id[[b]], ,drop = FALSE], y = ytil ), yreg0)
       model.yx <- silent.do.call(what = "train", args = args.yx, warnings = warnings)
       metric.y <- model.yx$metric
 
@@ -144,42 +146,60 @@ cross.fitting <- function(y, d, x,
         sdy0 <- sdy1 <- 1
       }
 
-      args.y0x  <- c(
-        list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d0, ,drop = FALSE],
-             y = ytil0), yreg0)
-      model.y0x <-
-        silent.do.call(what = "train", args = args.y0x, warnings = warnings)
-      metric.y0 <- model.y0x$metric
+      if (!is.null(yreg0)) {
+        args.y0x  <- c(
+          list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d0, ,drop = FALSE],
+               y = ytil0), yreg0)
+        model.y0x <-
+          silent.do.call(what = "train", args = args.y0x, warnings = warnings)
+        metric.y0 <- model.y0x$metric
+      } else {
+        model.y0x <- NULL
+        metric.y0 <- NULL
+      }
 
-      args.y1x  <- c(
-        list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d1, ,drop = FALSE],
-             y = ytil1), yreg1)
-      model.y1x <-
-        silent.do.call(what = "train", args = args.y1x, warnings = warnings)
-      metric.y1 <- model.y1x$metric
+      if (!is.null(yreg1)) {
+        args.y1x  <- c(
+          list(x = x[ -Id[[b]], ,drop = FALSE][dtil == d1, ,drop = FALSE],
+               y = ytil1), yreg1)
+        model.y1x <-
+          silent.do.call(what = "train", args = args.y1x, warnings = warnings)
+        metric.y1 <- model.y1x$metric
+      } else {
+        model.y1x <- NULL
+        metric.y1 <- NULL
+      }
 
       metric.y <- list(metric.y0 = metric.y0, metric.y1 = metric.y1)
 
       if (save.models) {
-        out$model.y[[b]] <- list(model.y0x = model.y0x, model.y1x = model.y1x)
+        out$model.y[[b]]  <- list(model.y0x = model.y0x, model.y1x = model.y1x)
         out$model.y0[[b]] <- model.y0x
         out$model.y1[[b]] <- model.y1x
-        out$model.d[[b]] <- model.dx
+        out$model.d[[b]]  <- model.dx
       }
 
       if (all(target == "att")) {
-        yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
-        yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = FALSE])*sdy1 + muy1
+        if (!is.null(model.y0x))
+          yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
+        if (!is.null(model.y1x))
+          yhat1[Id[[b]]][num(d[Id[[b]]]) == 1] <- safe.predict(model.y1x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 1], ,drop = FALSE])*sdy1 + muy1
       } else if (all(target == "atu")) {
-        yhat0[Id[[b]]][num(d[Id[[b]]]) == 0] <- safe.predict(model.y0x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 0], ,drop = FALSE])*sdy0 + muy0
-        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
+        if (!is.null(model.y0x))
+          yhat0[Id[[b]]][num(d[Id[[b]]]) == 0] <- safe.predict(model.y0x, newdata = x[Id[[b]][num(d[Id[[b]]]) == 0], ,drop = FALSE])*sdy0 + muy0
+        if (!is.null(model.y1x))
+          yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
       } else {
-        yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
-        yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
+        if (!is.null(model.y0x))
+          yhat0[Id[[b]]] <- safe.predict(model.y0x, newdata = x[Id[[b]], ,drop = FALSE])*sdy0 + muy0
+        if (!is.null(model.y1x))
+          yhat1[Id[[b]]] <- safe.predict(model.y1x, newdata = x[Id[[b]], ,drop = FALSE])*sdy1 + muy1
       }
 
-      yhat[Id[[b]]][num(d[Id[[b]]]) == 0] <- yhat0[Id[[b]]][num(d[Id[[b]]]) == 0]
-      yhat[Id[[b]]][num(d[Id[[b]]]) == 1] <- yhat1[Id[[b]]][num(d[Id[[b]]]) == 1]
+      if (!is.null(model.y0x))
+        yhat[Id[[b]]][num(d[Id[[b]]]) == 0] <- yhat0[Id[[b]]][num(d[Id[[b]]]) == 0]
+      if (!is.null(model.y1x))
+        yhat[Id[[b]]][num(d[Id[[b]]]) == 1] <- yhat1[Id[[b]]][num(d[Id[[b]]]) == 1]
     }
 
   }
@@ -205,16 +225,18 @@ cross.fitting <- function(y, d, x,
     out$preds$yhat0 <- yhat0
     out$preds$yhat1 <- yhat1
 
-    rmse_dhat <- sqrt(mean((num(d) - dhat)^2))
-    rmse_yhat0 <- sqrt(mean((num(y[num(d) == 0]) -
-                               yhat0[num(d) == 0])^2))
-    rmse_yhat1 <- sqrt(mean((num(y[num(d) == 1]) -
-                               yhat1[num(d) == 1])^2))
-    rmse_yhat <- sqrt(mean((num(y) - yhat)^2))
-    out$rmse$dhat <- rmse_dhat
+    rmse_dhat  <- sqrt(mean((num(d) - dhat)^2))
+    rmse_yhat0 <- if (!is.null(yreg0))
+      sqrt(mean((num(y[num(d) == 0]) - yhat0[num(d) == 0])^2)) else NULL
+    rmse_yhat1 <- if (!is.null(yreg1))
+      sqrt(mean((num(y[num(d) == 1]) - yhat1[num(d) == 1])^2)) else NULL
+    rmse_yhat  <- if (!is.null(yreg0) && !is.null(yreg1))
+      sqrt(mean((num(y) - yhat)^2)) else if (!is.null(yreg0)) rmse_yhat0 else rmse_yhat1
+
+    out$rmse$dhat  <- rmse_dhat
     out$rmse$yhat0 <- rmse_yhat0
     out$rmse$yhat1 <- rmse_yhat1
-    out$rmse$yhat <- rmse_yhat
+    out$rmse$yhat  <- rmse_yhat
   }
   out$preds$phat <- phat
   if(verbose) cat("\n")

@@ -79,11 +79,31 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##' @param model an object of class \code{\link{dml}} or \code{\link{dml_bounds}}.
 ##' @param cf.y (nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).
 ##' @param cf.d how much variation latent variables create in the Riesz Representer of the target parameters. Must be a number between (0, 1). When the target of interest is the ATE in a partially linear model, this corresponds to the partial R2 of omitted variables with the treatment. When the target of interest is the ATE in a non-parametric model with a binary treatment, this corresponds to the gains in precision (i.e, 1/variance) when predicting who is assigned to treatment.
-##' @param rho2 degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
 ##' @param ... arguments passed to other methods.
 ##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
 ##' @param level confidence level. Default is \code{0.95}.
 ##' @returns For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Conditional ATT/ATU formulation.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # bounds on the ATE under postulated confounding strength
+##' dml_bounds(fit, cf.y = 0.03, cf.d = 0.03)
+##' confidence_bounds(fit, cf.y = 0.03, cf.d = 0.03, level = 0.95)
 ##' @export
 dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 
@@ -157,8 +177,9 @@ confidence_bounds.numeric <- function(theta.s, S2,
   theta.p <- theta.s + k*sqrt(S2)
   level[level < 0.5] <- 0.5
   t_crit <- qnorm(level)
-  lwr <- combine.median(theta.m, se.m)
-  upr <- combine.median(theta.p, se.p)
+  combine <- if (combine.method == "mean") combine.mean else combine.median
+  lwr <- combine(theta.m, se.m)
+  upr <- combine(theta.p, se.p)
   lwr <- unname(lwr["estimate"] - t_crit*lwr["se"])
   upr <- unname(upr["estimate"] + t_crit*upr["se"])
   c(lwr = lwr, upr = upr)
@@ -229,6 +250,10 @@ rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
   (confidence_bounds(dml.fit,  cf.y = rv,cf.d = rv, level = 1 - alpha)[par,side] - theta)^2
 }
 
+xrv_fun <- function(dml.fit, xrv, par, side = "lwr", theta = 0, alpha = 0.05, rho2 = 1){
+  (confidence_bounds(dml.fit, rho2 = rho2, cf.y = 1,cf.d = xrv, level = 1 - alpha)[par,side] - theta)^2
+}
+
 
 ##' Computes Robustness Values for Debiased Machine Learning
 ##'
@@ -239,6 +264,25 @@ rv_fun <- function(dml.fit, rv, par, side = "lwr", theta = 0, alpha = 0.05){
 ##'
 ##'
 ##' @returns A named numeric vector of robustness values.
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Conditional ATT/ATU formulation.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # smallest confounding strength that would overturn the conclusion
+##' robustness_value(fit, theta = 0, alpha = 0.05)
 ##' @export
 robustness_value <- sensemakr::robustness_value
 
@@ -267,6 +311,92 @@ robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
   # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
   # grid[rv.idx]
 }
+
+###################################################################################################################
+##' Computes Extreme Robustness Values for Debiased Machine Learning
+##'
+##' @description
+##' This function computes the extreme robustness value of a target parameter estimated via debiased machine learning.
+##'
+##' The extreme robustness value describes the minimum strength of association (parameterized in terms of partial R2) that omitted variables would need to have with the Riesz Representer alone so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
+##'
+##'
+##' @references
+##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+##'   \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Conditional ATT/ATU formulation.)
+##' @examples
+##' data("pension")
+##' set.seed(3); idx <- sample(nrow(pension), 2000)
+##' y <- pension$net_tfa[idx]
+##' d <- pension$e401[idx]
+##' x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+##'                   data = pension[idx, ])
+##' fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+##'
+##' # extreme robustness value: confounding acting on the Riesz representer alone
+##' extreme_robustness_value(fit, theta = 0, alpha = 0.05)
+##' @export
+extreme_robustness_value <- sensemakr::extreme_robustness_value
+
+##' @rdname extreme_robustness_value
+##' @param model an object of class \code{\link{dml}} or \code{\link[=dml_bounds]{dml.bounds}}.
+##' @param theta the null hypothesis of interest for the target parameter theta. Default is \code{theta =0} (zero null hypothesis).
+##' @param alpha significance level. Default is \code{alpha = 0.05}.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
+##' @inheritParams summary.dml
+##' @exportS3Method sensemakr::extreme_robustness_value dml
+extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 1,...){
+  conf <- confint(model, level = 1 - alpha,...)
+  out <- setNames(rep(NA,nrow(conf)), rownames(conf))
+  for (i in 1:nrow(conf)) {
+    if (conf[i,1] <= theta & theta <= conf[i,2]) {
+      out[i] <- 0
+      next
+    }
+    side <- ifelse(theta < conf[i,1], "lwr", "upr")
+    # print(side)
+    if (alpha == 1) {
+      # estimate bound: theta.s +/- sqrt(rho2 * x/(1-x)) * S, so the XRV solves
+      # f0^2 = rho2 * x/(1-x). Group ("g.") rows live in results$groups.
+      par.i <- rownames(conf)[i]
+      res.i <- if (startsWith(par.i, .group_marker)) {
+        model$results$groups[[sub("^g\\.", "", par.i)]]
+      } else {
+        model$results$main[[unname(.target_to_slot[par.i])]]
+      }
+      S2.i   <- stats::median(extract_estimate(res.i, "S2"))
+      if (!is.finite(S2.i) || S2.i <= 0) {
+        # small subsamples can estimate the (theoretically positive) S2
+        # negative; be explicit instead of returning NaN
+        warning("The S2 estimate for '", par.i, "' is not positive; ",
+                "returning NA for its extreme robustness value.")
+        out[i] <- NA_real_
+        next
+      }
+      f0     <- unname(abs(theta - coef(model)[par.i]) / sqrt(S2.i))
+      out[i] <- (f0^2 / rho2) / (1 + f0^2 / rho2)
+    } else {
+      fn <- function(xrv) xrv_fun(xrv, dml.fit = model, par = names(out)[i],
+                                  side = side, theta = theta, alpha = alpha,
+                                  rho2 = rho2)
+      out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
+    }
+  }
+
+  return(out)
+}
+##' @rdname extreme_robustness_value
+##' @exportS3Method sensemakr::extreme_robustness_value dml.bounds
+extreme_robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, rho2 = 1, ...){
+  extreme_robustness_value(model$dml.fit, theta = theta, alpha = alpha, rho2 = rho2, ...)
+}
+
+########################################################################################
 
 ##' @rdname robustness_value
 ##' @exportS3Method sensemakr::robustness_value dml.bounds

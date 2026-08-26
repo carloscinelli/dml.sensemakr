@@ -56,7 +56,7 @@ ovb_contour_plot(...)
 
 \item{combine.method}{method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.}
 
-\item{rho2}{degree of adversity. Default is \code{rho=1}, which assumes the maximum degree of adversity of confounding.}
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
 
 \item{cf.y}{(nonparametric) partial R2 of the omitted variables with the outcome. Must be a number between (0, 1).}
 
@@ -84,9 +84,11 @@ ovb_contour_plot(...)
 
 \item{col.thr.line}{color of threshold contour line.}
 
-\item{xlab}{label of x axis. If `NULL`, default label is used.}
+\item{xlab}{label of x axis. If `NULL` (default), a label matching the
+target's omitted-variable-bias interpretation is chosen automatically.}
 
-\item{ylab}{label of y axis. If `NULL`, default label is used.}
+\item{ylab}{label of y axis. If `NULL` (default), chosen automatically to
+match the target, in the same way as `xlab`.}
 
 \item{cex.lab}{The magnification to be used for x and y labels relative to the current setting of cex.}
 

@@ -23,6 +23,8 @@ dml(
   save.models = FALSE,
   y.class = FALSE,
   d.class = FALSE,
+  conditional = NULL,
+  centered = FALSE,
   verbose = TRUE,
   warnings = FALSE
 )
@@ -32,7 +34,7 @@ dml_gate(dml.fit, groups, ...)
 \arguments{
 \item{y}{\code{\link{numeric}} vector with the outcome.}
 
-\item{d}{\code{\link{numeric}} vector with the treatment. If the treatment is binary, it needs to be encoded as as: zero = absence of treatment, one = presence of treatment.}
+\item{d}{\code{\link{numeric}} vector with the treatment. If the treatment is binary, it needs to be encoded as: zero = absence of treatment, one = presence of treatment.}
 
 \item{x}{\code{\link{numeric}} vector or \code{\link{matrix}} with covariates. We suggest constructing \code{x} using \code{\link{model.matrix}}.}
 
@@ -58,11 +60,15 @@ dml_gate(dml.fit, groups, ...)
 
 \item{dirty.tuning}{should the tuning of the machine learning method happen within each cross-fit fold ("clean"), or using all the data ("dirty")? Default is dirty tuning (\code{dirty.tuning = TRUE}). As long as the number of choices for the tuning parameters is not too big, dirty tuning is faster and should not affect the asymptotic guarantees of DML.}
 
-\item{save.models}{should the fitted models of each iterated be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.}
+\item{save.models}{should the fitted models of each iteration be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.}
 
 \item{y.class}{when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.}
 
-\item{d.class}{when \code{d} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.}
+\item{d.class}{when \code{d} is binary, should the treatment regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.}
+
+\item{conditional}{logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise. The conditional parameterization is the recommended one (Wang et al., 2026); \code{conditional = FALSE} gives the unconditional parameterization of Chernozhukov et al. (2026), retained so those results can be reproduced.}
+
+\item{centered}{logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Note the centered version can yield negative estimates of \code{nu2.s} in finite samples.}
 
 \item{verbose}{if \code{TRUE} (default) prints steps of the fitting procedure.}
 
@@ -139,4 +145,8 @@ ovb_contour_plot(dml.401k, cf.y = 0.03, cf.d = 0.04,
 }
 \references{
 Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+
+  Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Basis of the conditional ATT/ATU parameterization.)
 }

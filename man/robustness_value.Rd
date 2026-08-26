@@ -29,3 +29,24 @@ This function computes the robustness value of a target parameter estimated via 
 
 The robustness value describes the minimum strength of association (parameterized in terms of  R2) that omitted variables would need to have both with the outcome and with the Riesz Representer so that the confidence bounds for the target parameter includes zero (or another threshold of interest).
 }
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# smallest confounding strength that would overturn the conclusion
+robustness_value(fit, theta = 0, alpha = 0.05)
+}
+\references{
+Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
+  (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
+  \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+
+  Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Conditional ATT/ATU formulation.)
+}

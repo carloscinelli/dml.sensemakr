@@ -4,18 +4,38 @@
 \alias{dml_benchmark}
 \title{Benchmarks for the strength of latent variables using observed covariates}
 \usage{
-dml_benchmark(model, benchmark_covariates, target = "ate")
+dml_benchmark(model, benchmark_covariates, dreg = NULL, yreg = NULL)
 }
 \arguments{
 \item{model}{an object of class \code{\link{dml}}.}
 
-\item{benchmark_covariates}{a character vector with the names of the observed covariates that will be used for benchmarking.}
+\item{benchmark_covariates}{the observed covariates to benchmark. Either a
+character vector of column names in the model's \code{x} (each benchmarked
+on its own), or a named list where each element is a character vector of
+column names to drop \emph{together} in the refit (e.g. the
+dummy columns of a factor: \code{list(region = c("region3", "region4"))}).
+List element names become the row labels; unnamed elements are labelled by
+the column name (singletons) or the columns joined by \code{"+"}.}
 
-\item{target}{character. The target parameter. Default is \code{"ate"}.}
+\item{dreg, yreg}{optional learner specifications (as in \code{\link{dml}}) for
+the \emph{refit}, overriding those stored in \code{model$call}.}
 }
 \value{
 An object of class \code{dml_benchmark} containing benchmark results.
 }
 \description{
 Compute benchmarks for the strength of latent variables, under the assumption that the gains in explanatory power due to latent variables is proportional to the gains of observed covariates.
+}
+\examples{
+data("pension")
+set.seed(3); idx <- sample(nrow(pension), 2000)
+y <- pension$net_tfa[idx]
+d <- pension$e401[idx]
+x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                  data = pension[idx, ])
+fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.seed = 3, verbose = FALSE)
+
+# observed gains of income, from a refit without it
+bench <- dml_benchmark(fit, benchmark_covariates = "inc")
+summary(bench)
 }

@@ -47,15 +47,26 @@ summary.dml <- function(object, combine.method = "median", ...){
 
   # goodness of fits
   comb_fun <- get(combine.method)
-  out$r2y <- comb_fun(sapply(object$fits, function(x) r2(x$preds$yhat, object$data$y)))
+  is_cond <- isTRUE(object$info$conditional)
+  if (is_cond && identical(object$info$target, "atu")) {
+    # conditional ATU: yhat0 is NULL; report R2 of yhat1 on treated units only
+    d1_idx <- object$data$d == 1
+    out$r2y <- comb_fun(sapply(object$fits,
+                               function(f) r2(f$preds$yhat1[d1_idx], object$data$y[d1_idx])))
+  } else if (is_cond) {
+    # conditional ATT: yhat1 is NULL; report R2 of yhat0 on control units only
+    d0_idx <- object$data$d == 0
+    out$r2y <- comb_fun(sapply(object$fits,
+                               function(f) r2(f$preds$yhat0[d0_idx], object$data$y[d0_idx])))
+  } else {
+    out$r2y <- comb_fun(sapply(object$fits, function(x) r2(x$preds$yhat, object$data$y)))
+  }
   out$r2d <- comb_fun(sapply(object$fits, function(x) r2(x$preds$dhat, object$data$d)))
 
-  # main coefs
-  # main <- rbind(object$coefs$main[combine.method,])
-  # rownames(main) <- "ate"
-  main <- lapply(object$coefs$main, function(x) x[combine.method, ])
+  # main coefs — only show slots matching the requested target(s)
+  main <- lapply(.target_coefs(object), function(x) x[combine.method, ])
   main <- do.call("rbind", main)
-  rownames(main) <- paste0("ate.", rownames(main))
+  rownames(main) <- .slot_to_target[rownames(main)]
   main <- expand.cmat(main)
   out$main <- main
 
@@ -64,7 +75,7 @@ summary.dml <- function(object, combine.method = "median", ...){
   if (!no.groups) {
     groups <- lapply(object$coefs$groups, function(x) x[combine.method, ])
     groups <- do.call("rbind", groups)
-    rownames(groups) <- paste0("gate.", rownames(groups))
+    rownames(groups) <- paste0(.group_marker, rownames(groups))
     groups <- expand.cmat(groups)
     out$groups <- groups
   }
@@ -74,18 +85,40 @@ summary.dml <- function(object, combine.method = "median", ...){
 }
 
 
+# Maps internal slot names to user-facing target labels and vice-versa.
+.slot_to_target <- c(all = "ate", treat = "att", untr = "atu")
+.target_to_slot <- c(ate = "all", att = "treat", atu = "untr")
+
+# Group rows are named "g.<estimand>.<group level>". The "g." marker selects
+# them: grepl("^g\\.", names(coef(fit))).
+.group_marker <- "g."
+
+
+
+
+# Internal: return only the coefs$main slots that match the requested target(s);
+# fall back to whatever was actually computed so a fitted object always prints.
+.target_coefs <- function(object) {
+  keep <- unname(.target_to_slot[object$info$target])
+  keep <- keep[keep %in% names(object$coefs$main)]
+  if (!length(keep)) keep <- names(object$coefs$main)
+  object$coefs$main[keep]
+}
+
 ##' @rdname summary.dml
 ##' @description  The \code{coef} function extracts the coefficients.
 ##' @export
 coef.dml <- function(object, combine.method = "median", ...){
-  ate <- sapply(object$coefs$main, function(x) x[combine.method, "estimate"])
-    #object$coefs$main[combine.method, "estimate"]
+  tc   <- .target_coefs(object)
+  ate  <- sapply(tc, function(x) x[combine.method, "estimate"])
+  names(ate) <- .slot_to_target[names(ate)]
   if (!is.null(object$coefs$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "estimate"])
+    names(gate) <- paste0(.group_marker, names(gate))
   } else{
     gate = NULL
   }
-  c(ate = ate, gate = gate)
+  c(ate, gate)
 }
 
 ##' @rdname summary.dml
@@ -98,14 +131,16 @@ se <- function(object, ...){
 ##' @description  The \code{se} function extracts the standard errors.
 ##' @export
 se.dml <- function(object, combine.method = "median", ...){
-  ate <- sapply(object$coefs$main, function(x) x[combine.method, "se"])
-    #object$coefs$main[combine.method, "se"]
-  if(!is.null(object$coefs$groups)){
+  tc   <- .target_coefs(object)
+  ate  <- sapply(tc, function(x) x[combine.method, "se"])
+  names(ate) <- .slot_to_target[names(ate)]
+  if (!is.null(object$coefs$groups)) {
     gate <- sapply(object$coefs$groups, function(x) x[combine.method, "se"])
+    names(gate) <- paste0(.group_marker, names(gate))
   } else{
     gate = NULL
   }
-  c(ate= ate, gate = gate)
+  c(ate, gate)
 }
 
 ##' @rdname summary.dml
@@ -157,15 +192,20 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
   cat("\n")
   cat("", "Model:", ifelse(x$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
   cat("", "Cross-Fitting:",x$info$cf.folds, "folds,", x$info$cf.reps, "reps", "\n")
+  yreg0_name <- if (is.null(x$info$yreg$yreg0)) "(not used)" else attr(x$info$yreg$yreg0$method, "name")
+  yreg1_name <- if (is.null(x$info$yreg$yreg1)) "(not used)" else attr(x$info$yreg$yreg1$method, "name")
   cat("", "ML Method:",
-      "outcome", paste0("(yreg0:", attr(x$info$yreg$yreg0$method, "name"),
-                        ", yreg1:", attr(x$info$yreg$yreg1$method, "name"), ", R2 = ", round(x$r2y*100,3), "%),"),
+      "outcome", paste0("(yreg0:", yreg0_name,
+                        ", yreg1:", yreg1_name, ", R2 = ", round(x$r2y*100,3), "%),"),
       "treatment", paste0("(", attr(x$info$dreg$method,"name"), ", R2 = ", round(x$r2d*100,3), "%)\n"))
   cat("", "Tuning:", ifelse(x$info$dirty.tuning, "dirty", "clean"), "\n")
 
   cat("\n")
 
-  cat("Average Treatment Effect:", "\n\n")
+  target_label <- if (isTRUE(x$info$conditional)) {
+    if (identical(x$info$target, "atu")) "Conditional ATU" else "Conditional ATT"
+  } else "Average Treatment Effect"
+  cat(target_label, ":", "\n\n")
   print(x$main, digits = digits)
 
   no.groups <- is.null(x$groups)
@@ -178,8 +218,11 @@ print.summary_dml <- function(x, digits = max(3L, getOption("digits") - 3L), int
   cat("Note: DML estimates combined using the", x$combine.method, "method.")
 
   if (interpret) {
-    yreg.method <- x$info$yreg$method$label
-    yreg.lib    <- x$info$yreg$method$library[[1]]
+    # yreg is stored as list(yreg0, yreg1); report the side actually used
+    # (yreg0 for ATE/ATT/PLM, yreg1 for conditional ATU).
+    yreg.used   <- if (!is.null(x$info$yreg$yreg0)) x$info$yreg$yreg0 else x$info$yreg$yreg1
+    yreg.method <- yreg.used$method$label
+    yreg.lib    <- yreg.used$method$library[[1]]
     dreg.method <- x$info$dreg$method$label
     dreg.lib    <- x$info$dreg$method$library[[1]]
     cf.folds    <- x$info$cf.folds

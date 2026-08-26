@@ -72,16 +72,22 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   # cat("Short Estimates and Bounds on Omitted Variable Bias\n")
   # cat("\n")
   cat("Sensitivity Parameters\n",
-      "","cf.y =", paste0(x$info$cf.y,"\n"),
-      "","r2rr =", paste0(x$info$cf.d, "\n"),
-      "", "rho =", paste0(x$info$rho,""), "\n")
+      "", "cf.y =", paste0(x$info$cf.y, "\n"),
+      "", "cf.d =", paste0(x$info$cf.d, "\n"),
+      "", "rho2 =", paste0(x$info$rho2, ""), "\n")
   # cat("\nBounds on Average Treatment Effect:", "\n\n")
   # print()
   main <- x$main
   if (!is.null(main)) {
     cat("\n")
     for (i in seq_along(main)) {
-      cat("\nBounds on Average Treatment Effect:", names(main)[i], "\n\n")
+      # names(main) are the internal slots (all/treat/untr); name the estimand
+      tg  <- .slot_to_target[names(main)[i]]
+      lab <- c(ate = "Average Treatment Effect",
+               att = "Average Treatment Effect on the Treated",
+               atu = "Average Treatment Effect on the Untreated")[tg]
+      if (is.na(lab)) lab <- paste("Average Treatment Effect:", names(main)[i])
+      cat("\nBounds on ", lab, "\n\n", sep = "")
       print(main[[i]], digits = digits)
     }
   }
@@ -90,7 +96,8 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
   if (!is.null(groups)) {
     cat("\n")
     for (i in seq_along(groups)) {
-      cat("\nBounds on Group Average Treatment Effect:","Group", names(groups)[i], "\n\n")
+      cat("\nBounds on Group Average Treatment Effect:", "Group",
+          names(groups)[i], "\n\n")
       print(groups[[i]], digits = digits)
     }
   }
@@ -100,11 +107,10 @@ print.summary_dml.bounds <- function(x, digits = 2, ...){
 #' @rdname print.dml.bounds
 #' @export
 coef.dml.bounds <- function(object, combine.method = "median", ...){
-  # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "estimate"]))
   if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     ate <- do.call("rbind", ate)
-    rownames(ate) <- paste0("ate.", rownames(ate))
+    rownames(ate) <- .slot_to_target[rownames(ate)]
   } else{
     ate = NULL
   }
@@ -112,7 +118,7 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
   if (!is.null(object$coefs$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "estimate"]))
     gate <- do.call("rbind", gate)
-    rownames(gate) <- paste0("gate.", rownames(gate))
+    rownames(gate) <- paste0(.group_marker, rownames(gate))
   } else{
     gate = NULL
   }
@@ -123,18 +129,17 @@ coef.dml.bounds <- function(object, combine.method = "median", ...){
 #' @rdname print.dml.bounds
 #' @export
 se.dml.bounds <- function(object, combine.method = "median", ...){
-  # ate <- rbind(ate = sapply(object$coefs$main, function(x) x[combine.method, "se"]))
   if (!is.null(object$coefs$main)) {
     ate <- lapply(object$coefs$main, function(x) sapply(x, function(x) x[combine.method, "se"]))
     ate <- do.call("rbind", ate)
-    rownames(ate) <- paste0("ate.", rownames(ate))
+    rownames(ate) <- .slot_to_target[rownames(ate)]
   } else{
     ate = NULL
   }
   if (!is.null(object$coefs$groups)) {
     gate <- lapply(object$coefs$groups, function(x) sapply(x, function(x) x[combine.method, "se"]))
     gate <- do.call("rbind", gate)
-    rownames(gate) <- paste0("gate.", rownames(gate))
+    rownames(gate) <- paste0(.group_marker, rownames(gate))
   } else{
     gate = NULL
   }

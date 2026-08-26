@@ -11,11 +11,16 @@ sensemakr <- function(model, ...) {
 }
 
 ##' @param model a model created with the function \code{\link{dml}}.
-##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.
+##' @param rho2 degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.
 ##' @param ... arguments passed to other methods.
 ##' @param benchmark_covariates  character vector of the names of covariates that will be used to bound the plausible strength of the latent variables.
 ##' @param cf.y (optional) R2 based strength of confounding in the outcome regression. It corresponds to the parameter R^2_\{y-g_s ~ g-g_s\} in Chernozhukov et al (2026). Generally, it is equal by the (nonparametric) partial R2 of the confounders with the outcome. Default is NULL.
 ##' @param cf.d (optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2026). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.
+##' @param kD numeric vector of multipliers for the benchmark gains on the treatment
+##'   side: each value k adds one bounds row per benchmark covariate, postulating a
+##'   latent variable whose gain in the Riesz Representer is k times the covariate's
+##'   observed gain. Default \code{1}.
+##' @param kY same as \code{kD}, for the outcome side. Default is \code{kD}.
 ##' @param bound_label label to bounds provided manually in \code{cf.y} and \code{cf.d}.
 ##' @param theta null hypothesis.
 ##' @param alpha significance level.
@@ -51,6 +56,7 @@ sensemakr.dml <- function(model,
                           benchmark_covariates = NULL,
                           cf.y = NULL, cf.d = cf.y,
                           rho2 = 1,
+                          kD = 1, kY = kD,
                           bound_label = "Confounding Scenario",
                           theta = 0, alpha = 0.05, ...){
 
@@ -72,17 +78,71 @@ sensemakr.dml <- function(model,
   rvs <- cbind(rv, rva)
   out$sensitivity_stats <- rvs
 
-  # confidence bounds
+  # bounds on omitted variable bias, in two tables: the postulated scenario
+  # (cf.y/cf.d/rho2, one row per target, groups included), and the benchmark
+  # scenarios (one row per multiplier per covariate, labelled "<k>x <name>",
+  # carrying both the fixed-benchmark and benchmark-uncertainty CIs).
+  rows <- NULL
+
   if (!is.null(cf.y)) {
     conf.bounds <- confidence_bounds(model, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
-    out$conf.bounds <- conf.bounds
+    out$conf.bounds <- conf.bounds       # kept for backward compatibility
+    pt <- dml_bounds(model, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
+    cf <- coef(pt)
+    tg <- rownames(conf.bounds)
+    rows <- data.frame(target = tg,
+                       bound.label = bound_label,
+                       cf.y = cf.y, cf.d = cf.d, rho2 = rho2,
+                       theta.minus = unname(cf["theta.m", tg]),
+                       theta.plus  = unname(cf["theta.p", tg]),
+                       lwr = unname(conf.bounds[tg, "lwr"]),
+                       upr = unname(conf.bounds[tg, "upr"]),
+                       row.names = NULL)
   }
 
-  # benchmarks
-  # if (!is.null(benchmark_covariates) & !is.null(model$results$main$all)) {
-  if (!is.null(benchmark_covariates) & !is.null(model$results$main[[1]])) {
-    bench.bounds <- dml_benchmark(model = model, benchmark_covariates = benchmark_covariates)
-    out$bench.bounds <- bench.bounds
+  if (!is.null(benchmark_covariates)) {
+    bench.slot <- unname(.target_to_slot[model$info$target])
+    single <- length(bench.slot) == 1L && !is.na(bench.slot) &&
+              !is.null(model$results$main[[bench.slot]])
+    if (!single) {
+      warning("Benchmarks apply to one target at a time, and this fit has ",
+              length(model$info$target), " (",
+              paste(model$info$target, collapse = ", "),
+              "). The bounds table reports only the manual scenario.",
+              call. = FALSE)
+    } else {
+      bench <- dml_benchmark(model = model,
+                             benchmark_covariates = benchmark_covariates)
+      out$bench.bounds <- bench
+      gains <- summary(bench)$benchmarks
+      kD.v  <- kD
+      kY.v  <- rep_len(kY, length(kD.v))
+      bt    <- NULL
+      for (i in seq_along(kD.v)) {
+        bb <- as.data.frame(benchmark_bounds(model, bench,
+                                             kY = kY.v[i], kD = kD.v[i]))
+        bt <- rbind(bt, data.frame(
+          target = model$info$target,
+          bound.label = if (kY.v[i] == kD.v[i]) {
+            paste0(kD.v[i], "x ", rownames(gains))
+          } else {
+            paste0(kY.v[i], "xY/", kD.v[i], "xD ", rownames(gains))
+          },
+          cf.y = unname(kY.v[i] * gains[, "gain.Y"]),
+          cf.d = unname(kD.v[i] * gains[, "gain.D"]),
+          rho  = unname(gains[, "rho"]),
+          theta.minus = bb$theta.minus, theta.plus = bb$theta.plus,
+          lwr.fixed = bb$lwr.fixed, upr.fixed = bb$upr.fixed,
+          lwr = bb$lwr, upr = bb$upr, row.names = NULL))
+      }
+      class(bt) <- c("dml_bench_bounds", "data.frame")
+      out$bench.table <- bt
+    }
+  }
+
+  if (!is.null(rows)) {
+    class(rows) <- c("dml_ovb_bounds", "data.frame")
+    out$bounds <- rows
   }
 
   class(out) <- "dml.sensemakr"
@@ -118,19 +178,16 @@ print.dml.sensemakr <- function(x,
   colnames(rvs) <- c("RV (%)", "RVa (%)")
   print(rvs)
 
-  if (!is.null(x$conf.bounds)) {
-    cat("\nConfidence Bounds for Sensitivity Scenario:\n")
-    print(x$conf.bounds)
+  if (!is.null(x$bounds)) {
+    cat("\nBounds on omitted variable bias (postulated scenario):\n\n")
+    .print_ovb_bounds(x$bounds, digits)
     cat("\n")
   }
 
-  if (!is.null(x$bench.bounds)) {
-    cat("\nBenchmark Statistic for Sensitivity Scenario:\n")
-    print.dml_benchmark(x$bench.bounds, digits = digits)
-    cat("\nVerbal interpretation of Benchmark Statistic:\n\n")
-    cat("-- gain.Y: the observed strength of association of the benchmark covariate with the outcome.\n")
-    cat("-- gain.D: the observed strength of association of the benchmark covariate with the RR.\n")
-    cat("-- delta: the bias of omitting the benchmark covariate (i.e., theta.sj - theta.s).")
+  if (!is.null(x$bench.table)) {
+    cat("\nBenchmark bounds (latent variable k times as strong as the covariate):\n\n")
+    .print_ovb_bounds(x$bench.table, digits)
+    cat("\n")
   }
 
   cat("For more information, check summary.")
@@ -165,32 +222,31 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
   }
 
 
-  if (!is.null(object$conf.bounds)) {
-    cat("\nConfidence Bounds for Sensitivity Scenario:\n")
-    print(round(object$conf.bounds, digits = digits))
-    cat("\nVerbal interpretation of confidence bounds:\n\n")
-    cat("-- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level \"point\" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level \"region\" stands for the coverage rate of the true bounds.")
+  if (!is.null(object$bounds)) {
+    cat("\nBounds on omitted variable bias (postulated scenario):\n\n")
+    .print_ovb_bounds(object$bounds, digits)
+    cat("\n-- Bounds on each target parameter under latent variables with the postulated sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds; lwr and upr are one-sided 95% confidence bounds treating those parameters as fixed.\n")
   }
 
-  if (!is.null(object$bench.bounds)) {
-    cat("\nBenchmark Statistic for Sensitivity Scenario:\n")
-    print.dml_benchmark(object$bench.bounds, digits = digits)
-    cat("\nVerbal interpretation of Benchmark Statistic:\n\n")
-    cat("-- gain.Y: the observed strength of association of the benchmark covariate with the outcome.\n")
-    cat("-- gain.D: the observed strength of association of the benchmark covariate with the RR.\n")
-    cat("-- delta: the bias of omitting the benchmark covariate (i.e., theta.sj - theta.s).")
+  if (!is.null(object$bench.table)) {
+    cat("\nBenchmark bounds (latent variable k times as strong as the covariate):\n\n")
+    .print_ovb_bounds(object$bench.table, digits)
+    cat("\n-- Each row postulates a latent variable whose gains in explanatory power are k times the observed gains of the benchmark covariate; rho is the covariate's estimated alignment. [lwr.fixed, upr.fixed] are confidence bounds treating the benchmark as fixed; [lwr, upr] account for benchmark uncertainty.\n")
   }
 
   if (object$model$info$model == "npm") {
   cat("\n\nInterpretation of sensitivity parameters:\n")
   cat(paste0("\n-- cf.y: percentage of the residual variation of the outcome explained by latent variables."))
   cat(paste0("\n-- cf.d: percentage gains in the variation of the Riesz Representer generated by latent variables:\n"))
-  if (!is.null(object$model$results$main$all))
+  is_cond_model <- isTRUE(object$model$info$conditional)
+  if (!is.null(object$model$results$main$all) && !is_cond_model)
     cat("   ATE: cf.d measures the percentage gains in the average precision on the treatment regression.\n")
   if (!is.null(object$model$results$main$treat))
-    cat("   ATT: cf.d measures the percentage gains in the average odds of getting treatment. \n")
+    cat("   ATT", if (is_cond_model) "(conditional)" else "(unconditional)",
+        ": cf.d measures the percentage gains in the average odds of getting treatment. \n")
   if (!is.null(object$model$results$main$untr))
-    cat("   ATU: cf.d measures the percentage gains in the average odds of not getting treatment. \n")
+    cat("   ATU", if (is_cond_model) "(conditional)" else "(unconditional)",
+        ": cf.d measures the percentage gains in the average odds of not getting treatment. \n")
   if (!is.null(object$model$results$groups))
     cat("-- For Group Average Treatment Effects (GATE), parameters are conditional on the relevant group.")
   }
@@ -211,6 +267,11 @@ plot.dml.sensemakr <- function(x,
                                level = 0.95,
                                combine.method = "median",
                                ...){
+  # default to the fit's own (single) target, mirroring ovb_contour_plot.dml
+  if (missing(parameter) && length(x$model$info$target) >= 1L &&
+      x$model$info$target[1] %in% c("ate", "att", "atu")) {
+    parameter <- x$model$info$target[1]
+  }
   if (!"bound.label" %in% names(list(...))) {
     ovb_contour_plot(x$model,
                      parameter = parameter,
@@ -232,4 +293,14 @@ plot.dml.sensemakr <- function(x,
                      combine.method = combine.method, ...)
   }
 
+}
+
+
+# Format the bounds-on-OVB table: round numerics, drop the target column when
+# the fit has a single target, print without row names.
+.print_ovb_bounds <- function(b, digits = 4) {
+  tb <- as.data.frame(b)
+  num <- vapply(tb, is.numeric, logical(1))
+  tb[num] <- lapply(tb[num], round, digits = digits)
+  print(tb, row.names = FALSE)
 }

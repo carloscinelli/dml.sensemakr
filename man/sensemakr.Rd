@@ -13,6 +13,8 @@ sensemakr(model, ...)
   cf.y = NULL,
   cf.d = cf.y,
   rho2 = 1,
+  kD = 1,
+  kY = kD,
   bound_label = "Confounding Scenario",
   theta = 0,
   alpha = 0.05,
@@ -30,7 +32,14 @@ sensemakr(model, ...)
 
 \item{cf.d}{(optional) R2 based strength of confounding in the Riesz representer (RR). It corresponds to the parameter 1-R^2_\{alpha ~ alpha_s\} in Chernozhukov et al (2026). It quantifies how much variation latent variables create in the RR. This interpretation can be refined for specific cases. For instance, if the target is the ATE in a partially linear model, this quantity reduces to the (nonparametric) partial R2 of the confounders with the treatment. If the target is the ATE in a nonparametric model with a binary treatment, this quantity reduces to the gains in precision in the treatment model due to latent variables.}
 
-\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity.}
+\item{rho2}{degree of adversity. Default is \code{rho2 = 1}, which assumes the maximum degree of adversity of confounding.}
+
+\item{kD}{numeric vector of multipliers for the benchmark gains on the treatment
+side: each value k adds one bounds row per benchmark covariate, postulating a
+latent variable whose gain in the Riesz Representer is k times the covariate's
+observed gain. Default \code{1}.}
+
+\item{kY}{same as \code{kD}, for the outcome side. Default is \code{kD}.}
 
 \item{bound_label}{label to bounds provided manually in \code{cf.y} and \code{cf.d}.}
 

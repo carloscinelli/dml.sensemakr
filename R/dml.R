@@ -3,7 +3,7 @@
 ##' Estimates a target parameter of interest, such as an average treatment effect (ATE), using Debiased Machine #Learning (DML).
 ##'
 ##' @param y \code{\link{numeric}} vector with the outcome.
-##' @param d \code{\link{numeric}} vector with the treatment. If the treatment is binary, it needs to be encoded as as: zero = absence of treatment, one = presence of treatment.
+##' @param d \code{\link{numeric}} vector with the treatment. If the treatment is binary, it needs to be encoded as: zero = absence of treatment, one = presence of treatment.
 ##' @param x \code{\link{numeric}} vector or \code{\link{matrix}} with covariates. We suggest constructing \code{x} using \code{\link{model.matrix}}.
 ##' @param model specifies the model. Current available options are \code{plm} for a partially linear model, and \code{npm} for a fully non-parametric model.
 ##' @param target specifies the target causal quantity of interest. Available options are \code{ate} (ATE - average treatment effect), \code{att} (ATT - average treatment effect on the treated), and \code{atu} (ATU - average treatment effect on the untreated). Note that for the partially linear model with a continuous treatment the ATE also equals the average causal derivative (ACD). For the nonparametric model, these are only available for binary treatments.
@@ -16,9 +16,11 @@
 ##' @param yreg same as \code{reg}, but specifies arguments for the outcome regression alone. Default is the same value of \code{reg}. Alternatively, a named list with elements \code{yreg0} and \code{yreg1} specifying separate methods for each.
 ##' @param dreg same as \code{reg}, but specifies arguments for the treatment regression alone. Default is the same value of \code{reg}.
 ##' @param dirty.tuning should the tuning of the machine learning method happen within each cross-fit fold ("clean"), or using all the data ("dirty")? Default is dirty tuning (\code{dirty.tuning = TRUE}). As long as the number of choices for the tuning parameters is not too big, dirty tuning is faster and should not affect the asymptotic guarantees of DML.
-##' @param save.models should the fitted models of each iterated be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.
+##' @param save.models should the fitted models of each iteration be saved? Default is \code{FALSE}. Note that setting this to true could end up using a lot of memory.
 ##' @param y.class when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
-##' @param d.class when \code{d} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
+##' @param d.class when \code{d} is binary, should the treatment regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
+##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise. The conditional parameterization is the recommended one (Wang et al., 2026); \code{conditional = FALSE} gives the unconditional parameterization of Chernozhukov et al. (2026), retained so those results can be reproduced.
+##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Note the centered version can yield negative estimates of \code{nu2.s} in finite samples.
 ##' @param verbose if \code{TRUE} (default) prints steps of the fitting procedure.
 ##' @param warnings should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.
 ##' @returns
@@ -32,6 +34,10 @@
 ##'  \item{\code{coefs}}{A \code{list} with the estimates and standard errors for each repetition.}
 ##' }
 ##' @references Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
+##'
+##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+##'   "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+##'   (Basis of the conditional ATT/ATU parameterization.)
 ##' @examples
 ##'# loads package
 ##'library(dml.sensemakr)
@@ -98,6 +104,8 @@ dml <- function(y, d, x,
                 save.models = FALSE,
                 y.class = FALSE,
                 d.class = FALSE,
+                conditional = NULL,
+                centered = FALSE,
                 verbose = TRUE,
                 warnings = FALSE){
 
@@ -106,6 +114,13 @@ dml <- function(y, d, x,
   target  <- match.arg(target,
                        choices = c("ate", "att", "atu"),
                        several.ok = TRUE)
+
+  # plm estimates a single average effect; "att"/"atu" targets are not available
+  if (model == "plm" && any(target %in% c("att", "atu"))) {
+    warning("model = 'plm' estimates a single average effect and cannot ",
+            "target 'att'/'atu'; reporting the ATE.")
+    target <- "ate"
+  }
   # check if x is numeric but not a matrix and converts to matrix.
   # this is for the case where x is a single covariate
   if (is.numeric(x) && !is.matrix(x)) {
@@ -157,10 +172,31 @@ dml <- function(y, d, x,
     warning("cf.folds set to 2 (number of cross-fitting folds need to be at least 2).")
   }
 
+  # auto-set conditional: TRUE whenever the target admits it (single "att"/"atu"
+  # target under "npm"). This is the parameterization of Wang et al. (2026); the
+  # unconditional one is only ever used when explicitly requested.
+  if (is.null(conditional)) {
+    conditional <- (model == "npm" &&
+                      (identical(target, "att") || identical(target, "atu")))
+  }
+  if (conditional && model != "npm") {
+    warning("conditional = TRUE is only supported for model = 'npm'; setting conditional = FALSE.")
+    conditional <- FALSE
+  }
+  if (conditional && !(identical(target, "att") || identical(target, "atu"))) {
+    warning("conditional = TRUE requires a single target = 'att' or 'atu'; setting conditional = FALSE.")
+    conditional <- FALSE
+  }
+
 
   out <- list()
   out$data <- list(y = y, d = d, x = x)
   out$call <-   match.call()
+  # Snapshot the variables the stored call names, so functions that re-evaluate
+  # it (e.g. dml_benchmark) resolve the user's objects. Copy the named variables
+  # rather than the caller's frame, which would keep every local alive and would
+  # be serialized with the fit.
+  out$call.env <- snapshot.call.env(out$call, parent.frame())
 
   if (y.class) {
     y <- factor(y, levels = c(0,1), labels = c("zero", "one"))
@@ -188,6 +224,8 @@ dml <- function(y, d, x,
 
   out$info <- list(model = model,
                    target = target,
+                   conditional = conditional,
+                   centered = centered,
                    cf.folds = cf.folds,
                    cf.reps = cf.reps,
                    dirty.tuning = dirty.tuning,
@@ -198,11 +236,16 @@ dml <- function(y, d, x,
     cat("Debiased Machine Learning\n")
     cat("\n")
     cat("", "Model:", ifelse(out$info$model == "plm", "Partially Linear", "Nonparametric"), "\n")
-    cat("", "Target:", out$info$target , "\n")
+    cat("", "Target:", out$info$target, if (conditional) "(conditional)" else "(unconditional)", "\n")
     cat("", "Cross-Fitting:", out$info$cf.folds, "folds,", out$info$cf.reps, "reps", "\n")
+    # conditional ATT uses yreg0 only; conditional ATU uses yreg1 only -- unless
+    # groups are requested, which need both arms for the group estimand
+    drop.arm    <- conditional
+    yreg0_label <- if (drop.arm && identical(target, "atu")) "(not used)" else attr(out$info$yreg$yreg0$method, "name")
+    yreg1_label <- if (drop.arm && identical(target, "att")) "(not used)" else attr(out$info$yreg$yreg1$method, "name")
     cat("", "ML Method:",
-        "outcome", paste0("(yreg0:", attr(out$info$yreg$yreg0$method, "name"),
-                          ", yreg1:", attr(out$info$yreg$yreg1$method, "name"), "),"),
+        "outcome", paste0("(yreg0:", yreg0_label,
+                          ", yreg1:", yreg1_label, "),"),
         "treatment", paste0("(", attr(out$info$dreg$method,"name"), ")\n"))
     cat("", "Tuning:", ifelse(out$info$dirty.tuning, "dirty", "clean"), "\n")
     cat("\n")
@@ -211,6 +254,8 @@ dml <- function(y, d, x,
 
 
   if (dirty.tuning) {
+
+    if (!is.null(cf.seed)) set.seed(cf.seed)
 
     if (verbose) {
       cat("\n")
@@ -288,19 +333,56 @@ dml <- function(y, d, x,
 
     if (model == "npm") {
       if (verbose) cat("- Tuning Model for Y (non-parametric).\n")
-      yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
-      yreg1 <- tune_model(x = x[d == d1, ,drop = FALSE], y = ytil1, args = yreg1)
+      # conditional ATT tunes yreg0 (controls) only; conditional ATU tunes
+      # yreg1 (treated) only; otherwise both sides are tuned.
+      cond.att <- conditional && identical(target, "att")
+      cond.atu <- conditional && identical(target, "atu")
+
+      if (!cond.atu) {
+        yreg0 <- tune_model(x = x[d == d0, ,drop = FALSE], y = ytil0, args = yreg0)
+      } else {
+        yreg0 <- NULL
+      }
+      if (!cond.att) {
+        yreg1 <- tune_model(x = x[d == d1, ,drop = FALSE], y = ytil1, args = yreg1)
+      } else {
+        yreg1 <- NULL
+      }
       yreg <- list(yreg0 = yreg0, yreg1 = yreg1)
       if (verbose) {
         cat("-- Best Tune:\n")
-        print(yreg0$tuneGrid)
-        print(yreg1$tuneGrid)
+        if (!is.null(yreg0)) print(yreg0$tuneGrid)
+        if (!is.null(yreg1)) print(yreg1$tuneGrid)
         cat("\n")
       }
     }
       out$dreg <- dreg
       out$yreg <- yreg
+      # update info to reflect the final tuned specs; plm tuning returns a flat
+      # spec, so re-wrap it in the yreg0/yreg1 structure the record expects
+      out$info$yreg <- if (model == "plm") list(yreg0 = yreg, yreg1 = yreg) else yreg
 
+  }
+
+  # conditional fits never use the counterfactual arm's outcome model; drop its
+  # spec on every path (not just under dirty.tuning) so it is never trained
+  # A conditional fit needs one outcome arm, so drop the other arm's spec on every
+  # path, not only under dirty tuning. The group rows report the same estimand
+  # within each group, so they do not need the dropped arm either.
+  if (model == "npm" && conditional) {
+    if (is.list(yreg) &&
+        isTRUE(all.equal(tolower(names(yreg)), c("yreg0", "yreg1")))) {
+      yreg0.use <- yreg$yreg0
+      yreg1.use <- yreg$yreg1
+    } else {
+      yreg0.use <- yreg1.use <- yreg
+    }
+    yreg <- if (identical(target, "att")) {
+      list(yreg0 = yreg0.use, yreg1 = NULL)
+    } else {
+      list(yreg0 = NULL, yreg1 = yreg1.use)
+    }
+    out$info$yreg <- yreg
   }
 
   if (!is.null(cf.seed)) set.seed(cf.seed)
@@ -343,7 +425,8 @@ dml <- function(y, d, x,
                               dhat)
     }
 
-    if (model == "npm") {
+    # a conditional npm fit builds its own results below, so skip the score here
+    if (model == "npm" && !conditional) {
       phat   <- cross.fit.i$preds$phat
       dhat   <- cross.fit.i$preds$dhat
       yhat0  <- cross.fit.i$preds$yhat0
@@ -353,31 +436,65 @@ dml <- function(y, d, x,
                               parameter = "all",
                               yhat1, yhat0, dhat, phat, trim = ps.trim)
 
-      trimmed.all.idx <- results[[i]]$trim.summary$trimmed_indices$all
-      trimmed.low.idx <- results[[i]]$trim.summary$trimmed_indices$low
-      trimmed.high.idx <- results[[i]]$trim.summary$trimmed_indices$high
-      results[[i]]$trim.summary$trimmed_obs <- list(
-        all = list(y.trimmed = y[trimmed.all.idx],
-                   d.trimmed = d[trimmed.all.idx],
-                   x.trimmed = x[trimmed.all.idx, ]),
-        low = list(y.trimmed = y[trimmed.low.idx],
-                   d.trimmed = d[trimmed.low.idx],
-                   x.trimmed = x[trimmed.low.idx, ]),
-        high = list(y.trimmed = y[trimmed.high.idx],
-                    d.trimmed = d[trimmed.high.idx],
-                    x.trimmed = x[trimmed.high.idx, ])
-      )
+      results[[i]]$trim.summary$trimmed_obs <-
+        collect.trimmed.obs(y, d, x, results[[i]]$trim.summary$trimmed_indices)
     }
     if (verbose) cat("\n")
   }
 
   out$fits <- fits
-  out$results$main$all <- results
-  out$coefs$main$all   <- combine.cross.fits(results)
+  # a conditional npm fit replaces main below, so skip the score it would discard
+  if (!(model == "npm" && conditional)) {
+    out$results$main$all <- results
+    out$coefs$main$all   <- combine.cross.fits(results)
+  }
 
   if (model == "npm") {
-    out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
-    out$coefs$main <- lapply(out$results$main, combine.cross.fits)
+    if (conditional) {
+      # conditional path: att.npm.cond() (target "att") or atu.npm.cond()
+      # (target "atu") for each rep. Results stored in the matching slot
+      # ("treat" for ATT, "untr" for ATU).
+      cond_results <- vector("list", cf.reps)
+      for (i in seq_len(cf.reps)) {
+        phat  <- fits[[i]]$preds$phat
+        dhat  <- fits[[i]]$preds$dhat
+        yhat0 <- fits[[i]]$preds$yhat0
+        yhat1 <- fits[[i]]$preds$yhat1
+        if (identical(target, "att")) {
+          cond_results[[i]] <- att.npm.cond(
+            y      = num(y),
+            d      = num(d),
+            yhat0  = yhat0,
+            yhat1  = NULL,
+            dhat   = dhat,
+            phat   = phat,
+            trim   = ps.trim,
+            centered = centered
+          )
+        } else {
+          cond_results[[i]] <- atu.npm.cond(
+            y      = num(y),
+            d      = num(d),
+            yhat1  = yhat1,
+            yhat0  = NULL,
+            dhat   = dhat,
+            phat   = phat,
+            trim   = ps.trim,
+            centered = centered
+          )
+        }
+        cond_results[[i]]$trim.summary$trimmed_obs <-
+          collect.trimmed.obs(y, d, x, cond_results[[i]]$trim.summary$trimmed_indices)
+      }
+      cond_slot <- if (identical(target, "att")) "treat" else "untr"
+      # the conditional target is the only estimand actually computed; replace
+      # main entirely so the half-fit unconditional "all" slot does not linger
+      out$results$main <- setNames(list(cond_results), cond_slot)
+      out$coefs$main   <- setNames(list(combine.cross.fits(cond_results)), cond_slot)
+    } else {
+      out$results$main <- ate.att.atu.npm(out, target = target, trim = ps.trim)
+      out$coefs$main   <- lapply(out$results$main, combine.cross.fits)
+    }
   }
 
   # Group ATE
@@ -471,17 +588,41 @@ combine.cross.fits <- function(results, param = "theta.s"){
   out
 }
 
-combine.median <- function(thetas, ses){
-  median.theta  <- median(thetas)
-  ss <- c((thetas - mean(thetas)) %*% (thetas - mean(thetas)))
-  se.median.theta <- sqrt(median(ses^2 + c(ss)))
+# Copies the variables a stored call names, so a fit can be re-evaluated later
+# without holding a reference to the caller's frame (which would keep every
+# local alive and would be serialized with the fit).
+snapshot.call.env <- function(call, env) {
+  vars  <- all.vars(call)
+  found <- mget(vars, envir = env, inherits = TRUE,
+                ifnotfound = vector("list", length(vars)))
+  found <- found[!vapply(found, is.null, logical(1))]
+  list2env(found, parent = globalenv())
+}
+
+# records the observations dropped by propensity-score trimming
+collect.trimmed.obs <- function(y, d, x, trimmed_indices) {
+  grab <- function(idx) list(y.trimmed = y[idx],
+                             d.trimmed = d[idx],
+                             x.trimmed = x[idx, , drop = FALSE])
+  list(all  = grab(trimmed_indices$all),
+       low  = grab(trimmed_indices$low),
+       high = grab(trimmed_indices$high))
+}
+
+# Chernozhukov et al. (2018), Def. 3.3: the across-repetition term is the
+# squared deviation of each repetition from the aggregated median, and it is
+# taken inside the median, not added to it as a constant.
+combine.median <- function(thetas, ses, na.rm = TRUE){
+  median.theta    <- median(thetas, na.rm = na.rm)
+  se.median.theta <- sqrt(median(ses^2 + (thetas - median.theta)^2, na.rm = na.rm))
   c(estimate = median.theta, se = se.median.theta)
 }
 
-combine.mean <- function(thetas, ses){
-  mean.theta    <- mean(thetas)
-  ss <- c((thetas - mean(thetas)) %*% (thetas - mean(thetas)))
-  se.mean.theta   <- sqrt(mean(ses^2) + ss/length(ses))
+combine.mean <- function(thetas, ses, na.rm = TRUE){
+  mean.theta    <- mean(thetas, na.rm = na.rm)
+  # elementwise, like combine.median: an NA in either member drops the pair,
+  # so both terms of the variance are averaged over the same repetitions
+  se.mean.theta <- sqrt(mean(ses^2 + (thetas - mean.theta)^2, na.rm = na.rm))
   c(estimate = mean.theta,   se = se.mean.theta)
 }
 
