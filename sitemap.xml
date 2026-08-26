@@ -8,10 +8,12 @@
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
 <url><loc>/reference/Penn.html</loc></url>
+<url><loc>/reference/benchmark_bounds.html</loc></url>
 <url><loc>/reference/coef_plot.html</loc></url>
 <url><loc>/reference/dml.html</loc></url>
 <url><loc>/reference/dml_benchmark.html</loc></url>
 <url><loc>/reference/dml_bounds.html</loc></url>
+<url><loc>/reference/extreme_robustness_value.html</loc></url>
 <url><loc>/reference/gasdemand.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/ovb_contour_plot.html</loc></url>

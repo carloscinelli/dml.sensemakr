@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
       </span>
     </div>
 
@@ -59,7 +59,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">dml_benchmark</span><span class="op">(</span><span class="va">model</span>, <span class="va">benchmark_covariates</span>, target <span class="op">=</span> <span class="st">"ate"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">dml_benchmark</span><span class="op">(</span><span class="va">model</span>, <span class="va">benchmark_covariates</span>, dreg <span class="op">=</span> <span class="cn">NULL</span>, yreg <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -71,11 +71,18 @@
 
 
 <dt id="arg-benchmark-covariates">benchmark_covariates<a class="anchor" aria-label="anchor" href="#arg-benchmark-covariates"></a></dt>
-<dd><p>a character vector with the names of the observed covariates that will be used for benchmarking.</p></dd>
+<dd><p>the observed covariates to benchmark. Either a
+character vector of column names in the model's <code>x</code> (each benchmarked
+on its own), or a named list where each element is a character vector of
+column names to drop <em>together</em> in the refit (e.g. the
+dummy columns of a factor: <code>list(region = c("region3", "region4"))</code>).
+List element names become the row labels; unnamed elements are labelled by
+the column name (singletons) or the columns joined by <code>"+"</code>.</p></dd>
 
 
-<dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
-<dd><p>character. The target parameter. Default is <code>"ate"</code>.</p></dd>
+<dt id="arg-dreg-yreg">dreg, yreg<a class="anchor" aria-label="anchor" href="#arg-dreg-yreg"></a></dt>
+<dd><p>optional learner specifications (as in <code><a href="dml.html">dml</a></code>) for
+the <em>refit</em>, overriding those stored in <code>model$call</code>.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -83,6 +90,30 @@
     <p>An object of class <code>dml_benchmark</code> containing benchmark results.</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"pension"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>; <span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pension</span><span class="op">)</span>, <span class="fl">2000</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">pension</span><span class="op">$</span><span class="va">net_tfa</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">pension</span><span class="op">$</span><span class="va">e401</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">inc</span> <span class="op">+</span> <span class="va">educ</span> <span class="op">+</span> <span class="va">fsize</span> <span class="op">+</span> <span class="va">marr</span> <span class="op">+</span> <span class="va">twoearn</span> <span class="op">+</span> <span class="va">pira</span> <span class="op">+</span> <span class="va">hown</span>,</span></span>
+<span class="r-in"><span>                  data <span class="op">=</span> <span class="va">pension</span><span class="op">[</span><span class="va">idx</span>, <span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="dml.html">dml</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">d</span>, <span class="va">x</span>, model <span class="op">=</span> <span class="st">"plm"</span>, cf.folds <span class="op">=</span> <span class="fl">2</span>, cf.seed <span class="op">=</span> <span class="fl">3</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># observed gains of income, from a refit without it</span></span></span>
+<span class="r-in"><span><span class="va">bench</span> <span class="op">&lt;-</span> <span class="fu">dml_benchmark</span><span class="op">(</span><span class="va">fit</span>, benchmark_covariates <span class="op">=</span> <span class="st">"inc"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> === Computing benchmarks using covariate: inc  ===</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">bench</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Covariate benchmarks:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     gain.Y se.gain.Y gain.D se.gain.D     rho se.rho     delta se.delta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> inc 0.1899    0.0687 0.0332    0.0104 -0.3338 0.1087 -3092.902 952.4735</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Combined across cross-fitting repetitions using the median method.</span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
@@ -95,7 +126,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

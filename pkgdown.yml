@@ -1,8 +1,8 @@
-pandoc: 3.1.11
-pkgdown: 2.2.0
+pandoc: 3.8.3
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   bonus: bonus.html
   dml-401k: dml-401k.html
   other-ml-methods: other-ml-methods.html
-last_built: 2026-04-01T23:40Z
+last_built: 2026-08-26T00:28Z

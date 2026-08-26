@@ -24,7 +24,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
       </span>
     </div>
 
@@ -79,6 +79,8 @@ The function dml_gate is a convenience function that adds groups to a dml object
 <span>  save.models <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  y.class <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  d.class <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  conditional <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  centered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  warnings <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
@@ -95,7 +97,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
 
 
 <dt id="arg-d">d<a class="anchor" aria-label="anchor" href="#arg-d"></a></dt>
-<dd><p><code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></code> vector with the treatment. If the treatment is binary, it needs to be encoded as as: zero = absence of treatment, one = presence of treatment.</p></dd>
+<dd><p><code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></code> vector with the treatment. If the treatment is binary, it needs to be encoded as: zero = absence of treatment, one = presence of treatment.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -147,7 +149,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
 
 
 <dt id="arg-save-models">save.models<a class="anchor" aria-label="anchor" href="#arg-save-models"></a></dt>
-<dd><p>should the fitted models of each iterated be saved? Default is <code>FALSE</code>. Note that setting this to true could end up using a lot of memory.</p></dd>
+<dd><p>should the fitted models of each iteration be saved? Default is <code>FALSE</code>. Note that setting this to true could end up using a lot of memory.</p></dd>
 
 
 <dt id="arg-y-class">y.class<a class="anchor" aria-label="anchor" href="#arg-y-class"></a></dt>
@@ -155,7 +157,15 @@ The function dml_gate is a convenience function that adds groups to a dml object
 
 
 <dt id="arg-d-class">d.class<a class="anchor" aria-label="anchor" href="#arg-d-class"></a></dt>
-<dd><p>when <code>d</code> is binary, should the outcome regression be treated as a classification problem? Default is <code>FALSE</code>. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.</p></dd>
+<dd><p>when <code>d</code> is binary, should the treatment regression be treated as a classification problem? Default is <code>FALSE</code>. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.</p></dd>
+
+
+<dt id="arg-conditional">conditional<a class="anchor" aria-label="anchor" href="#arg-conditional"></a></dt>
+<dd><p>logical or <code>NULL</code>. If <code>TRUE</code>, estimates the <em>conditional</em> version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for <code>model = "npm"</code> with a single <code>target</code> of <code>"att"</code> or <code>"atu"</code>. When <code>NULL</code> (default), it is set to <code>TRUE</code> automatically for those single-target npm cases and <code>FALSE</code> otherwise. The conditional parameterization is the recommended one (Wang et al., 2026); <code>conditional = FALSE</code> gives the unconditional parameterization of Chernozhukov et al. (2026), retained so those results can be reproduced.</p></dd>
+
+
+<dt id="arg-centered">centered<a class="anchor" aria-label="anchor" href="#arg-centered"></a></dt>
+<dd><p>logical. Controls the parameterization of the Riesz-representer imbalance <code>nu2.s</code> in the conditional model. When <code>FALSE</code> (default), <code>nu2.s</code> is the full second moment of the Riesz representer, \(\chi^2 + 1\) (uncentered); when <code>TRUE</code>, it is the centered version, the \(\chi^2\) divergence (that moment minus 1). Only relevant when <code>conditional = TRUE</code>. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Note the centered version can yield negative estimates of <code>nu2.s</code> in finite samples.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -199,6 +209,9 @@ The function dml_gate is a convenience function that adds groups to a dml object
     <div id="references">
     <h2>References</h2>
     <p>Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." <em>Review of Economics and Statistics</em>. <a href="https://doi.org/10.1162/REST.a.1705" class="external-link">doi:10.1162/REST.a.1705</a></p>
+<p>Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).
+  "Omitted Variable Bias in Difference-in-Differences Designs." Working Paper.
+  (Basis of the conditional ATT/ATU parameterization.)</p>
     </div>
 
     <div id="ref-examples">
@@ -228,7 +241,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
 <span class="r-out co"><span class="r-pr">#&gt;</span> Debiased Machine Learning</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Target: ate </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Target: ate (unconditional) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 2 folds, 1 reps </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
@@ -265,23 +278,23 @@ The function dml_gate is a convenience function that adds groups to a dml object
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 2 folds, 1 reps </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 25.964%), treatment (ranger, R2 = 11.209%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.33%), treatment (ranger, R2 = 10.805%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect : </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all     7828       1158   6.758 1.4e-11 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate     8354       1171   7.133 9.82e-13 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Group Average Treatment Effect: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value  P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1   4715.6      824.5   5.719 1.07e-08 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2   3133.4     1208.9   2.592 0.009541 ** </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3   6404.1     1749.8   3.660 0.000252 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4  17055.1     4026.6   4.236 2.28e-05 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q1     4700        800   5.875 4.24e-09 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q2     2208       1371   1.610 0.107351    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q3     6753       1865   3.621 0.000293 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q4    19753       3984   4.958 7.13e-07 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -289,42 +302,42 @@ The function dml_gate is a convenience function that adds groups to a dml object
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Verbal interpretation of DML procedure:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -- Average treatment effects were estimated using DML with 2-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- Average treatment effects were estimated using DML with 2-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># coef median method (default)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ate.all   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  7827.510  4715.612  3133.438  6404.057 17055.081 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ate  g.ate.q1  g.ate.q2  g.ate.q3  g.ate.q4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  8353.976  4699.765  2208.199  6752.608 19752.677 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># se median method (default)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="summary.dml.html">se</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ate.all   gate.q1   gate.q2   gate.q3   gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1158.2592  824.5061 1208.8764 1749.7512 4026.6181 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       ate  g.ate.q1  g.ate.q2  g.ate.q3  g.ate.q4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1171.1649  800.0017 1371.3711 1864.8223 3984.2351 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># confint median method</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">dml.401k</span>, combine.method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             2.5 %    97.5 %</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all 5557.3634 10097.656</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1 3099.6102  6331.615</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2  764.0834  5502.792</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3 2974.6078  9833.506</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4 9163.0549 24947.108</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               2.5 %    97.5 %</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate       6058.5352 10649.417</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q1  3131.7905  6267.739</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q2  -479.6385  4896.038</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q3  3097.6232 10407.592</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q4 11943.7193 27561.634</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Sensitivity Analysis</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Robustness Values</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ate.all    gate.q1    gate.q2    gate.q3    gate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.04426524 0.07757526 0.01608742 0.03391018 0.05282426 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        ate   g.ate.q1   g.ate.q2   g.ate.q3   g.ate.q4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.04824061 0.07683029 0.00000000 0.03561389 0.06788745 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Confidence Bounds</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k</span>, cf.y <span class="op">=</span> <span class="fl">0.03</span>, cf.d <span class="op">=</span> <span class="fl">0.04</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 lwr         upr</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all  1319.15097 14338.63459</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q1  1908.23649  7611.59164</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q2 -1391.29072  7008.82531</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q3   -90.55583 12705.36179</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gate.q4  3676.26304 30523.14269</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  lwr         upr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate       1862.87448 14944.23750</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q1  1905.72981  7548.05070</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q2 -2610.40602  6328.55520</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q3    95.65788 13207.58426</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q4  6635.82716 33206.70469</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Confidence level: point = 95%; region = 90%.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Sensitivity parameters: cf.y = 0.03; cf.d = 0.04; rho2 = 1.</span>
@@ -348,7 +361,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

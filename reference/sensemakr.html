@@ -24,7 +24,7 @@ The main input is an object of class dml. It returns an object of class dml.sens
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
       </span>
     </div>
 
@@ -70,6 +70,8 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 <span>  cf.y <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cf.d <span class="op">=</span> <span class="va">cf.y</span>,</span>
 <span>  rho2 <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  kD <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  kY <span class="op">=</span> <span class="va">kD</span>,</span>
 <span>  bound_label <span class="op">=</span> <span class="st">"Confounding Scenario"</span>,</span>
 <span>  theta <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -102,7 +104,18 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 
 
 <dt id="arg-rho-">rho2<a class="anchor" aria-label="anchor" href="#arg-rho-"></a></dt>
-<dd><p>degree of adversity. Default is <code>rho2 = 1</code>, which assumes the maximum degree of adversity.</p></dd>
+<dd><p>degree of adversity. Default is <code>rho2 = 1</code>, which assumes the maximum degree of adversity of confounding.</p></dd>
+
+
+<dt id="arg-kd">kD<a class="anchor" aria-label="anchor" href="#arg-kd"></a></dt>
+<dd><p>numeric vector of multipliers for the benchmark gains on the treatment
+side: each value k adds one bounds row per benchmark covariate, postulating a
+latent variable whose gain in the Riesz Representer is k times the covariate's
+observed gain. Default <code>1</code>.</p></dd>
+
+
+<dt id="arg-ky">kY<a class="anchor" aria-label="anchor" href="#arg-ky"></a></dt>
+<dd><p>same as <code>kD</code>, for the outcome side. Default is <code>kD</code>.</p></dd>
 
 
 <dt id="arg-bound-label">bound_label<a class="anchor" aria-label="anchor" href="#arg-bound-label"></a></dt>
@@ -140,7 +153,7 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 <span class="r-out co"><span class="r-pr">#&gt;</span> Debiased Machine Learning</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Target: ate </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Target: ate (unconditional) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 5 folds, 1 reps </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
@@ -181,20 +194,20 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Model: Nonparametric </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Cross-Fitting: 5 folds, 1 reps </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.415%), treatment (ranger, R2 = 11.322%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.297%), treatment (ranger, R2 = 11.655%)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Tuning: dirty </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Average Treatment Effect : </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Estimate Std. Error t value  P(&gt;|t|)    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all     7946       1148   6.923 4.42e-12 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     Estimate Std. Error t value  P(&gt;|t|)    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate     8601       1186   7.249 4.19e-13 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Note: DML estimates combined using the median method.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Verbal interpretation of DML procedure:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ==== Sensitivity Analysis ====</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -202,8 +215,8 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. level: alpha = 0.05 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Robustness Values:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         RV (%) RVa (%)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all 6.0753  4.5749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     RV (%) RVa (%)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ate 6.4773  4.9824</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Verbal interpretation of robustness values:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -213,16 +226,15 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Confidence Bounds for Sensitivity Scenario:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               lwr       upr</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ate.all  1533.599 14386.177</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bounds on omitted variable bias (postulated scenario):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Confidence level: point = 95%; region = 90%.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  target          bound.label cf.y cf.d rho2 theta.minus theta.plus      lwr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     ate Confounding Scenario 0.04 0.03    1     4084.33   13117.78 2109.239</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       upr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  15202.53</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Verbal interpretation of confidence bounds:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- Bounds on each target parameter under latent variables with the postulated sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds; lwr and upr are one-sided 95% confidence bounds treating those parameters as fixed.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Interpretation of sensitivity parameters:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -248,7 +260,7 @@ The main input is an object of class <code><a href="dml.html">dml</a></code>. It
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
       </span>
     </div>
 
@@ -217,7 +217,7 @@ are estimated nonparametrically using Random Forests.</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -266,17 +266,17 @@ of the outcome and treatment models:</p>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.269%), treatment (ranger, R2 = 11.551%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; Average Treatment Effect : </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     8966       1326    6.76 1.38e-11 ***</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate     8966       1314   6.825 8.79e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
 <p>As we can see, after flexibly taking into account observed
 confounding factors, the estimate of the effect of 401(k) eligibility on
 net financial assets is substantially attenuated relative to the naive
@@ -377,17 +377,17 @@ of omitted variables with the treatment):</p>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 27.269%), treatment (ranger, R2 = 11.551%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; Average Treatment Effect : </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     8966       1326    6.76 1.38e-11 ***</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate     8966       1314   6.825 8.79e-12 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ==== Sensitivity Analysis ====</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -395,8 +395,8 @@ of omitted variables with the treatment):</p>
 <span><span class="co">#&gt; Signif. level: alpha = 0.05 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Robustness Values:</span></span>
-<span><span class="co">#&gt;         RV (%) RVa (%)</span></span>
-<span><span class="co">#&gt; ate.all 7.2641  5.4825</span></span>
+<span><span class="co">#&gt;     RV (%) RVa (%)</span></span>
+<span><span class="co">#&gt; ate 7.2641  5.4829</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of robustness values:</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -404,16 +404,14 @@ of omitted variables with the treatment):</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Robustness Value for the Confidence Bound (RVa): omitted variables that explain more than RV% of the residual variation both of the treatment (cf.d) and of the outcome (cf.y) are sufficiently strong to make the confidence bounds include 0, at the  significance level of alpha = 0.05. Conversely, omitted variables that do not explain more than RV% of the residual variation of both the treatment and the outcome are not sufficiently strong to do so.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Confidence Bounds for Sensitivity Scenario:</span></span>
-<span><span class="co">#&gt;              lwr      upr</span></span>
-<span><span class="co">#&gt; ate.all  2588.40 15424.97</span></span>
+<span><span class="co">#&gt; Bounds on omitted variable bias (postulated scenario):</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
-<span><span class="co">#&gt; Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.</span></span>
+<span><span class="co">#&gt;  target          bound.label cf.y cf.d rho2 theta.minus theta.plus      lwr</span></span>
+<span><span class="co">#&gt;     ate Confounding Scenario 0.04 0.03    1    4785.561    13147.2 2593.483</span></span>
+<span><span class="co">#&gt;       upr</span></span>
+<span><span class="co">#&gt;  15396.16</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Verbal interpretation of confidence bounds:</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.</span></span>
+<span><span class="co">#&gt; -- Bounds on each target parameter under latent variables with the postulated sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds; lwr and upr are one-sided 95% confidence bounds treating those parameters as fixed.</span></span>
 <span></span>
 <span><span class="co"># contour plots</span></span>
 <span><span class="va">oldpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
@@ -478,7 +476,7 @@ comparison:</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -519,7 +517,7 @@ comparison:</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -560,7 +558,7 @@ comparison:</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -595,10 +593,14 @@ comparison:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="va">bench.plm</span></span>
-<span><span class="co">#&gt;          gain.Y   gain.D     rho theta.s theta.sj  delta</span></span>
-<span><span class="co">#&gt; inc     0.15251 0.047876  0.3293    9020    12284 3263.4</span></span>
-<span><span class="co">#&gt; pira    0.05155 0.002753  0.2435    9020     9242  222.1</span></span>
-<span><span class="co">#&gt; twoearn 0.03752 0.005844 -0.5600    9020     8178 -841.8</span></span></code></pre></div>
+<span><span class="co">#&gt; Covariate benchmarks:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;         gain.Y se.gain.Y gain.D se.gain.D     rho se.rho      delta se.delta</span></span>
+<span><span class="co">#&gt; inc     0.1512    0.0485 0.0481    0.0051 -0.3365 0.0754 -3370.8812 490.2191</span></span>
+<span><span class="co">#&gt; pira    0.0515    0.0227 0.0018    0.0026 -0.1327 0.4074  -265.6566 412.6432</span></span>
+<span><span class="co">#&gt; twoearn 0.0376    0.0164 0.0072    0.0034  0.4850 0.2200   816.1287 312.6554</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Combined across cross-fitting repetitions using the median method.</span></span></code></pre></div>
 <p>The output shows the bounds on the strength of the latent variable
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>U</mi><annotation encoding="application/x-tex">U</annotation></semantics></math>
 if it were as strong as (i) income (<code>inc</code>), (ii) whether a
@@ -641,7 +643,7 @@ nonparametric model:</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -690,20 +692,20 @@ and the group-specific treatment effects:</p>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.641%), treatment (ranger, R2 = 11.432%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; Average Treatment Effect : </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     7904       1225    6.45 1.12e-10 ***</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate     7904       1174   6.734 1.65e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; gate.q1   4515.8      865.7   5.216 1.83e-07 ***</span></span>
-<span><span class="co">#&gt; gate.q2   2546.1     1377.4   1.849 0.064520 .  </span></span>
-<span><span class="co">#&gt; gate.q3   6802.5     1831.4   3.714 0.000204 ***</span></span>
-<span><span class="co">#&gt; gate.q4  17681.5     4187.5   4.222 2.42e-05 ***</span></span>
+<span><span class="co">#&gt;          Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; g.ate.q1   4515.8      799.2   5.651 1.60e-08 ***</span></span>
+<span><span class="co">#&gt; g.ate.q2   2546.1     1292.5   1.970 0.048851 *  </span></span>
+<span><span class="co">#&gt; g.ate.q3   6802.5     1824.1   3.729 0.000192 ***</span></span>
+<span><span class="co">#&gt; g.ate.q4  17681.5     4015.9   4.403 1.07e-05 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -711,7 +713,7 @@ and the group-specific treatment effects:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
 <p>The ATE varies substantially across groups, with effects ranging from
 approximately $4,000 (first quartile) to almost $18,000 (last quartile).
 We can visualize the heterogeneous treatment effects by plotting the
@@ -722,7 +724,7 @@ quartile:</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># coefficient plot under conditional ignorability</span></span>
-<span><span class="va">group.names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"gate.q"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">group.names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"g.ate.q"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span></span>
 <span><span class="va">df</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">dml.401k.npm</span><span class="op">)</span><span class="op">[</span><span class="va">group.names</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">cis</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">dml.401k.npm</span><span class="op">)</span><span class="op">[</span><span class="va">group.names</span>, <span class="op">]</span></span>
 <span><span class="va">cis</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">cis</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lwr.ci"</span>, <span class="st">"upr.ci"</span><span class="op">)</span><span class="op">)</span></span>
@@ -762,20 +764,20 @@ now corresponds to gains in precision.</p>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 26.641%), treatment (ranger, R2 = 11.432%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; Average Treatment Effect : </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; ate.all     7904       1225    6.45 1.12e-10 ***</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; ate     7904       1174   6.734 1.65e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group Average Treatment Effect: </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value  P(&gt;|t|)    </span></span>
-<span><span class="co">#&gt; gate.q1   4515.8      865.7   5.216 1.83e-07 ***</span></span>
-<span><span class="co">#&gt; gate.q2   2546.1     1377.4   1.849 0.064520 .  </span></span>
-<span><span class="co">#&gt; gate.q3   6802.5     1831.4   3.714 0.000204 ***</span></span>
-<span><span class="co">#&gt; gate.q4  17681.5     4187.5   4.222 2.42e-05 ***</span></span>
+<span><span class="co">#&gt;          Estimate Std. Error t value  P(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; g.ate.q1   4515.8      799.2   5.651 1.60e-08 ***</span></span>
+<span><span class="co">#&gt; g.ate.q2   2546.1     1292.5   1.970 0.048851 *  </span></span>
+<span><span class="co">#&gt; g.ate.q3   6802.5     1824.1   3.729 0.000192 ***</span></span>
+<span><span class="co">#&gt; g.ate.q4  17681.5     4015.9   4.403 1.07e-05 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -783,7 +785,7 @@ now corresponds to gains in precision.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 5 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ==== Sensitivity Analysis ====</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -791,12 +793,12 @@ now corresponds to gains in precision.</p>
 <span><span class="co">#&gt; Signif. level: alpha = 0.05 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Robustness Values:</span></span>
-<span><span class="co">#&gt;          RV (%) RVa (%)</span></span>
-<span><span class="co">#&gt; ate.all  6.0267  4.4169</span></span>
-<span><span class="co">#&gt; gate.q1 10.6673  7.3521</span></span>
-<span><span class="co">#&gt; gate.q2  4.1469  0.0000</span></span>
-<span><span class="co">#&gt; gate.q3  6.8459  3.6090</span></span>
-<span><span class="co">#&gt; gate.q4  8.8498  5.4019</span></span>
+<span><span class="co">#&gt;           RV (%) RVa (%)</span></span>
+<span><span class="co">#&gt; ate       6.0267  4.5051</span></span>
+<span><span class="co">#&gt; g.ate.q1 10.6673  7.6517</span></span>
+<span><span class="co">#&gt; g.ate.q2  4.1469  0.5902</span></span>
+<span><span class="co">#&gt; g.ate.q3  6.8459  3.6226</span></span>
+<span><span class="co">#&gt; g.ate.q4  8.8498  5.5311</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of robustness values:</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -806,20 +808,23 @@ now corresponds to gains in precision.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  The interpretation of sensitivity parameters can be further refined for each target quantity. See more below.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Confidence Bounds for Sensitivity Scenario:</span></span>
-<span><span class="co">#&gt;                lwr        upr</span></span>
-<span><span class="co">#&gt; ate.all  1325.6164 14465.2279</span></span>
-<span><span class="co">#&gt; gate.q1  1675.2199  7386.0972</span></span>
-<span><span class="co">#&gt; gate.q2 -2243.0333  6689.7068</span></span>
-<span><span class="co">#&gt; gate.q3   170.6822 13198.0471</span></span>
-<span><span class="co">#&gt; gate.q4  3971.6186 31483.0739</span></span>
+<span><span class="co">#&gt; Bounds on omitted variable bias (postulated scenario):</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Confidence level: point = 95%; region = 90%.</span></span>
-<span><span class="co">#&gt; Sensitivity parameters: cf.y = 0.04; cf.d = 0.03; rho2 = 1.</span></span>
+<span><span class="co">#&gt;    target          bound.label cf.y cf.d rho2 theta.minus theta.plus        lwr</span></span>
+<span><span class="co">#&gt;       ate Confounding Scenario 0.04 0.03    1   3432.4239  12376.117  1442.4523</span></span>
+<span><span class="co">#&gt;  g.ate.q1 Confounding Scenario 0.04 0.03    1   3108.4768   5949.525  1797.6232</span></span>
+<span><span class="co">#&gt;  g.ate.q2 Confounding Scenario 0.04 0.03    1    431.8322   4660.452 -2134.4384</span></span>
+<span><span class="co">#&gt;  g.ate.q3 Confounding Scenario 0.04 0.03    1   3429.2663  10175.651   185.8875</span></span>
+<span><span class="co">#&gt;  g.ate.q4 Confounding Scenario 0.04 0.03    1  10888.0291  24475.065  4227.4794</span></span>
+<span><span class="co">#&gt;        upr</span></span>
+<span><span class="co">#&gt;  14392.168</span></span>
+<span><span class="co">#&gt;   7286.242</span></span>
+<span><span class="co">#&gt;   6541.967</span></span>
+<span><span class="co">#&gt;  13184.521</span></span>
+<span><span class="co">#&gt;  31192.240</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Verbal interpretation of confidence bounds:</span></span>
+<span><span class="co">#&gt; -- Bounds on each target parameter under latent variables with the postulated sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds; lwr and upr are one-sided 95% confidence bounds treating those parameters as fixed.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- The table shows the lower (lwr) and upper (upr) limits of the confidence bounds on the target quantity, considering omitted variables with postulated sensitivity parameters cf.y, cf.d and rho2. The confidence level "point" is the relevant coverage for most use cases, and stands for the coverage rate for the true target quantity. The confidence level "region" stands for the coverage rate of the true bounds.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Interpretation of sensitivity parameters:</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -874,7 +879,7 @@ scenario.</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -917,7 +922,7 @@ scenario.</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -960,7 +965,7 @@ scenario.</p>
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Nonparametric </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 5 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -997,10 +1002,14 @@ scenario.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- Rep 5 -- Folds: 1  2  3  4  5</span></span>
 <span><span class="va">bench.npm</span></span>
-<span><span class="co">#&gt;          gain.Y   gain.D     rho theta.s theta.sj  delta</span></span>
-<span><span class="co">#&gt; inc     0.13918 0.133240  0.2346    7969    11783 3814.2</span></span>
-<span><span class="co">#&gt; pira    0.03914 0.003076  0.2503    7969     8490  520.8</span></span>
-<span><span class="co">#&gt; twoearn 0.01241 0.002352 -0.1368    7969     7475 -494.1</span></span></code></pre></div>
+<span><span class="co">#&gt; Covariate benchmarks:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;         gain.Y se.gain.Y gain.D se.gain.D     rho se.rho      delta se.delta</span></span>
+<span><span class="co">#&gt; inc     0.1445    0.0435 0.1338    0.0186 -0.2267 0.0487 -3731.2221 468.2531</span></span>
+<span><span class="co">#&gt; pira    0.0363    0.0165 0.0012    0.0167 -0.0486 0.1682  -640.6138 369.1035</span></span>
+<span><span class="co">#&gt; twoearn 0.0067    0.0120 0.0000    0.0140  0.0000 0.0000   581.0005 278.4045</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Combined across cross-fitting repetitions using the median method.</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -1042,7 +1051,7 @@ Crowd Out Other Personal Saving?” <em>Journal of Public Economics</em>,
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>

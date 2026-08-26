@@ -28,7 +28,7 @@ Almost all parameters can be customized by the user."><!-- mathjax --><script sr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
       </span>
     </div>
 
@@ -138,7 +138,7 @@ Almost all parameters can be customized by the user."><!-- mathjax --><script sr
 
 
 <dt id="arg-rho-">rho2<a class="anchor" aria-label="anchor" href="#arg-rho-"></a></dt>
-<dd><p>degree of adversity. Default is <code>rho=1</code>, which assumes the maximum degree of adversity of confounding.</p></dd>
+<dd><p>degree of adversity. Default is <code>rho2 = 1</code>, which assumes the maximum degree of adversity of confounding.</p></dd>
 
 
 <dt id="arg-cf-y">cf.y<a class="anchor" aria-label="anchor" href="#arg-cf-y"></a></dt>
@@ -194,11 +194,13 @@ Almost all parameters can be customized by the user."><!-- mathjax --><script sr
 
 
 <dt id="arg-xlab">xlab<a class="anchor" aria-label="anchor" href="#arg-xlab"></a></dt>
-<dd><p>label of x axis. If `NULL`, default label is used.</p></dd>
+<dd><p>label of x axis. If `NULL` (default), a label matching the
+target's omitted-variable-bias interpretation is chosen automatically.</p></dd>
 
 
 <dt id="arg-ylab">ylab<a class="anchor" aria-label="anchor" href="#arg-ylab"></a></dt>
-<dd><p>label of y axis. If `NULL`, default label is used.</p></dd>
+<dd><p>label of y axis. If `NULL` (default), chosen automatically to
+match the target, in the same way as `xlab`.</p></dd>
 
 
 <dt id="arg-cex-lab">cex.lab<a class="anchor" aria-label="anchor" href="#arg-cex-lab"></a></dt>
@@ -262,7 +264,7 @@ Almost all parameters can be customized by the user."><!-- mathjax --><script sr
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

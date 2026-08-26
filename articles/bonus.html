@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
       </span>
     </div>
 
@@ -85,7 +85,8 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/carloscinelli/dml.sensemakr" class="external-link">dml.sensemakr</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; See details in:</span></span>
 <span><span class="co">#&gt; - Chernozhukov, V. Cinelli, C. Newey, W. Sharma, A. Syrgkanis, V. (2026). Long Story Short: Omitted Variable Bias in Causal Machine Learning. Review of Economics and Statistics.</span></span>
-<span><span class="co">#&gt; - Available at: https://doi.org/10.1162/REST.a.1705</span></span></code></pre></div>
+<span><span class="co">#&gt; - Available at: https://doi.org/10.1162/REST.a.1705</span></span>
+<span><span class="co">#&gt; - Wang, J. Sant'Anna, P.H.C. Chernozhukov, V. Cinelli, C. (2026). Omitted Variable Bias in Difference-in-Differences Designs. Working Paper.</span></span></code></pre></div>
 <p>Vignette under construction.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"Penn"</span><span class="op">)</span></span>
@@ -101,7 +102,7 @@
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger), treatment (ranger)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -136,17 +137,17 @@
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:ranger, yreg1:ranger, R2 = 0%), treatment (ranger, R2 = 0%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; Average Treatment Effect : </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value P(&gt;|t|)  </span></span>
-<span><span class="co">#&gt; ate.all -0.07477    0.03569  -2.095  0.0362 *</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value P(&gt;|t|)  </span></span>
+<span><span class="co">#&gt; ate -0.07477    0.03569  -2.095  0.0362 *</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Random Forest from the R package ranger; the treatment regression uses Random Forest from the R package ranger.</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Neural Net Args</span></span>
 <span><span class="va">nnet.args</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"nnet"</span>,</span>
@@ -159,7 +160,7 @@
 <span><span class="co">#&gt; Debiased Machine Learning</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Model: Partially Linear </span></span>
-<span><span class="co">#&gt;  Target: ate </span></span>
+<span><span class="co">#&gt;  Target: ate (unconditional) </span></span>
 <span><span class="co">#&gt;  Cross-Fitting: 5 folds, 1 reps </span></span>
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:nnet, yreg1:nnet), treatment (nnet)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
@@ -194,17 +195,17 @@
 <span><span class="co">#&gt;  ML Method: outcome (yreg0:nnet, yreg1:nnet, R2 = 1.248%), treatment (nnet, R2 = 0%)</span></span>
 <span><span class="co">#&gt;  Tuning: dirty </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Average Treatment Effect: </span></span>
+<span><span class="co">#&gt; Average Treatment Effect : </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;         Estimate Std. Error t value P(&gt;|t|)  </span></span>
-<span><span class="co">#&gt; ate.all -0.07067    0.03537  -1.998  0.0457 *</span></span>
+<span><span class="co">#&gt;     Estimate Std. Error t value P(&gt;|t|)  </span></span>
+<span><span class="co">#&gt; ate -0.07067    0.03537  -1.998  0.0457 *</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; Note: DML estimates combined using the median method.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Verbal interpretation of DML procedure:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses  from the R package ; the treatment regression uses Neural Network from the R package nnet.</span></span></code></pre></div>
+<span><span class="co">#&gt; -- Average treatment effects were estimated using DML with 5-fold cross-fitting. In order to reduce the variance that stems from sample splitting, we repeated the procedure 1 times. Estimates are combined using the median as the final estimate, incorporating variation across experiments into the standard error as described in Chernozhukov et al. (2018). The outcome regression uses Neural Network from the R package nnet; the treatment regression uses Neural Network from the R package nnet.</span></span></code></pre></div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -222,7 +223,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>
