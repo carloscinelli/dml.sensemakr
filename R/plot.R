@@ -16,27 +16,38 @@ plot.dml <- function(x, combine.method = "median", level = 0.95, ...) {
 
 ##' @export
 ##' @param type type of plot for confidence bounds. Options are \code{confidence_bounds}, and \code{all}.
+##' @param max logical. Should confidence-bound plots use the widest confidence
+##'   envelope over all weaker confounding? Default is \code{TRUE}.
 ##' @rdname plot.dml
 plot.dml.bounds <- function(x,
                             type = c("confidence_bounds","all"),
                             combine.method = "median", level = 0.95,
+                            max = TRUE,
                             ...) {
   type <- match.arg(type)
   if (type == "confidence_bounds") {
-    plot.bounds2(x = x, combine.method = combine.method, level = level,...)
+    plot.bounds2(
+      x = x, combine.method = combine.method, level = level,
+      max = max, ...
+    )
   } else {
     plot.bounds1(x = x, combine.method = combine.method, level = level,...)
   }
 }
 
 #' @keywords internal
-plot.bounds2 <- function(x, combine.method = "median", level = 0.95, ...){
-  coef_plot(estimate = coef(x)["theta.s", ],
-             labels =  names(coef(x)["theta.s", ]),
-             lwr1 = coef(x)["theta.m", ],
-             upr1 = coef(x)["theta.p", ],
-             lwr2 = confidence_bounds(x)[,"lwr"],
-             upr2 = confidence_bounds(x)[,"upr"], ...)
+plot.bounds2 <- function(x, combine.method = "median", level = 0.95,
+                         max = TRUE, ...){
+  confidence <- suppressWarnings(confidence_bounds(
+    x, combine.method = combine.method, level = level, max = max
+  ))
+  coefficients <- coef(x, combine.method = combine.method)
+  coef_plot(estimate = coefficients["theta.s", ],
+             labels = names(coefficients["theta.s", ]),
+             lwr1 = coefficients["theta.m", ],
+             upr1 = coefficients["theta.p", ],
+             lwr2 = confidence[,"lwr"],
+             upr2 = confidence[,"upr"], ...)
 }
 
 #' @keywords internal
@@ -376,6 +387,9 @@ ovb_contour_plot.dml <- function(model,
   cov.theta.S2 <- extract_estimate(results, "cov.theta.S2")
   x_grid <- seq(0, lim.x, by = lim.x/grid.number)
   y_grid <- seq(0, lim.y,  by = lim.y/grid.number)
+  # A contour cell represents the bound at that exact coordinate.  Computing
+  # a cumulative CI-max envelope at every cell would change the surface's
+  # meaning and repeat the envelope optimization thousands of times.
   vec_bounds <- Vectorize(confidence_bounds.numeric, vectorize.args = c("cf.y", "cf.d"))
 
   f <- function(x, y) {
@@ -385,6 +399,7 @@ ovb_contour_plot.dml <- function(model,
                cov.theta.S2 = cov.theta.S2,
                combine.method = combine.method,
                level = level,
+               max = FALSE,
                rho2 = rho2,
                cf.d = x,
                cf.y = y)[which.bound, ]

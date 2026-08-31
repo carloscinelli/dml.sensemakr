@@ -225,7 +225,7 @@ summary.dml.sensemakr <- function(object,  digits = max(3L, getOption("digits") 
   if (!is.null(object$bounds)) {
     cat("\nBounds on omitted variable bias (postulated scenario):\n\n")
     .print_ovb_bounds(object$bounds, digits)
-    cat("\n-- Bounds on each target parameter under latent variables with the postulated sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds; lwr and upr are one-sided 95% confidence bounds treating those parameters as fixed.\n")
+    cat("\n-- Bounds on each target parameter under latent variables no stronger than the postulated maximum sensitivity parameters cf.y, cf.d and rho2. theta.minus and theta.plus are the point bounds at those maxima; lwr and upr form the widest one-sided 95% confidence envelope over all weaker confounding.\n")
   }
 
   if (!is.null(object$bench.table)) {

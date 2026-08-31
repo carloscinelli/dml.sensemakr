@@ -12,6 +12,7 @@
   type = c("confidence_bounds", "all"),
   combine.method = "median",
   level = 0.95,
+  max = TRUE,
   ...
 )
 }
@@ -25,6 +26,9 @@
 \item{...}{arguments passed to other methods.}
 
 \item{type}{type of plot for confidence bounds. Options are \code{confidence_bounds}, and \code{all}.}
+
+\item{max}{logical. Should confidence-bound plots use the widest confidence
+envelope over all weaker confounding? Default is \code{TRUE}.}
 }
 \value{
 For \code{plot.dml}: a \code{ggplot} object. For \code{plot.dml.bounds}: a \code{ggplot} object.

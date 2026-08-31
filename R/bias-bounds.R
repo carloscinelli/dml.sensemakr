@@ -83,6 +83,12 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##' @param ... arguments passed to other methods.
 ##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
 ##' @param level confidence level. Default is \code{0.95}.
+##' @param max logical. If \code{TRUE} (the default), \code{cf.y} and
+##'   \code{cf.d} are treated as maximum admissible sensitivity values and
+##'   the widest confidence interval over all weaker confounding is returned.
+##'   If \code{FALSE}, the confidence interval is evaluated only at the
+##'   supplied sensitivity values, reproducing the legacy fixed-corner
+##'   calculation.
 ##' @returns For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
 ##' @references
 ##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
@@ -145,12 +151,48 @@ dml_bounds <- function(model, cf.y, cf.d, rho2 = 1){
 
 
 #' Compute confidence bounds
-#' @description Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
+#' @description Computes confidence bounds on the target parameter of interest
+#' accounting for omitted variable biases. By default, the returned interval
+#' is the widest confidence envelope over all confounding no stronger than the
+#' supplied sensitivity values.
 #'
 #' @rdname dml_bounds
 #' @export
 confidence_bounds <- function(...){
   UseMethod("confidence_bounds")
+}
+
+.confidence_bounds_validate_max <- function(maximize) {
+  if (length(maximize) != 1L || !is.logical(maximize) || is.na(maximize)) {
+    stop("'max' must be a single non-missing logical value.", call. = FALSE)
+  }
+  maximize
+}
+
+.confidence_bounds_maximum_factor <- function(cf.y, cf.d, rho2) {
+  arguments <- list(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
+  scalar_finite <- vapply(
+    arguments,
+    function(value) length(value) == 1L && is.numeric(value) &&
+      is.finite(value),
+    logical(1)
+  )
+  if (!all(scalar_finite) || cf.y < 0 || cf.y > 1 ||
+      cf.d < 0 || cf.d >= 1 || rho2 < 0 || rho2 > 1) {
+    stop("For 'max = TRUE', require 0 <= cf.y <= 1, 0 <= cf.d < 1, ",
+         "and 0 <= rho2 <= 1, each supplied as one finite number.",
+         call. = FALSE)
+  }
+  bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
+}
+
+.confidence_bounds_critical_value <- function(level) {
+  if (length(level) != 1L || !is.numeric(level) || !is.finite(level) ||
+      level < 0 || level > 1) {
+    stop("'level' must be a single finite number in [0, 1].",
+         call. = FALSE)
+  }
+  stats::qnorm(base::max(level, 0.5))
 }
 
 
@@ -169,7 +211,35 @@ confidence_bounds.numeric <- function(theta.s, S2,
                                       cf.y, cf.d,
                                       rho2 = 1,
                                       combine.method = "median",
-                                      level = 0.95, ...){
+                                      level = 0.95,
+                                      max = TRUE, ...){
+  max <- .confidence_bounds_validate_max(max)
+  if (max) {
+    combine.method <- match.arg(combine.method, c("median", "mean"))
+    maximum_factor <- .confidence_bounds_maximum_factor(cf.y, cf.d, rho2)
+    critical_value <- .confidence_bounds_critical_value(level)
+    statistics <- .rv_numeric_statistics(
+      theta = theta.s,
+      S2 = S2,
+      theta_se = se.theta.s,
+      S2_se = se.S2,
+      covariance = cov.theta.S2
+    )
+    if (is.null(statistics)) {
+      warning("All repetitions have invalid statistics or non-positive S2; ",
+              "returning NA confidence bounds.", call. = FALSE)
+      return(c(lwr = NA_real_, upr = NA_real_))
+    }
+    envelope <- .rv_envelope(
+      statistics = statistics,
+      maximum_factor = maximum_factor,
+      critical_value = critical_value,
+      combine.method = combine.method
+    )
+    return(c(lwr = unname(envelope["lwr"]),
+             upr = unname(envelope["upr"])))
+  }
+
   k = bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
   se.m <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 - (k/sqrt(S2))*cov.theta.S2)
   se.p <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 + (k/sqrt(S2))*cov.theta.S2)
@@ -192,9 +262,24 @@ confidence_bounds.dml <- function(model,
                                   cf.d,
                                   rho2 = 1,
                                   level = 0.95,
-                                  combine.method = "median", ...){
-  object <- dml_bounds(model, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
-  confidence_bounds(object, level = level,combine.method = combine.method, ...)
+                                  combine.method = "median",
+                                  max = TRUE, ...){
+  max <- .confidence_bounds_validate_max(max)
+  if (max) {
+    object <- structure(
+      list(
+        info = list(cf.y = cf.y, cf.d = cf.d, rho2 = rho2),
+        dml.fit = model
+      ),
+      class = "dml.bounds"
+    )
+  } else {
+    object <- dml_bounds(model, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
+  }
+  confidence_bounds(
+    object, level = level, combine.method = combine.method,
+    max = max, ...
+  )
 }
 
 
@@ -208,7 +293,36 @@ confidence_bounds.dml.bounds <- function(model,
                                          level = 0.95,
                                          combine.method = "median",
                                          return = c("lwr", "upr"),
-                                         ...){
+                                         max = TRUE, ...){
+
+  max <- .confidence_bounds_validate_max(max)
+  combine.method <- match.arg(combine.method, c("median", "mean"))
+  return <- match.arg(return, c("lwr", "upr"), several.ok = TRUE)
+
+  if (max) {
+    if (is.null(cf.y)) cf.y <- model$info$cf.y
+    if (is.null(cf.d)) cf.d <- model$info$cf.d
+    if (is.null(rho2)) rho2 <- model$info$rho2
+
+    maximum_factor <- .confidence_bounds_maximum_factor(cf.y, cf.d, rho2)
+    critical_value <- .confidence_bounds_critical_value(level)
+    envelopes <- .rv_model_envelopes(
+      model = model$dml.fit,
+      maximum_factor = maximum_factor,
+      critical_value = critical_value,
+      combine.method = combine.method
+    )
+    out <- envelopes[, c("lwr", "upr"), drop = FALSE]
+    out <- out[, return, drop = FALSE]
+    level2 <- base::max(0, 1 - (1 - level) * 2)
+    info <- list(cf.y = cf.y, cf.d = cf.d, rho2 = rho2, max = TRUE)
+    attr(out, "conf.levels") <- c(point = level, region = level2)
+    attr(out, "sens.param") <- info
+    attr(out, "extrema.at") <- envelopes[, c("lwr.at", "upr.at"),
+                                           drop = FALSE]
+    class(out) <- c("confidence.bounds", "matrix")
+    return(out)
+  }
 
   if (!is.null(cf.y) | !is.null(cf.d) | !is.null(rho2)) {
 
@@ -225,11 +339,14 @@ confidence_bounds.dml.bounds <- function(model,
     }
 
     new_bounds <- dml_bounds(model$dml.fit, cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
-    return(confidence_bounds(new_bounds, combine.method = combine.method, return = return))
+    return(confidence_bounds(
+      new_bounds, level = level, combine.method = combine.method,
+      return = return, max = FALSE
+    ))
 
   }
 
-  level2 = max(0, 1 - (1 - level)*2)
+  level2 = base::max(0, 1 - (1 - level)*2)
 
   confs <- confint(model, level = level2, combine.method = combine.method)
 
@@ -293,23 +410,15 @@ robustness_value <- sensemakr::robustness_value
 ##' @inheritParams summary.dml
 ##' @exportS3Method sensemakr::robustness_value dml
 robustness_value.dml <- function(model, theta = 0, alpha = 0.05, ...){
-  conf <- confint(model, level = 1 - alpha,...)
-  out <- setNames(rep(NA,nrow(conf)), rownames(conf))
-  for (i in 1:nrow(conf)) {
-    if (conf[i,1] <= theta & theta <= conf[i,2]) {
-      out[i] <- 0
-      next
-    }
-    side <- ifelse(theta < conf[i,1], "lwr", "upr")
-    fn <- function(rv) rv_fun(rv, dml.fit = model, par = names(out)[i],
-                              side = side, theta = theta, alpha = alpha)
-    out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
-  }
-  return(out)
-  # grid <- seq(0, 0.99,by = 0.001)
-  # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
-  # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
-  # grid[rv.idx]
+  arguments <- .rv_method_arguments(list(...))
+  .rv_sensitivity_statistics(
+    model = model,
+    theta = theta,
+    alpha = alpha,
+    rho2 = arguments$rho2,
+    combine.method = arguments$combine.method,
+    confint.arguments = arguments$confint.arguments
+  )$RV
 }
 
 ###################################################################################################################
@@ -351,44 +460,15 @@ extreme_robustness_value <- sensemakr::extreme_robustness_value
 ##' @inheritParams summary.dml
 ##' @exportS3Method sensemakr::extreme_robustness_value dml
 extreme_robustness_value.dml <- function(model, theta = 0, alpha = 0.05, rho2 = 1,...){
-  conf <- confint(model, level = 1 - alpha,...)
-  out <- setNames(rep(NA,nrow(conf)), rownames(conf))
-  for (i in 1:nrow(conf)) {
-    if (conf[i,1] <= theta & theta <= conf[i,2]) {
-      out[i] <- 0
-      next
-    }
-    side <- ifelse(theta < conf[i,1], "lwr", "upr")
-    # print(side)
-    if (alpha == 1) {
-      # estimate bound: theta.s +/- sqrt(rho2 * x/(1-x)) * S, so the XRV solves
-      # f0^2 = rho2 * x/(1-x). Group ("g.") rows live in results$groups.
-      par.i <- rownames(conf)[i]
-      res.i <- if (startsWith(par.i, .group_marker)) {
-        model$results$groups[[sub("^g\\.", "", par.i)]]
-      } else {
-        model$results$main[[unname(.target_to_slot[par.i])]]
-      }
-      S2.i   <- stats::median(extract_estimate(res.i, "S2"))
-      if (!is.finite(S2.i) || S2.i <= 0) {
-        # small subsamples can estimate the (theoretically positive) S2
-        # negative; be explicit instead of returning NaN
-        warning("The S2 estimate for '", par.i, "' is not positive; ",
-                "returning NA for its extreme robustness value.")
-        out[i] <- NA_real_
-        next
-      }
-      f0     <- unname(abs(theta - coef(model)[par.i]) / sqrt(S2.i))
-      out[i] <- (f0^2 / rho2) / (1 + f0^2 / rho2)
-    } else {
-      fn <- function(xrv) xrv_fun(xrv, dml.fit = model, par = names(out)[i],
-                                  side = side, theta = theta, alpha = alpha,
-                                  rho2 = rho2)
-      out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
-    }
-  }
-
-  return(out)
+  arguments <- .rv_method_arguments(list(...), rho2 = rho2)
+  .rv_sensitivity_statistics(
+    model = model,
+    theta = theta,
+    alpha = alpha,
+    rho2 = arguments$rho2,
+    combine.method = arguments$combine.method,
+    confint.arguments = arguments$confint.arguments
+  )$XRV
 }
 ##' @rdname extreme_robustness_value
 ##' @exportS3Method sensemakr::extreme_robustness_value dml.bounds
@@ -401,24 +481,7 @@ extreme_robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, 
 ##' @rdname robustness_value
 ##' @exportS3Method sensemakr::robustness_value dml.bounds
 robustness_value.dml.bounds <- function(model, theta = 0, alpha = 0.05, ...){
-  model <- model$dml.fit
-  conf <- confint(model, level = 1 - alpha,...)
-  out <- setNames(rep(NA, nrow(conf)), rownames(conf))
-  for (i in 1:nrow(conf)) {
-    if (conf[i,1] <= theta & theta <= conf[i,2]) {
-      out[i] <- 0
-      next
-    }
-    side <- ifelse(theta < conf[i,1], "lwr", "upr")
-    fn <- function(rv) rv_fun(rv, dml.fit = model, par = names(out)[i],
-                              side = side, theta = theta, alpha = alpha)
-    out[i] <- optim(par = c(0.01), fn, lower = 0, upper = 1, method = "Brent")$par
-  }
-  return(out)
-  # grid <- seq(0, 0.99,by = 0.001)
-  # values <- mapply(function(x,y) confidence_bounds(dml.fit, cf.y= x, cf.d = y), x = grid, y = grid)
-  # rv.idx <- which(values[1,] <= theta & theta <= values[2,])[1]
-  # grid[rv.idx]
+  robustness_value(model$dml.fit, theta = theta, alpha = alpha, ...)
 }
 
 # ##' Robustness Value DML

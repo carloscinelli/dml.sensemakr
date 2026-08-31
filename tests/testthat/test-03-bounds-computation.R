@@ -177,7 +177,7 @@ test_that("confidence_bounds.numeric computes correct bounds", {
                               se.theta.s, se.S2,
                               cov.theta.S2,
                               cf.y = 0.04, cf.d = 0.03,
-                              rho2 = 1, level = 0.95)
+                              rho2 = 1, level = 0.95, max = FALSE)
 
   expect_named(result, c("lwr", "upr"))
   expect_true(result["lwr"] < result["upr"])
