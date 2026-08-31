@@ -24,14 +24,32 @@ test_that("extreme_robustness_value returns a named numeric in [0, 1]", {
   expect_true(all(xrv >= 0 & xrv <= 1))
 })
 
-# === alpha = 1 closed form ===
-test_that("extreme_robustness_value at alpha = 1 matches the closed form f0^2 / (1 + f0^2)", {
+# === alpha = 1 endpoint crossing ===
+test_that("extreme_robustness_value at alpha = 1 uses the aggregated endpoint", {
   fit <- setup_xrv$fit
   xrv1 <- extreme_robustness_value(fit, alpha = 1, theta = 0)
-  # closed form: f0 = |theta - theta.s| / S,  XRV = f0^2 / (1 + f0^2)
-  S2 <- stats::median(sapply(fit$results$main$all, function(z) z$estimates$S2))
-  f0 <- abs(0 - coef(fit)[["ate"]]) / sqrt(S2)
-  expect_equal(unname(xrv1[["ate"]]), f0^2 / (1 + f0^2), tolerance = 1e-6)
+  results <- fit$results$main$all
+  statistic <- function(name) {
+    vapply(results, function(result) result$estimates[[name]], numeric(1))
+  }
+  endpoint <- function(factor) {
+    confidence_bounds(
+      theta.s = statistic("theta.s"),
+      S2 = statistic("S2"),
+      se.theta.s = statistic("se.theta.s"),
+      se.S2 = statistic("se.S2"),
+      cov.theta.S2 = statistic("cov.theta.S2"),
+      cf.y = 1,
+      cf.d = factor^2 / (1 + factor^2),
+      level = 0,
+      combine.method = "median"
+    )[["lwr"]]
+  }
+  upper <- 1
+  while (endpoint(upper) > 0) upper <- 2 * upper
+  required_factor <- uniroot(endpoint, c(0, upper), tol = 1e-12)$root
+  expected <- required_factor^2 / (1 + required_factor^2)
+  expect_equal(unname(xrv1[["ate"]]), expected, tolerance = 1e-9)
 })
 
 # === zero when the confidence bound already includes theta ===
