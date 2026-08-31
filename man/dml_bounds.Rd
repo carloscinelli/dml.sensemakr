@@ -23,6 +23,7 @@ confidence_bounds(...)
   rho2 = 1,
   combine.method = "median",
   level = 0.95,
+  max = TRUE,
   ...
 )
 
@@ -33,6 +34,7 @@ confidence_bounds(...)
   rho2 = 1,
   level = 0.95,
   combine.method = "median",
+  max = TRUE,
   ...
 )
 
@@ -44,6 +46,7 @@ confidence_bounds(...)
   level = 0.95,
   combine.method = "median",
   return = c("lwr", "upr"),
+  max = TRUE,
   ...
 )
 }
@@ -72,13 +75,23 @@ confidence_bounds(...)
 
 \item{level}{confidence level. Default is \code{0.95}.}
 
+\item{max}{logical. If \code{TRUE} (the default), \code{cf.y} and
+\code{cf.d} are treated as maximum admissible sensitivity values and
+the widest confidence interval over all weaker confounding is returned.
+If \code{FALSE}, the confidence interval is evaluated only at the
+supplied sensitivity values, reproducing the legacy fixed-corner
+calculation.}
+
 \item{return}{character vector specifying which bounds to return. Options are \code{"lwr"} and \code{"upr"}.}
 }
 \value{
 For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
 }
 \description{
-Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
+Computes confidence bounds on the target parameter of interest
+accounting for omitted variable biases. By default, the returned interval
+is the widest confidence envelope over all confounding no stronger than the
+supplied sensitivity values.
 }
 \examples{
 data("pension")

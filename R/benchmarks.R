@@ -133,7 +133,8 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##' @returns An object of class \code{dml_benchmark_bounds} (a data frame, one row
 ##'   per benchmark covariate) with the bias factor \code{BF}, the point bounds
 ##'   \code{theta.minus}/\code{theta.plus}, the fixed-gain confidence bounds
-##'   \code{lwr.fixed}/\code{upr.fixed} (\eqn{=}\code{confidence_bounds}), the
+##'   \code{lwr.fixed}/\code{upr.fixed}
+##'   (\eqn{=}\code{confidence_bounds(..., max = FALSE)}), the
 ##'   uncertainty-propagated confidence bounds \code{lwr}/\code{upr}, and the
 ##'   propagated bound SEs \code{se.minus}/\code{se.plus}. Covariates whose implied
 ##'   \eqn{k_D \hat G_{D,j} \ge 1} (\code{cf.d} reaches 1, so the bound diverges)

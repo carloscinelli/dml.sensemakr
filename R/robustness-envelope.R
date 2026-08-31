@@ -1,7 +1,8 @@
 # Internal implementation of the formal RV/XRV confidence-envelope definitions.
 #
-# The public fixed-sensitivity confidence-bound methods remain unchanged.  The
-# helpers below work directly with the common factor
+# The public confidence-bound methods use these helpers when max = TRUE and
+# retain their fixed-sensitivity calculation when max = FALSE.  The helpers
+# below work directly with the common factor
 #
 #   |rho_0| C_{0 Delta Y} C_{0D}
 #
@@ -90,6 +91,57 @@
   results
 }
 
+.rv_build_statistics <- function(theta, S2, theta_se, S2_se, covariance) {
+  S <- sqrt(S2)
+  list(
+    theta = theta,
+    S2 = S2,
+    S = S,
+    theta_se = theta_se,
+    S2_se = S2_se,
+    covariance = covariance,
+    variance_constant = theta_se^2,
+    variance_linear_magnitude = covariance / S,
+    variance_quadratic = S2_se^2 / (4 * S2)
+  )
+}
+
+.rv_numeric_statistics <- function(theta, S2, theta_se, S2_se,
+                                   covariance) {
+  values <- list(
+    theta = theta,
+    S2 = S2,
+    theta_se = theta_se,
+    S2_se = S2_se,
+    covariance = covariance
+  )
+  lengths <- vapply(values, length, integer(1))
+  if (any(lengths == 0L) || length(unique(lengths)) != 1L) {
+    stop("The numeric confidence-bound statistics must have equal, positive ",
+         "lengths.", call. = FALSE)
+  }
+
+  valid <- is.finite(theta) & is.finite(S2) & S2 > 0 &
+    is.finite(theta_se) & theta_se >= 0 &
+    is.finite(S2_se) & S2_se >= 0 & is.finite(covariance)
+  if (!all(valid) && any(valid)) {
+    warning("Some repetitions have invalid statistics or non-positive S2; ",
+            "dropping those repetitions from the confidence-envelope ",
+            "calculation.", call. = FALSE)
+  }
+  if (!any(valid)) {
+    return(NULL)
+  }
+
+  .rv_build_statistics(
+    theta = theta[valid],
+    S2 = S2[valid],
+    theta_se = theta_se[valid],
+    S2_se = S2_se[valid],
+    covariance = covariance[valid]
+  )
+}
+
 .rv_extract_statistics <- function(results, parameter) {
   required <- c("theta.s", "S2", "se.theta.s", "se.S2",
                 "cov.theta.S2")
@@ -130,23 +182,12 @@
     return(NULL)
   }
 
-  theta <- theta[valid]
-  S2 <- S2[valid]
-  theta_se <- theta_se[valid]
-  S2_se <- S2_se[valid]
-  covariance <- covariance[valid]
-  S <- sqrt(S2)
-
-  list(
-    theta = theta,
-    S2 = S2,
-    S = S,
-    theta_se = theta_se,
-    S2_se = S2_se,
-    covariance = covariance,
-    variance_constant = theta_se^2,
-    variance_linear_magnitude = covariance / S,
-    variance_quadratic = S2_se^2 / (4 * S2)
+  .rv_build_statistics(
+    theta = theta[valid],
+    S2 = S2[valid],
+    theta_se = theta_se[valid],
+    S2_se = S2_se[valid],
+    covariance = covariance[valid]
   )
 }
 
@@ -427,6 +468,51 @@
     lwr.at = unname(lower["factor"]),
     upr.at = unname(upper["factor"])
   )
+}
+
+.rv_model_envelopes <- function(model, maximum_factor, critical_value,
+                                combine.method) {
+  main_slots <- names(model$results$main)
+  main_parameters <- unname(.slot_to_target[main_slots])
+  main_parameters <- main_parameters[!is.na(main_parameters)]
+  group_parameters <- if (is.null(model$results$groups)) {
+    character(0)
+  } else {
+    paste0(.group_marker, names(model$results$groups))
+  }
+  parameter_names <- c(main_parameters, group_parameters)
+  if (!length(parameter_names)) {
+    stop("Could not identify parameters for the confidence envelopes.",
+         call. = FALSE)
+  }
+
+  envelopes <- lapply(parameter_names, function(parameter) {
+    results <- .rv_results_for_parameter(model, parameter)
+    statistics <- .rv_extract_statistics(results, parameter)
+    if (is.null(statistics)) {
+      warning("All cross-fitting repetitions for '", parameter,
+              "' have invalid statistics or non-positive S2; returning NA ",
+              "for its confidence envelope.", call. = FALSE)
+      return(c(lwr = NA_real_, upr = NA_real_,
+               lwr.at = NA_real_, upr.at = NA_real_))
+    }
+    tryCatch(
+      .rv_envelope(
+        statistics = statistics,
+        maximum_factor = maximum_factor,
+        critical_value = critical_value,
+        combine.method = combine.method
+      ),
+      error = function(error) {
+        warning("Unable to calculate the confidence envelope for '",
+                parameter, "': ", conditionMessage(error), call. = FALSE)
+        c(lwr = NA_real_, upr = NA_real_,
+          lwr.at = NA_real_, upr.at = NA_real_)
+      }
+    )
+  })
+  names(envelopes) <- parameter_names
+  do.call(rbind, envelopes)
 }
 
 .rv_contains <- function(interval, theta) {

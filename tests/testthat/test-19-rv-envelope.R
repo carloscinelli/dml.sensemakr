@@ -105,7 +105,8 @@ test_that("the factor-direct evaluator reproduces confidence_bounds.numeric", {
             cf.d = factor^2 / (1 + factor^2),
             rho2 = 1,
             combine.method = method,
-            level = 1 - alpha
+            level = 1 - alpha,
+            max = FALSE
           )
           expect_equal(unname(observed), unname(expected), tolerance = 2e-12)
         }

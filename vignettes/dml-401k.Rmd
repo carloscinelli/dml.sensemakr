@@ -182,7 +182,15 @@ plot(sens.401k.npm, which.bound = "upr", bound.label = "Max match (3 years)", co
 par(oldpar)
 ```
 
-Confidence bounds for group-wise ATEs can also be computed. The `confidence_bounds()` function returns the lower and upper bounds on the treatment effect under the confounding scenario; setting `level = 0` gives the point-wise bounds (no statistical uncertainty, only the bias from confounding), whereas `level = 0.95` gives the confidence bounds (accounting for both bias and sampling uncertainty). The results are shown in the figure below, where the red band shows the bounds and the blue band shows the confidence bounds.
+Confidence bounds for group-wise ATEs can also be computed. By default,
+`confidence_bounds()` treats `cf.y` and `cf.d` as maximum sensitivity values
+and returns the widest interval over all weaker confounding. Setting
+`max = FALSE` instead evaluates the interval only at the supplied values.
+Setting `level = 0` gives the point-wise bounds (no statistical uncertainty,
+only the bias from confounding), whereas `level = 0.95` gives the confidence
+bounds (accounting for both bias and sampling uncertainty). The results are
+shown in the figure below, where the red band shows the bounds and the blue
+band shows the confidence bounds.
 
 ```{r, fig.width=8}
 # confidence bounds plot

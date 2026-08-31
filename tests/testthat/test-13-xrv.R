@@ -42,7 +42,8 @@ test_that("extreme_robustness_value at alpha = 1 uses the aggregated endpoint", 
       cf.y = 1,
       cf.d = factor^2 / (1 + factor^2),
       level = 0,
-      combine.method = "median"
+      combine.method = "median",
+      max = FALSE
     )[["lwr"]]
   }
   upper <- 1

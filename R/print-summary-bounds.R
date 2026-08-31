@@ -167,11 +167,16 @@ confint.dml.bounds <- function(object, parm = NULL, level = 0.95, combine.method
 #'@export
 print.confidence.bounds <- function(x, ...){
    print.table(x)
+  maximized <- isTRUE(attributes(x)$sens.param$max)
   cat("\nConfidence level: point =",
       paste0(attributes(x)$conf.levels["point"]*100, "%;"),
       "region =",
       paste0(attributes(x)$conf.levels["region"]*100, "%."))
-  cat("\nSensitivity parameters: cf.y =",
+  cat(if (maximized) {
+        "\nMaximum sensitivity parameters: cf.y ="
+      } else {
+        "\nSensitivity parameters: cf.y ="
+      },
       paste0(attributes(x)$sens.param["cf.y"], ";"),
       "cf.d =",
       paste0(attributes(x)$sens.param["cf.d"], ";"),
