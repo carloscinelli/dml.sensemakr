@@ -1,5 +1,7 @@
 # dml.sensemakr (development version)
 
+* Group-specific estimates now inherit the fitted model's propensity-score
+  trimming bounds, including groups added later with `dml_gate()`.
 * Package checks now cover the declared testing dependencies, vignettes, and
   PDF manual. Test fixtures and documentation have been updated for clean,
   reproducible package development.

@@ -11,7 +11,7 @@
 ##' @param cf.folds number of cross-fitting folds. Default is \code{5}.
 ##' @param cf.reps number of cross-fitting repetitions. Default is \code{1}.
 ##' @param cf.seed optional integer. A random seed for reproducibility of fold assignments.
-##' @param ps.trim trims propensity scores lower than \code{ps.trim} and greater than \code{1-ps.trim}, in order to obtain more stable estimates. Alternatively, a named list with elements \code{lower} and \code{upper} specifying the lower and upper bounds for trimming. This is only relevant for the case of a binary treatment and when \code{model = "npm"}.
+##' @param ps.trim trims propensity scores lower than \code{ps.trim} and greater than \code{1-ps.trim}, in order to obtain more stable estimates. Alternatively, a named list with elements \code{lower} and \code{upper} specifying the lower and upper bounds for trimming. The same bounds are used for main and group-specific estimates, including groups added with \code{dml_gate()}. This is only relevant for the case of a binary treatment and when \code{model = "npm"}.
 ##' @param reg details of the machine learning method to be used for estimating the nuisance parameters (e.g, regression functions of the treatment and the outcome). Currently, this should be specified using the same arguments as \code{caret}'s \code{\link[caret]{train}} function. The default is random forest using \code{ranger}. The default method is fast and usually works well for many applications.
 ##' @param yreg same as \code{reg}, but specifies arguments for the outcome regression alone. Default is the same value of \code{reg}. Alternatively, a named list with elements \code{yreg0} and \code{yreg1} specifying separate methods for each.
 ##' @param dreg same as \code{reg}, but specifies arguments for the treatment regression alone. Default is the same value of \code{reg}.
@@ -243,6 +243,7 @@ dml <- function(y, d, x,
                    centered = centered,
                    cf.folds = cf.folds,
                    cf.reps = cf.reps,
+                   ps.trim = ps.trim,
                    dirty.tuning = dirty.tuning,
                    yreg = yreg,
                    dreg = dreg)

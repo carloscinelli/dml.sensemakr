@@ -432,7 +432,15 @@ ate.att.atu.npm <- function(dml, target, trim = 0.02) {
 
 
 # computes ate for each group npm
-group.ate.npm <- function(dml, groups, trim = 0.02) {
+group.ate.npm <- function(dml, groups, trim = NULL) {
+  if (is.null(trim)) {
+    trim <- dml$info$ps.trim
+    # Older fitted objects record the bounds in their main score results.
+    if (is.null(trim) && length(dml$results$main)) {
+      trim <- dml$results$main[[1L]][[1L]]$trim.summary$trim
+    }
+    if (is.null(trim)) trim <- 0.01
+  }
   lev     <- levels(groups)
   cf.reps <- dml$info$cf.reps
   y       <- dml$data$y
