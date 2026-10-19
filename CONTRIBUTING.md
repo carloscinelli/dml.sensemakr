@@ -49,3 +49,10 @@ under `tools/`, outside the automated test suite.
 Keep unreleased work under a development version and a development heading
 in `NEWS.md`. Review the Git diff and commit completed changes. Publishing,
 tagging, or submitting a release is a separate operation.
+
+## Website publishing
+
+The `pkgdown` workflow builds the website from `main` and publishes the generated
+files to `gh-pages`. In GitHub Settings > Pages, use **Deploy from a branch**,
+select **gh-pages**, and select **/(root)**. The checked-in `main/docs` directory
+contains an older website and is not the publishing source.
