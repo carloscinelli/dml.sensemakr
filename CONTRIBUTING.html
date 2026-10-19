@@ -73,6 +73,10 @@
 <p>Alternatively, use <code>R CMD INSTALL</code> on the source tarball produced by the successful check to install that exact bundle without rebuilding its vignettes.</p>
 <p>Keep tests self-contained. Define reusable fixtures as functions, cache expensive fixture construction, and restore changes to random seeds, graphics devices, options, or files. Do not attach packages or create objects in the global environment from test files. Keep exploratory scripts under <code>tools/</code>, outside the automated test suite.</p>
 <p>Keep unreleased work under a development version and a development heading in <code>NEWS.md</code>. Review the Git diff and commit completed changes. Publishing, tagging, or submitting a release is a separate operation.</p>
+<div class="section level2">
+<h2 id="website-publishing">Website publishing<a class="anchor" aria-label="anchor" href="#website-publishing"></a></h2>
+<p>The <code>pkgdown</code> workflow builds the website from <code>main</code> and publishes the generated files to <code>gh-pages</code>. In GitHub Settings &gt; Pages, use <strong>Deploy from a branch</strong>, select <strong>gh-pages</strong>, and select <strong>/(root)</strong>. The checked-in <code>main/docs</code> directory contains an older website and is not the publishing source.</p>
+</div>
 </div>
 
   </div>
