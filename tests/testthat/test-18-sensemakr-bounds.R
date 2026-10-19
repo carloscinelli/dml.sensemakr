@@ -60,10 +60,19 @@ test_that("asymmetric multipliers get an unambiguous label", {
 })
 
 test_that("a diverging multiplier shows infinite bounds", {
+  benchmark <- suppressMessages(dml_benchmark(fit1, "inc"))
+  # Exercise a known positive gain. A fitted gain may legitimately be zero
+  # after flooring, in which case no finite multiplier causes divergence.
+  benchmark$benchmarks$inc$gain.Y[] <- 0.2
+  benchmark$benchmarks$inc$gain.D[] <- 0.3
+  benchmark$benchmarks$inc$rho[] <- 0.5
+  local_mocked_bindings(dml_benchmark = function(...) benchmark,
+                        .package = "dml.sensemakr")
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
               cf.y = 0.03, cf.d = 0.03, kD = 100)))
-  row <- s$bench.table[s$bench.table$bound.label == "100x inc", ]
+  row <- s$bench.table
+  expect_gt(row$cf.d, 1)
   expect_equal(row$lwr.fixed, -Inf)
   expect_equal(row$upr.fixed, Inf)
 })

@@ -20,7 +20,7 @@
 ##' @param y.class when \code{y} is binary, should the outcome regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
 ##' @param d.class when \code{d} is binary, should the treatment regression be treated as a classification problem? Default is \code{FALSE}. Note that for DML we need the class probabilities, and regression gives us that. If you change to classification, you need to make sure the method outputs class probabilities.
 ##' @param conditional logical or \code{NULL}. If \code{TRUE}, estimates the \emph{conditional} version of the target, in which the outcome regression is fit on a single treatment arm and used to impute the counterfactual mean for the other arm. Only supported for \code{model = "npm"} with a single \code{target} of \code{"att"} or \code{"atu"}. When \code{NULL} (default), it is set to \code{TRUE} automatically for those single-target npm cases and \code{FALSE} otherwise. The conditional parameterization is the recommended one (Wang et al., 2026); \code{conditional = FALSE} gives the unconditional parameterization of Chernozhukov et al. (2026), retained so those results can be reproduced.
-##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Note the centered version can yield negative estimates of \code{nu2.s} in finite samples.
+##' @param centered logical. Controls the parameterization of the Riesz-representer imbalance \code{nu2.s} in the conditional model. When \code{FALSE} (default), \code{nu2.s} is the full second moment of the Riesz representer, \eqn{\chi^2 + 1} (uncentered); when \code{TRUE}, it is the centered version, the \eqn{\chi^2} divergence (that moment minus 1). Only relevant when \code{conditional = TRUE}. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Estimates of \code{nu2.s} are bounded below by 1 in the uncentered version and by 0 in the centered version.
 ##' @param verbose if \code{TRUE} (default) prints steps of the fitting procedure.
 ##' @param warnings should \code{caret}'s warnings be printed? Default is \code{FALSE}. Note \code{caret} has many inconsistent and unnecessary warnings.
 ##' @returns
@@ -33,6 +33,17 @@
 ##'  \item{\code{results}}{A \code{list} with the results (influence functions and estimates) for each repetition.}
 ##'  \item{\code{coefs}}{A \code{list} with the estimates and standard errors for each repetition.}
 ##' }
+##' @details
+##' Estimates of \code{nu2.s} are constrained in each cross-fitting repetition.
+##' For unconditional binary-treatment models the lower bound is
+##' \eqn{1/[\hat p(1-\hat p)]}, where \eqn{\hat p} is the sample treatment share.
+##' For partially linear models it is the reciprocal of the empirical treatment
+##' variance, computed with divisor \eqn{n}. Group-specific estimates use the
+##' corresponding within-group share or variance. The original influence
+##' functions are retained; sensitivity scales use the constrained estimates.
+##' In the centered conditional model, a zero sensitivity scale gives zero
+##' point-estimate bias. When confounding is positive, bound standard errors
+##' requiring the square-root delta method are unavailable at that scale.
 ##' @references Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." \emph{Review of Economics and Statistics}. \doi{10.1162/REST.a.1705}
 ##'
 ##'   Wang, J., Sant'Anna, P. H. C., Chernozhukov, V., and Cinelli, C. (2026).

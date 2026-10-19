@@ -32,9 +32,15 @@ rho_of <- function(target, conditional) {
   # cleanly in .GlobalEnv inside dml_benchmark().
   cl  <- bquote(dml(Y, D, Xm, model = "npm", target = .(target),
                     conditional = .(conditional), cf.folds = 5, cf.reps = 1,
-                    cf.seed = 1, verbose = FALSE))
+                    cf.seed = 1, verbose = FALSE, yreg = "lm",
+                    dreg = list(method = "glm", family = binomial())))
   fit <- eval(cl, .GlobalEnv)
-  dml_benchmark(fit, "X2")$benchmarks$X2$rho
+  benchmark <- dml_benchmark(fit, "X2")$benchmarks$X2
+  # The sign convention concerns positive gains. Correctly specified learners
+  # keep this fixture away from the zero-gain case created by binding floors.
+  expect_gt(benchmark$gain.Y, 0)
+  expect_gt(benchmark$gain.D, 0)
+  benchmark$rho
 }
 
 test_that("unconditional ATT rho aligns with ATE and ATU", {

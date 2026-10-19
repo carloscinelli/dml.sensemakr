@@ -244,7 +244,14 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
       s2 <- sigma2.s.rep[k]; n2 <- nu2.s.rep[k]; th <- theta.s.rep[k]
       S.k    <- sqrt(s2 * n2)
       psi.th <- psis$psi.theta.s[[k]]
-      psi.S  <- (s2 * psis$psi.nu2.s[[k]] + n2 * psis$psi.sigma2.s[[k]]) / (2 * S.k)
+      psi.S2 <- s2 * psis$psi.nu2.s[[k]] + n2 * psis$psi.sigma2.s[[k]]
+      psi.bias <- if (isTRUE(BF == 0)) {
+        numeric(length(psi.th))
+      } else if (isTRUE(S.k == 0)) {
+        rep(NA_real_, length(psi.th))
+      } else {
+        BF * psi.S2 / (2 * S.k)
+      }
       psi.BF <- if (gain.zero) numeric(length(psi.th)) else {
         # gain-uncertainty terms (always propagated); rho term only when rho is estimated
         gains <- abs(rho.use) * CD * (kY * psis$psi.GY[[k]]) / (2 * CY) +
@@ -252,10 +259,10 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
         if (rho2.fixed) gains else gains + sign(rho.use) * CY * CD * psis$psi.rho[[k]]
       }
       tm[k] <- th - BF * S.k;                     tp[k] <- th + BF * S.k
-      sm[k] <- psi.sd(psi.th - BF * psi.S - S.k * psi.BF)   # full-propagation SE
-      sp[k] <- psi.sd(psi.th + BF * psi.S + S.k * psi.BF)
-      sm.fx[k] <- psi.sd(psi.th - BF * psi.S)               # fixed-gain SE
-      sp.fx[k] <- psi.sd(psi.th + BF * psi.S)
+      sm[k] <- psi.sd(psi.th - psi.bias - S.k * psi.BF)   # full-propagation SE
+      sp[k] <- psi.sd(psi.th + psi.bias + S.k * psi.BF)
+      sm.fx[k] <- psi.sd(psi.th - psi.bias)               # fixed-gain SE
+      sp.fx[k] <- psi.sd(psi.th + psi.bias)
     }
 
     # combine reps: estimate + an SE that folds in the across-rep spread (CCDDHNR)

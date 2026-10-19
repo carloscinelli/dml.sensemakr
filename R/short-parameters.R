@@ -78,6 +78,9 @@ att.npm.cond <- function(y, d,
                   mean(2 * l - lc)
   }
 
+  # Impose the parameter-space bound after computing the original score.
+  nu2.0s <- max(nu2.0s, if (centered) 0 else 1)
+
   # S02 = sigma2.0s * nu2.0s
   S02     <- sigma2.0s * nu2.0s
   psi.S02 <- sigma2.0s * psi.nu2.0s + nu2.0s * psi.sigma2.0s
@@ -183,6 +186,9 @@ atu.npm.cond <- function(y, d,
     psi.nu2.1s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.1s) /
                   mean(2 * l - lc)
   }
+
+  # Impose the parameter-space bound after computing the original score.
+  nu2.1s <- max(nu2.1s, if (centered) 0 else 1)
 
   # S12 = sigma2.1s * nu2.1s
   S12     <- sigma2.1s * nu2.1s
@@ -307,6 +313,11 @@ ate.npm <- function(y, d, parameter = "all",
   nu2.s        <-  mean(2*Msa - RRs^2) / mean(2 * l - 1)
   psi.nu2.s    <-  (2*Msa  - RRs^2 - (2 * l - 1) * nu2.s) / mean(2 * l - 1)
 
+  # Use the empirical treatment share, including within group-specific calls.
+  # Keep the original influence function, including its share variation.
+  p <- mean(d)
+  nu2.s <- max(nu2.s, 1 / (p * (1 - p)))
+
   # S2
   S2           <- sigma2.s*nu2.s
   psi.S2       <- (sigma2.s*(psi.nu2.s) + nu2.s*psi.sigma2.s)
@@ -354,6 +365,10 @@ ate.plm <- function(y, d, yhat, dhat){
   # nu2
   nu2.s          <- 1/mean(resD^2)
   psi.nu2.s      <- nu2.s - (resD)^2 * (nu2.s)^2
+
+  # The empirical variance uses divisor n, for binary or continuous treatment.
+  # Apply the bound only after computing the original influence function.
+  nu2.s <- max(nu2.s, 1 / mean((d - mean(d))^2))
 
   # S2
   S2           <- sigma2.s*nu2.s

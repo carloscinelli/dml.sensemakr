@@ -34,7 +34,14 @@ bounds <- function(short.results, cf.y = 0.04, cf.d = 0.03, rho2 = 1){
 
   # bounds IFs
   psi.S2         <- (sigma2.s*(psi.nu2.s) + nu2.s*psi.sigma2.s)
-  psi.bias.bound <- (bf/2) * (1/S) * psi.S2
+  psi.bias.bound <- if (isTRUE(bf == 0)) {
+    numeric(length(psi.theta.s))
+  } else if (isTRUE(S == 0)) {
+    # The square-root delta method is undefined at a zero scale.
+    rep(NA_real_, length(psi.theta.s))
+  } else {
+    (bf/2) * (1/S) * psi.S2
+  }
   psi.theta.m    <- psi.theta.s - psi.bias.bound
   psi.theta.p    <- psi.theta.s + psi.bias.bound
 
