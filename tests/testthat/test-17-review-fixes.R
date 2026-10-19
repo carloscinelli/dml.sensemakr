@@ -4,12 +4,9 @@
 # changes, so it cannot be silently reintroduced. Fixtures are shared across
 # tests to keep the file fast.
 
-library(testthat)
-library(dml.sensemakr)
-
-setup_rf <- local({
+new_rf_fixture <- memoise::memoise(function() {
   data("pension", package = "dml.sensemakr")
-  set.seed(909)
+  withr::local_seed(909)
   idx <- sample(nrow(pension), 400)
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -49,8 +46,8 @@ setup_rf <- local({
 
 # a copy of the benchmark with known positive gains, so the k-multiplier tests
 # are deterministic (real gains on a small subsample can be <= 0)
-bench_pos <- local({
-  b <- setup_rf$bench2
+new_positive_benchmark <- memoise::memoise(function() {
+  b <- new_rf_fixture()$bench2
   for (v in names(b$benchmarks)) {
     b$benchmarks[[v]]$gain.Y[] <- 0.2
     b$benchmarks[[v]]$gain.D[] <- 0.3
@@ -61,6 +58,7 @@ bench_pos <- local({
 
 # === finding 1: info$yreg keeps its yreg0/yreg1 structure on the plm path ===
 test_that("plm fit with dirty tuning keeps the yreg0/yreg1 record and summary reports the learner", {
+  setup_rf <- new_rf_fixture()
   fit <- setup_rf$fit.plm
   expect_named(fit$info$yreg, c("yreg0", "yreg1"))
   out <- paste(capture.output(print(summary(fit))), collapse = "\n")
@@ -70,6 +68,7 @@ test_that("plm fit with dirty tuning keeps the yreg0/yreg1 record and summary re
 
 # === finding 2: dml_benchmark works when the user's variable is named yreg ===
 test_that("dml_benchmark resolves the stored call in the user's environment", {
+  setup_rf <- new_rf_fixture()
   # the fixture itself was built with a local variable named `yreg`; this
   # asserts the result is sound, not just that construction did not error
   expect_s3_class(setup_rf$bench2, "dml_benchmark")
@@ -79,6 +78,7 @@ test_that("dml_benchmark resolves the stored call in the user's environment", {
 
 # === finding 3: plm + target 'att' warns, falls back to ATE, and prints ===
 test_that("plm with target 'att' warns and reports the ATE instead of crashing", {
+  setup_rf <- new_rf_fixture()
   expect_warning(
     fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "plm", target = "att",
                cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE),
@@ -91,6 +91,7 @@ test_that("plm with target 'att' warns and reports the ATE instead of crashing",
 
 # === finding 4: na.rm in summary.dml_benchmark is honored again ===
 test_that("summary.dml_benchmark drops NA repetitions when na.rm = TRUE", {
+  setup_rf <- new_rf_fixture()
   b <- setup_rf$bench2
   b$benchmarks[["inc"]]$gain.Y[2] <- NA   # simulate one failed repetition
   s.rm   <- summary(b, na.rm = TRUE)
@@ -101,6 +102,7 @@ test_that("summary.dml_benchmark drops NA repetitions when na.rm = TRUE", {
 
 # === finding 5: conditional fits carry only the requested estimand ===
 test_that("conditional ATT fit has no stale unconditional 'all' slot", {
+  setup_rf <- new_rf_fixture()
   fit <- setup_rf$fit.att
   expect_named(fit$results$main, "treat")
   expect_named(fit$coefs$main, "treat")
@@ -113,6 +115,7 @@ test_that("conditional ATT fit has no stale unconditional 'all' slot", {
 
 # === finding 6: groups never silently downgrade the main parameterization ===
 test_that("requesting groups keeps the conditional parameterization for the main target", {
+  setup_rf <- new_rf_fixture()
   fit <- setup_rf$fit.attg
   # the recommended (conditional) parameterization survives a groups request ...
   expect_true(isTRUE(fit$info$conditional))
@@ -136,6 +139,7 @@ test_that("requesting groups keeps the conditional parameterization for the main
 })
 
 test_that("dml_gate reproduces the inline groups= estimates on a conditional fit", {
+  setup_rf <- new_rf_fixture()
   # the group ATT needs only the untreated arm, so a conditional fit made
   # without groups can still be gated after the fact
   gated <- dml_gate(setup_rf$fit.att, groups = setup_rf$g)
@@ -145,6 +149,7 @@ test_that("dml_gate reproduces the inline groups= estimates on a conditional fit
 
 # === both parameterizations stay available for reproduction ===
 test_that("unconditional and centered parameterizations remain reachable", {
+  setup_rf <- new_rf_fixture()
   # unconditional: Chernozhukov et al. (2026) parameterization
   uncond <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm", target = "att",
                 conditional = FALSE, cf.folds = 2, cf.reps = 1, cf.seed = 123,
@@ -164,6 +169,7 @@ test_that("unconditional and centered parameterizations remain reachable", {
 
 # === finding 7: the alpha = 1 closed form honors rho2 ===
 test_that("extreme_robustness_value at alpha = 1 scales with rho2", {
+  setup_rf <- new_rf_fixture()
   fit  <- setup_rf$fit.plm
   xrv1 <- extreme_robustness_value(fit, alpha = 1)              # rho2 = 1
   xrv5 <- extreme_robustness_value(fit, alpha = 1, rho2 = 0.5)
@@ -175,6 +181,7 @@ test_that("extreme_robustness_value at alpha = 1 scales with rho2", {
 
 # === finding 8: the alpha = 1 closed form works on fits with groups ===
 test_that("extreme_robustness_value at alpha = 1 handles gate rows", {
+  setup_rf <- new_rf_fixture()
   # must not error on gate rows (it used to crash); a gate whose estimated S2
   # comes out non-positive on this small subsample is NA with a warning
   xrv <- suppressWarnings(extreme_robustness_value(setup_rf$fit.grp, alpha = 1))
@@ -186,6 +193,7 @@ test_that("extreme_robustness_value at alpha = 1 handles gate rows", {
 
 # === finding 9: XRV is exactly 0 when theta is inside the interval ===
 test_that("extreme_robustness_value short-circuits to an exact 0", {
+  setup_rf <- new_rf_fixture()
   fit <- setup_rf$fit.plm
   theta.inside <- mean(confint(fit)["ate", ])
   xrv <- extreme_robustness_value(fit, theta = theta.inside, alpha = 0.05)
@@ -195,6 +203,8 @@ test_that("extreme_robustness_value short-circuits to an exact 0", {
 
 # === finding 10: kY = 0 / kD = 0 collapse to the plain CI, not NaN ===
 test_that("benchmark_bounds with a zero multiplier returns the plain CI", {
+  setup_rf <- new_rf_fixture()
+  bench_pos <- new_positive_benchmark()
   for (arg in list(list(kY = 0), list(kD = 0))) {
     bb <- do.call(benchmark_bounds,
                   c(list(setup_rf$fit.plm, bench_pos), arg))
@@ -210,6 +220,8 @@ test_that("benchmark_bounds with a zero multiplier returns the plain CI", {
 
 # === finding 11: per-covariate kY/kD vectors are applied per covariate ===
 test_that("benchmark_bounds accepts one k per benchmark covariate", {
+  setup_rf <- new_rf_fixture()
+  bench_pos <- new_positive_benchmark()
   bb <- benchmark_bounds(setup_rf$fit.plm, bench_pos, kY = c(0, 1))
   expect_true(bb["age", "BF"] == 0)   # kY = 0 applies to the first covariate
   expect_true(bb["inc", "BF"] > 0)    # kY = 1 to the second
@@ -223,6 +235,7 @@ test_that("benchmark_bounds accepts one k per benchmark covariate", {
 
 # === finding 12: dirty.tuning = FALSE also skips the unused outcome arm ===
 test_that("conditional ATT never trains the treated-arm outcome model", {
+  setup_rf <- new_rf_fixture()
   # no groups requested, so the second arm is genuinely unused
   fit <- setup_rf$fit.att   # dirty.tuning = FALSE, save.models = TRUE
   expect_true(all(is.na(fit$fits[[1]]$preds$yhat1)))
@@ -232,6 +245,7 @@ test_that("conditional ATT never trains the treated-arm outcome model", {
 
 # === review round 2: plots follow the fit's own target ===
 test_that("contour and sensemakr plots work on conditional and grouped fits", {
+  setup_rf <- new_rf_fixture()
   pdf(NULL)
   on.exit(dev.off(), add = TRUE)
   # default parameter resolves to the fit's own target (no "ate" slot needed)
@@ -267,6 +281,7 @@ test_that("collect.trimmed.obs keeps a single trimmed row as a matrix", {
 
 # === review round 3: group rows follow every requested target ===
 test_that("each requested target gets its own group block", {
+  setup_rf <- new_rf_fixture()
   fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm",
              target = c("att", "atu"), groups = setup_rf$g,
              cf.folds = 2, cf.reps = 1, cf.seed = 123, verbose = FALSE)
@@ -281,6 +296,7 @@ test_that("each requested target gets its own group block", {
 })
 
 test_that("group rows carry the estimand and the level in their names", {
+  setup_rf <- new_rf_fixture()
   fit <- setup_rf$fit.grp   # target = "ate"
   expect_identical(names(coef(fit)), c("ate", "g.ate.single", "g.ate.married"))
   out <- paste(capture.output(print(summary(fit))), collapse = "\n")
@@ -289,6 +305,7 @@ test_that("group rows carry the estimand and the level in their names", {
 
 # === review round 4: findings introduced by the earlier fixes ===
 test_that("a group that cannot identify the target returns NA with a warning", {
+  setup_rf <- new_rf_fixture()
   # a group with no treated units has no ATT; report it rather than return 0/0
   g.deg <- factor(ifelse(setup_rf$d == 1, "hasT", "noT"))
   expect_warning(
@@ -302,6 +319,7 @@ test_that("a group that cannot identify the target returns NA with a warning", {
 })
 
 test_that("call.env stores the call's variables, not the caller's frame", {
+  setup_rf <- new_rf_fixture()
   f <- function() {
     big <- numeric(2e5)                  # a local the call does not name
     dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "plm",
@@ -313,6 +331,7 @@ test_that("call.env stores the call's variables, not the caller's frame", {
 })
 
 test_that("the default contour parameter follows a multi-target fit", {
+  setup_rf <- new_rf_fixture()
   fit <- dml(setup_rf$y, setup_rf$d, setup_rf$x, model = "npm",
              target = c("att", "atu"), cf.folds = 2, cf.reps = 1,
              cf.seed = 123, verbose = FALSE)
@@ -322,6 +341,7 @@ test_that("the default contour parameter follows a multi-target fit", {
 })
 
 test_that("a conditional fit does not build the estimand it discards", {
+  setup_rf <- new_rf_fixture()
   expect_named(setup_rf$fit.att$results$main, "treat")
   expect_named(setup_rf$fit.att$coefs$main, "treat")
 })
@@ -344,7 +364,7 @@ test_that("combine.median matches the CCDDHNR median rule", {
 test_that("combine.median does not inflate the SE as repetitions grow", {
   cm <- dml.sensemakr:::combine.median
   ses <- vapply(c(5L, 20L, 100L), function(R) {
-    set.seed(42)
+    withr::local_seed(42)
     unname(cm(rnorm(R, 10, 0.3), rep(1, R))["se"])
   }, numeric(1))
   # all three within 10% of each other; the old rule grew without bound
@@ -367,7 +387,7 @@ test_that("combine.mean matches the CCDDHNR mean rule", {
 test_that("d.class = TRUE gives a usable propensity score and finite ATT/ATU", {
   skip_if_not_installed("glmnet")
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 400)
+  withr::local_seed(1); i <- sample(nrow(pension), 400)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
 
@@ -389,7 +409,7 @@ test_that("d.class = TRUE gives a usable propensity score and finite ATT/ATU", {
 # ---------------------------------------------------------------------------
 test_that("benchmark_bounds separates a missing gain from a zero gain", {
   data("pension", package = "dml.sensemakr")
-  set.seed(505); i <- sample(nrow(pension), 400)
+  withr::local_seed(505); i <- sample(nrow(pension), 400)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
   fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 2, cf.seed = 11,
@@ -442,7 +462,7 @@ learner_used <- function(fit, arm = "y") {
 test_that("plm fits the requested outcome learner under both tuning settings", {
   skip_if_not_installed("glmnet")
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 300)
+  withr::local_seed(1); i <- sample(nrow(pension), 300)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ, data = pension[i, ])
 
@@ -470,19 +490,20 @@ test_that("plm fits the requested outcome learner under both tuning settings", {
   }
 })
 
-test_that("plm still warns when the two outcome arms differ", {
+test_that("plm warns once per fit when the two outcome arms differ", {
   skip_if_not_installed("glmnet")
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 300)
+  withr::local_seed(1); i <- sample(nrow(pension), 300)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ, data = pension[i, ])
 
   expect_warning(
-    dml(y, d, x, model = "plm", yreg = list(yreg0 = "glmnet", yreg1 = "ranger"),
-        dreg = "glmnet", dirty.tuning = FALSE, cf.folds = 2, cf.reps = 1,
+    fit <- dml(y, d, x, model = "plm", yreg = list(yreg0 = "glmnet", yreg1 = "ranger"),
+        dreg = "glmnet", dirty.tuning = FALSE, cf.folds = 2, cf.reps = 2,
         cf.seed = 1, verbose = FALSE),
     "Only one method should be specified for yreg"
   )
+  expect_identical(fit$info$yreg$yreg0, fit$info$yreg$yreg1)
   # and no warning when they agree
   expect_silent(
     dml(y, d, x, model = "plm", yreg = "glmnet", dreg = "glmnet",
@@ -494,7 +515,7 @@ test_that("plm still warns when the two outcome arms differ", {
 test_that("npm fits the requested outcome learner under both tuning settings", {
   skip_if_not_installed("glmnet")
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 300)
+  withr::local_seed(1); i <- sample(nrow(pension), 300)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ, data = pension[i, ])
   for (dirty in c(TRUE, FALSE)) {
@@ -525,7 +546,7 @@ test_that("combine.mean drops incomplete pairs, matching combine.median", {
 # ---------------------------------------------------------------------------
 test_that("benchmark_bounds clamps level at 0.5 like confidence_bounds", {
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 400)
+  withr::local_seed(1); i <- sample(nrow(pension), 400)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
   fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 2, cf.seed = 7,
@@ -547,7 +568,7 @@ test_that("benchmark_bounds clamps level at 0.5 like confidence_bounds", {
 # ---------------------------------------------------------------------------
 test_that("extreme_robustness_value accepts a dml.bounds object", {
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 400)
+  withr::local_seed(1); i <- sample(nrow(pension), 400)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
   fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 2, cf.seed = 7,
@@ -565,7 +586,7 @@ test_that("extreme_robustness_value accepts a dml.bounds object", {
 # ---------------------------------------------------------------------------
 test_that("dml.bounds print names the estimand, not the internal slot", {
   data("pension", package = "dml.sensemakr")
-  set.seed(1); i <- sample(nrow(pension), 400)
+  withr::local_seed(1); i <- sample(nrow(pension), 400)
   y <- pension$net_tfa[i]; d <- pension$e401[i]
   x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
   fit <- dml(y, d, x, model = "npm", target = "att", cf.folds = 2, cf.reps = 1,

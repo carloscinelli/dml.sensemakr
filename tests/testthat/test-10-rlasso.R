@@ -1,26 +1,13 @@
-# rm(list = ls())
-# n=100
-# p= 100
-# beta = 1/(1:p)^2
-# gamma =1/(1:p)^2
-#
-# X=matrix(rnorm(n*p), n, p)
-#
-#
-# D=   X%*%gamma + rnorm(n)/4
-#
-# Y =  D+ X%*%beta + rnorm(n)
-#
-# dml.rlasso <- dml(as.vector(Y), as.vector(D), X, yreg = "rlasso",
-#                   dreg = "ranger", cf.folds = 5)
-# summary(dml.rlasso)
-#
-#
-# resY = rlasso(Y~ X, Post=T)$res
-# resD = rlasso(D~ X, Post=T)$res
-# lm(resY ~ resD)$coef[2]
-#
-# # According to the documentation: https://cran.r-project.org/web/packages/hdm/hdm.pdf
-# # For rlassoATE, d, as the treatment variable, must be binary
-# rlassoATE(x = as.data.frame(X),d = c(rep(1,50), rep(0,50)), y = Y)
-# # rlassoATE(x = as.data.frame(X),d = D, y = Y) # This gives error
+test_that("rigorous lasso fits a partially linear effect", {
+  withr::local_seed(10)
+  x <- matrix(rnorm(1000), ncol = 4)
+  d <- x[, 1] + rnorm(nrow(x))
+  y <- 2 * d + x[, 2] + rnorm(nrow(x))
+  expect_no_warning(
+    fit <- dml(y, d, x, model = "plm", reg = "rlasso",
+               cf.folds = 2, cf.seed = 10, verbose = FALSE, warnings = TRUE)
+  )
+  expect_s3_class(fit, "dml")
+  expect_equal(unname(coef(fit)), 2, tolerance = 0.3)
+  expect_true(all(is.finite(se(fit))))
+})

@@ -1,12 +1,9 @@
 # Test DML NPM fitting on a small dataset for speed.
 
-library(testthat)
-library(dml.sensemakr)
-
 # Fit once and reuse across tests (small dataset, minimal settings)
-setup_npm <- local({
+new_npm_fixture <- memoise::memoise(function() {
   data("pension", package = "dml.sensemakr")
-  set.seed(99)
+  withr::local_seed(99)
   idx <- sample(nrow(pension), 500)  # small subset for speed
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -20,12 +17,14 @@ setup_npm <- local({
 
 # === dml() NPM structure ===
 test_that("dml() NPM returns correct structure", {
+  setup_npm <- new_npm_fixture()
   fit <- setup_npm$fit
   expect_s3_class(fit, "dml")
   expect_equal(fit$info$model, "npm")
 })
 
 test_that("dml() NPM fits have yhat0 and yhat1 predictions", {
+  setup_npm <- new_npm_fixture()
   fit <- setup_npm$fit
   for (i in 1:2) {
     preds <- fit$fits[[i]]$preds
@@ -38,18 +37,21 @@ test_that("dml() NPM fits have yhat0 and yhat1 predictions", {
 
 # === Group results ===
 test_that("dml() with groups produces group coefficients", {
+  setup_npm <- new_npm_fixture()
   fit <- setup_npm$fit
   expect_true(!is.null(fit$coefs$groups))
   expect_true(length(fit$coefs$groups) > 0)
 })
 
 test_that("coef.dml returns both ATE and GATE", {
+  setup_npm <- new_npm_fixture()
   cf <- coef(setup_npm$fit)
   expect_true(any(grepl("^ate", names(cf))))
   expect_true(any(grepl("^g\\.", names(cf))))
 })
 
 test_that("se.dml returns SEs for ATE and GATE", {
+  setup_npm <- new_npm_fixture()
   s <- se(setup_npm$fit)
   expect_true(any(grepl("^ate", names(s))))
   expect_true(any(grepl("^g\\.", names(s))))
@@ -57,6 +59,7 @@ test_that("se.dml returns SEs for ATE and GATE", {
 })
 
 test_that("confint.dml with groups has correct number of rows", {
+  setup_npm <- new_npm_fixture()
   ci <- confint(setup_npm$fit)
   cf <- coef(setup_npm$fit)
   expect_equal(nrow(ci), length(cf))
@@ -64,12 +67,14 @@ test_that("confint.dml with groups has correct number of rows", {
 
 # === DML bounds with groups ===
 test_that("dml_bounds with groups produces group bounds", {
+  setup_npm <- new_npm_fixture()
   bounds <- dml_bounds(setup_npm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   expect_s3_class(bounds, "dml.bounds")
   expect_true(!is.null(bounds$coefs$groups))
 })
 
 test_that("coef.dml.bounds with groups returns matrix with GATE rows", {
+  setup_npm <- new_npm_fixture()
   bounds <- dml_bounds(setup_npm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   cf <- coef(bounds)
   expect_true(is.matrix(cf))
@@ -79,6 +84,7 @@ test_that("coef.dml.bounds with groups returns matrix with GATE rows", {
 
 # === confidence_bounds with groups ===
 test_that("confidence_bounds with groups returns multi-row matrix", {
+  setup_npm <- new_npm_fixture()
   bounds <- dml_bounds(setup_npm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   cb <- confidence_bounds(bounds)
   expect_true(nrow(cb) > 1)
@@ -89,6 +95,7 @@ test_that("confidence_bounds with groups returns multi-row matrix", {
 
 # === sensitivity analysis with groups ===
 test_that("sensemakr with groups works correctly", {
+  setup_npm <- new_npm_fixture()
   sens <- sensemakr(setup_npm$fit, cf.y = 0.04, cf.d = 0.03)
   expect_s3_class(sens, "dml.sensemakr")
   expect_output(print(summary(sens)), "Sensitivity Analysis")
@@ -96,15 +103,18 @@ test_that("sensemakr with groups works correctly", {
 
 # === plotting ===
 test_that("plot.dml does not error for NPM", {
+  setup_npm <- new_npm_fixture()
   expect_silent(plot(setup_npm$fit))
 })
 
 test_that("plot.dml.bounds does not error", {
+  setup_npm <- new_npm_fixture()
   bounds <- dml_bounds(setup_npm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   expect_silent(plot(bounds))
 })
 
 test_that("coef_plot returns a ggplot object", {
+  setup_npm <- new_npm_fixture()
   # coef_plot takes numeric vectors, not a dml object
   cf <- coef(setup_npm$fit)
   ci <- confint(setup_npm$fit)
@@ -114,5 +124,6 @@ test_that("coef_plot returns a ggplot object", {
 })
 
 test_that("ovb_contour_plot does not error", {
+  setup_npm <- new_npm_fixture()
   expect_no_error(ovb_contour_plot(setup_npm$fit))
 })

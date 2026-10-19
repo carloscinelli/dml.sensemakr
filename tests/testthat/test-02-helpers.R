@@ -1,9 +1,6 @@
 # Test helper/internal functions
 # These tests are fast and test individual components in isolation.
 
-library(testthat)
-library(dml.sensemakr)
-
 # === psi.sd ===
 test_that("psi.sd computes standard error from influence function", {
   psi <- rnorm(100, sd = 2)

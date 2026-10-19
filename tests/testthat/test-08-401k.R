@@ -1,8 +1,6 @@
 # loads package
-library(dml.sensemakr)
-
-test_that("Testing 401k PLM", {
-  set.seed(10)
+test_that("401k PLM supports group estimates and sensitivity plots", {
+  withr::local_seed(10)
 
   ## loads data
   data("pension")
@@ -19,6 +17,9 @@ test_that("Testing 401k PLM", {
                       groups = cut(x[,"inc"], quantile(x[,"inc"], c(0, 0.25,.5,.75,1), na.rm = TRUE),
                                    labels = c("q1", "q2", "q3", "q4"), include.lowest = TRUE),
                       model = "plm", target = "ate")
+  expect_s3_class(dml.401k.plm, "dml")
+  expect_length(dml.401k.plm$coefs$groups, 4)
+  expect_true(all(is.finite(coef(dml.401k.plm))))
   plot(dml.401k.plm)
   dml.401k.plm
   summary(dml.401k.plm)
@@ -41,6 +42,5 @@ test_that("Testing 401k PLM", {
                    col.contour = "blue")
   dml_benchmark(dml.401k.plm, benchmark_covariates = c("inc"))
   bounds <- dml_bounds(model = dml.401k.plm,  cf.y = 0.03, cf.d = 0.04, rho2 = 1)
-  plot(bounds, type = "all")
+  expect_no_error(plot(bounds, type = "all"))
 })
-

@@ -1,13 +1,10 @@
 # Test dml_gate(): add group ATEs to an already-fitted dml object.
 
-library(testthat)
-library(dml.sensemakr)
-
 # An inline groups= fit and a groups-free fit share a seed, so the groups added
 # post hoc by dml_gate() should reproduce the inline group estimates exactly.
-setup_gate <- local({
+new_gate_fixture <- memoise::memoise(function() {
   data("pension", package = "dml.sensemakr")
-  set.seed(606)
+  withr::local_seed(606)
   idx <- sample(nrow(pension), 400)
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -24,6 +21,7 @@ setup_gate <- local({
 
 # === dml_gate attaches group results to a fitted object ===
 test_that("dml_gate() attaches group ATEs to a fitted dml object", {
+  setup_gate <- new_gate_fixture()
   gated <- dml_gate(setup_gate$fit_nogrp, groups = setup_gate$g)
   expect_s3_class(gated, "dml")
   expect_false(is.null(gated$coefs$groups))
@@ -32,6 +30,7 @@ test_that("dml_gate() attaches group ATEs to a fitted dml object", {
 
 # === dml_gate matches the inline dml(groups=) path ===
 test_that("dml_gate() reproduces the inline groups= estimates", {
+  setup_gate <- new_gate_fixture()
   gated <- dml_gate(setup_gate$fit_nogrp, groups = setup_gate$g)
   inline_coefs <- setup_gate$fit_inline$coefs$groups
   gated_coefs  <- gated$coefs$groups

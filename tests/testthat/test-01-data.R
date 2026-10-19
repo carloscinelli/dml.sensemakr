@@ -1,8 +1,5 @@
 # Test that package datasets load correctly
 
-library(testthat)
-library(dml.sensemakr)
-
 test_that("pension dataset loads and has expected structure", {
   data("pension", package = "dml.sensemakr")
   expect_true(is.data.frame(pension))

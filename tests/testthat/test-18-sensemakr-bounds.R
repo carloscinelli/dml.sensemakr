@@ -3,18 +3,19 @@
 # included) and the benchmark scenarios (one row per multiplier per
 # covariate, both the fixed-benchmark and benchmark-uncertainty CIs).
 
-library(testthat)
-library(dml.sensemakr)
-
-data("pension", package = "dml.sensemakr")
-set.seed(1); i <- sample(nrow(pension), 400)
-y <- pension$net_tfa[i]; d <- pension$e401[i]
-x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
-
-fit1 <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 1, cf.seed = 7,
-            verbose = FALSE)
+new_bounds_fixture <- memoise::memoise(function() {
+  pension <- dml.sensemakr::pension
+  withr::local_seed(1)
+  i <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[i]; d <- pension$e401[i]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize, data = pension[i, ])
+  fit <- dml(y, d, x, model = "plm", cf.folds = 2, cf.reps = 1, cf.seed = 7,
+             verbose = FALSE)
+  list(fit = fit, y = y, d = d, x = x)
+})
 
 test_that("sensemakr builds the postulated and benchmark tables", {
+  fit1 <- new_bounds_fixture()$fit
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
               cf.y = 0.03, cf.d = 0.03, kD = 1:2)))
@@ -51,6 +52,7 @@ test_that("sensemakr builds the postulated and benchmark tables", {
 })
 
 test_that("asymmetric multipliers get an unambiguous label", {
+  fit1 <- new_bounds_fixture()$fit
   s <- suppressWarnings(suppressMessages(
     sensemakr(fit1, benchmark_covariates = "inc",
               cf.y = 0.03, cf.d = 0.03, kD = c(1, 1), kY = c(1, 3))))
@@ -60,6 +62,7 @@ test_that("asymmetric multipliers get an unambiguous label", {
 })
 
 test_that("a diverging multiplier shows infinite bounds", {
+  fit1 <- new_bounds_fixture()$fit
   benchmark <- suppressMessages(dml_benchmark(fit1, "inc"))
   # Exercise a known positive gain. A fitted gain may legitimately be zero
   # after flooring, in which case no finite multiplier causes divergence.
@@ -78,6 +81,7 @@ test_that("a diverging multiplier shows infinite bounds", {
 })
 
 test_that("multi-target fits warn and keep the postulated rows per target", {
+  y <- new_bounds_fixture()$y; d <- new_bounds_fixture()$d; x <- new_bounds_fixture()$x
   fit2 <- dml(y, d, x, model = "npm", target = c("ate", "att"),
               cf.folds = 2, cf.reps = 1, cf.seed = 7, verbose = FALSE)
   expect_warning(
@@ -90,6 +94,7 @@ test_that("multi-target fits warn and keep the postulated rows per target", {
 })
 
 test_that("no cf.y and no benchmarks means no bounds tables", {
+  fit1 <- new_bounds_fixture()$fit
   s <- sensemakr(fit1)
   expect_null(s$bounds)
   expect_null(s$bench.table)

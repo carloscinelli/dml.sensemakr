@@ -1,8 +1,5 @@
 # Test edge cases and input validation
 
-library(testthat)
-library(dml.sensemakr)
-
 # === dml() input validation ===
 test_that("dml() errors on invalid model", {
   data("pension", package = "dml.sensemakr")
@@ -39,7 +36,7 @@ test_that("combine.cross.fits with single repetition", {
 # === confidence_bounds with different return options ===
 test_that("confidence_bounds.dml.bounds respects return parameter", {
   data("pension", package = "dml.sensemakr")
-  set.seed(55)
+  withr::local_seed(55)
   idx <- sample(nrow(pension), 300)
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -62,7 +59,7 @@ test_that("confidence_bounds.dml.bounds respects return parameter", {
 # === confidence_bounds with new sensitivity parameters ===
 test_that("confidence_bounds.dml.bounds recomputes with new parameters", {
   data("pension", package = "dml.sensemakr")
-  set.seed(55)
+  withr::local_seed(55)
   idx <- sample(nrow(pension), 300)
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -82,7 +79,7 @@ test_that("confidence_bounds.dml.bounds recomputes with new parameters", {
 # === robustness_value edge case: already includes zero ===
 test_that("robustness_value returns 0 when CI includes theta", {
   data("pension", package = "dml.sensemakr")
-  set.seed(55)
+  withr::local_seed(55)
   idx <- sample(nrow(pension), 300)
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]

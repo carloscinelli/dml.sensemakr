@@ -1,6 +1,3 @@
-library(testthat)
-library(dml.sensemakr)
-
 # Check the scale and its uncertainty against the retained, unconstrained score.
 expect_nu2_scale <- function(result, nu2, psi.nu2) {
   e <- result$estimates

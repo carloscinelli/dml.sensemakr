@@ -3,7 +3,7 @@ title: "Sensitivity Analysis for the Effect of 401(k) on Net Financial Assets"
 author: "Victor Chernozhukov, Carlos Cinelli, Whitney Newey, Amit Sharma, and Vasilis Syrgkanis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{dml-401k}
+  %\VignetteIndexEntry{Sensitivity Analysis for the Effect of 401(k) on Net Financial Assets}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

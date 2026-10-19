@@ -1,3 +1,15 @@
+# dml.sensemakr (development version)
+
+* Package checks now cover the declared testing dependencies, vignettes, and
+  PDF manual. Test fixtures and documentation have been updated for clean,
+  reproducible package development.
+* Invalid negative sensitivity scales return unavailable bounds with the
+  diagnostic warning, without an additional square-root warning.
+* Regression-only learners no longer request class probabilities. Rigorous
+  lasso uses its declared `hdm` dependency without trying to attach `rlasso`.
+* The warning about different outcome learners for a partially linear model
+  is emitted once per fit rather than once per cross-fitting fold.
+
 # dml.sensemakr 0.2.3
 
 * Estimates of `nu2.s` now respect their parameter-space lower bounds in all

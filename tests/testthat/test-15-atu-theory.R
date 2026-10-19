@@ -1,10 +1,6 @@
 # Theory tests for the conditional ATU estimator and covariate benchmarking,
 # checked against the manuscript's orthogonal scores and gain-metric formulas.
 #
-# Note: dml_benchmark() re-evaluates the dml() call, so y/d/x live in .GlobalEnv.
-
-library(testthat)
-library(dml.sensemakr)
 
 # ============================================================================
 # (1) ATT <-> ATU symmetry of the internal short-parameter helpers.
@@ -14,7 +10,7 @@ library(dml.sensemakr)
 #     unchanged. This is a fast, exact check (no ML fitting).
 # ============================================================================
 test_that("atu.npm.cond is the exact mirror of att.npm.cond", {
-  set.seed(1)
+  withr::local_seed(1)
   n  <- 600
   d  <- rbinom(n, 1, 0.45)
   pi <- runif(n, 0.08, 0.92)       # propensity P(D=1|X)  (inside the trim range)
@@ -33,22 +29,27 @@ test_that("atu.npm.cond is the exact mirror of att.npm.cond", {
 })
 
 # ---- shared conditional-ATU fits (uncentered and centered, same seed) -------
-data("pension", package = "dml.sensemakr")
-set.seed(414)
-idx <- sample(nrow(pension), 400)
-assign("y", pension$net_tfa[idx], envir = .GlobalEnv)
-assign("d", pension$e401[idx], envir = .GlobalEnv)
-assign("x", model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
-                         data = pension[idx, ]), envir = .GlobalEnv)
-atu_unc <- dml(y, d, x, model = "npm", target = "atu", cf.folds = 2, cf.reps = 1,
-               cf.seed = 123, centered = FALSE, verbose = FALSE)
-atu_cen <- dml(y, d, x, model = "npm", target = "atu", cf.folds = 2, cf.reps = 1,
-               cf.seed = 123, centered = TRUE, verbose = FALSE)
+new_atu_fixture <- memoise::memoise(function() {
+  pension <- dml.sensemakr::pension
+  withr::local_seed(414)
+  idx <- sample(nrow(pension), 400)
+  y <- pension$net_tfa[idx]
+  d <- pension$e401[idx]
+  x <- model.matrix(~ -1 + age + inc + educ + fsize + marr + twoearn + pira + hown,
+                     data = pension[idx, ])
+  unc <- dml(y, d, x, model = "npm", target = "atu", cf.folds = 2, cf.reps = 1,
+              cf.seed = 123, centered = FALSE, verbose = FALSE)
+  cen <- dml(y, d, x, model = "npm", target = "atu", cf.folds = 2, cf.reps = 1,
+              cf.seed = 123, centered = TRUE, verbose = FALSE)
+  list(unc = unc, cen = cen, y = y, d = d, x = x)
+})
 
 # ============================================================================
 # (2) centered vs uncentered for ATU (mirror of the ATT invariant)
 # ============================================================================
 test_that("centered leaves ATU theta.s/sigma2.s unchanged and shifts nu2.s by 1", {
+  atu_unc <- new_atu_fixture()$unc
+  atu_cen <- new_atu_fixture()$cen
   u  <- atu_unc$results$main$untr[[1]]$estimates
   cc <- atu_cen$results$main$untr[[1]]$estimates
   expect_equal(u$theta.s,  cc$theta.s)
@@ -60,6 +61,7 @@ test_that("centered leaves ATU theta.s/sigma2.s unchanged and shifts nu2.s by 1"
 # (3) downstream sensitivity runs on the ATU fit
 # ============================================================================
 test_that("dml_bounds, robustness_value and extreme_robustness_value run on ATU", {
+  atu_unc <- new_atu_fixture()$unc
   b <- dml_bounds(atu_unc, cf.y = 0.04, cf.d = 0.03)
   expect_s3_class(b, "dml.bounds")
   rv  <- robustness_value(atu_unc, alpha = 0.05)
@@ -74,6 +76,8 @@ test_that("dml_bounds, robustness_value and extreme_robustness_value run on ATU"
 #     pinned to G1D,j = (nu2 - nu2_wo)/nu2_wo and G1dY,j = (sig2_wo - sig2)/sig2.
 # ============================================================================
 test_that("dml_benchmark on a conditional fit matches the gain-metric formulas", {
+  atu_unc <- new_atu_fixture()$unc
+  y <- new_atu_fixture()$y; d <- new_atu_fixture()$d; x <- new_atu_fixture()$x
   bench <- dml_benchmark(atu_unc, benchmark_covariates = "inc")
   expect_s3_class(bench, "dml_benchmark")
 
@@ -95,6 +99,3 @@ test_that("dml_benchmark on a conditional fit matches the gain-metric formulas",
   # rho is a correlation
   expect_true(all(abs(b$rho) <= 1))
 })
-
-# clean up the global environment
-rm(y, d, x, envir = .GlobalEnv)

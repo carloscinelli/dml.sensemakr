@@ -230,6 +230,10 @@ dml <- function(y, d, x,
 
   yreg0 <- caretArgs(yreg0)
   yreg1 <- caretArgs(yreg1)
+  if (model == "plm" && !isTRUE(all.equal(yreg0, yreg1))) {
+    warning("Only one method should be specified for yreg when using 'plm'; using 'yreg0'.")
+    yreg1 <- yreg0
+  }
   yreg <- list(yreg0 = yreg0, yreg1 = yreg1)
   dreg <- caretArgs(dreg)
 
@@ -330,9 +334,6 @@ dml <- function(y, d, x,
 
     if (model == "plm") {
       if (verbose) cat("- Tuning Model for Y (partially linear).\n")
-      if (!isTRUE(all.equal(yreg0, yreg1))) {
-        warning("Only one method should be specified for yreg when using 'plm'; setting 'yreg' to 'yreg0'.")
-      }
       yreg  <- tune_model(x =  x, y = ytil, args = yreg0)
       if (verbose) {
         cat("-- Best Tune:\n")
@@ -564,7 +565,7 @@ num <- function(v){
 tune_model <- function(x, y, args) {
   original.args  <- c(list(x = x, y = y), args)
   best.model     <- silent.do.call(what = "train", args = original.args)
-  args$trControl <- trainControl(method = "none", classProbs = TRUE)
+  args$trControl <- trainControl(method = "none", classProbs = is.factor(y))
   args$tuneGrid  <- best.model$bestTune
   return(args)
 }
@@ -663,7 +664,7 @@ caretArgs <- function(reg){
     reg$preProcess <- "range"
   }
   attr(reg$method, "name") <- reg_name
-  reg$trControl$classProbs <- TRUE
+  reg$trControl$classProbs <- "Classification" %in% reg$method$type
   return(reg)
 }
 

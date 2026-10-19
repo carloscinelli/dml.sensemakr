@@ -1,12 +1,10 @@
 # Test extreme_robustness_value (XRV): the minimum Riesz-representer strength
 # (cf.d, with cf.y = 1) needed to bring the confidence bound to the null.
 
-library(testthat)
-library(dml.sensemakr)
 
-setup_xrv <- local({
+new_xrv_fixture <- memoise::memoise(function() {
   data("pension", package = "dml.sensemakr")
-  set.seed(808)
+  withr::local_seed(808)
   idx <- sample(nrow(pension), 400)
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -18,6 +16,7 @@ setup_xrv <- local({
 
 # === structure and range ===
 test_that("extreme_robustness_value returns a named numeric in [0, 1]", {
+  setup_xrv <- new_xrv_fixture()
   xrv <- extreme_robustness_value(setup_xrv$fit, alpha = 0.05)
   expect_type(xrv, "double")
   expect_true(!is.null(names(xrv)))
@@ -26,6 +25,7 @@ test_that("extreme_robustness_value returns a named numeric in [0, 1]", {
 
 # === alpha = 1 closed form ===
 test_that("extreme_robustness_value at alpha = 1 matches the closed form f0^2 / (1 + f0^2)", {
+  setup_xrv <- new_xrv_fixture()
   fit <- setup_xrv$fit
   xrv1 <- extreme_robustness_value(fit, alpha = 1, theta = 0)
   # closed form: f0 = |theta - theta.s| / S,  XRV = f0^2 / (1 + f0^2)
@@ -36,6 +36,7 @@ test_that("extreme_robustness_value at alpha = 1 matches the closed form f0^2 / 
 
 # === zero when the confidence bound already includes theta ===
 test_that("extreme_robustness_value is ~0 when the confidence bound includes theta", {
+  setup_xrv <- new_xrv_fixture()
   fit <- setup_xrv$fit
   ci <- confint(fit)
   theta_inside <- mean(ci[1, ])          # midpoint of the CI

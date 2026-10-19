@@ -1,14 +1,11 @@
 # Test bounds computation functions
 # These tests use pre-computed short results (no ML fitting) for speed.
 
-library(testthat)
-library(dml.sensemakr)
-
 # === bounds() function ===
 test_that("bounds() computes correct bias bound and adjusted estimates", {
   # Create synthetic short results
   n <- 100
-  set.seed(42)
+  withr::local_seed(42)
   short.results <- list(
     estimates = list(
       theta.s = 5.0,
@@ -61,14 +58,16 @@ test_that("bounds() warns when nu2 is negative", {
     )
   )
   expect_warning(
-    dml.sensemakr:::bounds(short.results, cf.y = 0.04, cf.d = 0.03),
+    result <- dml.sensemakr:::bounds(short.results, cf.y = 0.04, cf.d = 0.03),
     "nu\\^2 is negative"
   )
+  expect_true(is.na(result$estimates$bias.bound))
+  expect_true(is.na(result$estimates$se.bias.bound))
 })
 
 test_that("bounds() with zero sensitivity parameters gives zero bias", {
   n <- 50
-  set.seed(1)
+  withr::local_seed(1)
   short.results <- list(
     estimates = list(theta.s = 3.0, sigma2.s = 1.0, nu2.s = 1.0),
     psis = list(
@@ -87,7 +86,7 @@ test_that("bounds() with zero sensitivity parameters gives zero bias", {
 
 # === ate.plm ===
 test_that("ate.plm computes correct ATE in simple case", {
-  set.seed(123)
+  withr::local_seed(123)
   n <- 1000
   x <- rnorm(n)
   d <- x + rnorm(n)
@@ -115,7 +114,7 @@ test_that("ate.plm computes correct ATE in simple case", {
 
 # === ate.npm ===
 test_that("ate.npm computes ATE for binary treatment", {
-  set.seed(456)
+  withr::local_seed(456)
   n <- 500
   x <- rnorm(n)
   dhat <- plogis(x)

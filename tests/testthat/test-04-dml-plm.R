@@ -1,13 +1,10 @@
 # Test DML PLM fitting on a small dataset for speed
 # Uses a small subset of pension data with minimal folds/reps.
 
-library(testthat)
-library(dml.sensemakr)
-
 # Fit once and reuse across tests (small dataset, minimal settings)
-setup_plm <- local({
+new_plm_fixture <- memoise::memoise(function() {
   data("pension", package = "dml.sensemakr")
-  set.seed(42)
+  withr::local_seed(42)
   idx <- sample(nrow(pension), 500)  # small subset for speed
   y <- pension$net_tfa[idx]
   d <- pension$e401[idx]
@@ -19,6 +16,7 @@ setup_plm <- local({
 
 # === dml() object structure ===
 test_that("dml() returns correct class and structure for PLM", {
+  setup_plm <- new_plm_fixture()
   fit <- setup_plm$fit
   expect_s3_class(fit, "dml")
   expect_true(all(c("data", "call", "info", "fits", "results", "coefs") %in% names(fit)))
@@ -29,6 +27,7 @@ test_that("dml() returns correct class and structure for PLM", {
 })
 
 test_that("dml() stores data correctly", {
+  setup_plm <- new_plm_fixture()
   fit <- setup_plm$fit
   expect_equal(fit$data$y, setup_plm$y)
   expect_equal(fit$data$d, setup_plm$d)
@@ -36,6 +35,7 @@ test_that("dml() stores data correctly", {
 })
 
 test_that("dml() PLM fits contain predictions", {
+  setup_plm <- new_plm_fixture()
   fit <- setup_plm$fit
   expect_length(fit$fits, 2)  # cf.reps = 2
   for (i in 1:2) {
@@ -47,6 +47,7 @@ test_that("dml() PLM fits contain predictions", {
 })
 
 test_that("dml() PLM produces main coefficients", {
+  setup_plm <- new_plm_fixture()
   fit <- setup_plm$fit
   expect_true(!is.null(fit$coefs$main))
   # Main coefs are keyed by target (e.g., "all" for ATE)
@@ -61,6 +62,7 @@ test_that("dml() PLM produces main coefficients", {
 
 # === coef, se, confint ===
 test_that("coef.dml returns named vector", {
+  setup_plm <- new_plm_fixture()
   cf <- coef(setup_plm$fit)
   expect_type(cf, "double")
   expect_true(length(cf) > 0)
@@ -69,6 +71,7 @@ test_that("coef.dml returns named vector", {
 })
 
 test_that("coef.dml works with mean and median methods", {
+  setup_plm <- new_plm_fixture()
   cf_median <- coef(setup_plm$fit, combine.method = "median")
   cf_mean <- coef(setup_plm$fit, combine.method = "mean")
   expect_type(cf_median, "double")
@@ -77,6 +80,7 @@ test_that("coef.dml works with mean and median methods", {
 })
 
 test_that("se.dml returns positive standard errors", {
+  setup_plm <- new_plm_fixture()
   s <- se(setup_plm$fit)
   expect_type(s, "double")
   expect_true(all(s > 0))
@@ -84,6 +88,7 @@ test_that("se.dml returns positive standard errors", {
 })
 
 test_that("confint.dml returns matrix with correct dimensions", {
+  setup_plm <- new_plm_fixture()
   ci <- confint(setup_plm$fit, level = 0.95)
   expect_true(is.matrix(ci))
   expect_equal(ncol(ci), 2)
@@ -92,6 +97,7 @@ test_that("confint.dml returns matrix with correct dimensions", {
 })
 
 test_that("confint.dml respects level parameter", {
+  setup_plm <- new_plm_fixture()
   ci_95 <- confint(setup_plm$fit, level = 0.95)
   ci_99 <- confint(setup_plm$fit, level = 0.99)
   # 99% CI should be wider than 95%
@@ -102,20 +108,24 @@ test_that("confint.dml respects level parameter", {
 
 # === summary ===
 test_that("summary.dml returns correct class", {
+  setup_plm <- new_plm_fixture()
   s <- summary(setup_plm$fit)
   expect_s3_class(s, "summary_dml")
 })
 
 test_that("print.dml does not error", {
+  setup_plm <- new_plm_fixture()
   expect_output(print(setup_plm$fit), "Debiased Machine Learning")
 })
 
 test_that("print.summary_dml does not error", {
+  setup_plm <- new_plm_fixture()
   expect_output(print(summary(setup_plm$fit)), "Debiased Machine Learning")
 })
 
 # === dml_bounds ===
 test_that("dml_bounds returns correct class and structure", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   expect_s3_class(bounds, "dml.bounds")
   expect_equal(bounds$info$cf.y, 0.04)
@@ -126,6 +136,7 @@ test_that("dml_bounds returns correct class and structure", {
 })
 
 test_that("coef.dml.bounds returns matrix", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   cf <- coef(bounds)
   expect_true(is.matrix(cf))
@@ -137,6 +148,7 @@ test_that("coef.dml.bounds returns matrix", {
 })
 
 test_that("se.dml.bounds returns matrix with positive values", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   s <- se(bounds)
   expect_true(is.matrix(s))
@@ -144,6 +156,7 @@ test_that("se.dml.bounds returns matrix with positive values", {
 })
 
 test_that("confint.dml.bounds returns a list", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   ci <- confint(bounds)
   expect_type(ci, "list")
@@ -151,12 +164,14 @@ test_that("confint.dml.bounds returns a list", {
 })
 
 test_that("summary.dml.bounds does not error", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   expect_output(print(summary(bounds)), "Debiased Machine Learning")
 })
 
 # === confidence_bounds on dml object ===
 test_that("confidence_bounds.dml returns correct structure", {
+  setup_plm <- new_plm_fixture()
   cb <- confidence_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   expect_s3_class(cb, "confidence.bounds")
   expect_true(is.matrix(cb))
@@ -167,6 +182,7 @@ test_that("confidence_bounds.dml returns correct structure", {
 
 # === confidence_bounds on dml.bounds object ===
 test_that("confidence_bounds.dml.bounds returns correct structure", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   cb <- confidence_bounds(bounds)
   expect_s3_class(cb, "confidence.bounds")
@@ -177,6 +193,7 @@ test_that("confidence_bounds.dml.bounds returns correct structure", {
 
 # === robustness_value ===
 test_that("robustness_value.dml returns named numeric", {
+  setup_plm <- new_plm_fixture()
   rv <- robustness_value(setup_plm$fit)
   expect_type(rv, "double")
   expect_true(length(rv) > 0)
@@ -184,6 +201,7 @@ test_that("robustness_value.dml returns named numeric", {
 })
 
 test_that("robustness_value.dml.bounds returns named numeric", {
+  setup_plm <- new_plm_fixture()
   bounds <- dml_bounds(setup_plm$fit, cf.y = 0.04, cf.d = 0.03, rho2 = 1)
   rv <- robustness_value(bounds)
   expect_type(rv, "double")
@@ -193,6 +211,7 @@ test_that("robustness_value.dml.bounds returns named numeric", {
 
 # === sensemakr ===
 test_that("sensemakr.dml returns correct class", {
+  setup_plm <- new_plm_fixture()
   sens <- sensemakr(setup_plm$fit, cf.y = 0.04, cf.d = 0.03)
   expect_s3_class(sens, "dml.sensemakr")
   expect_true(!is.null(sens$info))
@@ -202,11 +221,13 @@ test_that("sensemakr.dml returns correct class", {
 })
 
 test_that("print.dml.sensemakr does not error", {
+  setup_plm <- new_plm_fixture()
   sens <- sensemakr(setup_plm$fit, cf.y = 0.04, cf.d = 0.03)
   expect_output(print(sens), "Sensitivity Analysis")
 })
 
 test_that("summary.dml.sensemakr does not error", {
+  setup_plm <- new_plm_fixture()
   sens <- sensemakr(setup_plm$fit, cf.y = 0.04, cf.d = 0.03)
   expect_output(print(summary(sens)), "Sensitivity Analysis")
 })

@@ -84,10 +84,6 @@ cross.fitting <- function(y, d, x,
         sdy <- 1
       }
 
-      if (!isTRUE(all.equal(yreg0, yreg1))) {
-        warning("Only one method should be specified for yreg when using 'plm'; using 'yreg0'.")
-      }
-
       # Use yreg0, the unpacked spec, exactly as the treatment side uses dreg.
       # yreg itself may still hold the yreg0/yreg1 pair, which train() cannot
       # read: it would take both as ... and fall back to its default method.

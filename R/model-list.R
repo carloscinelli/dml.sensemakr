@@ -14,7 +14,6 @@ models$rlasso <- list(label = "Rigorous Lasso",
                      data.frame(parameter = "none")
                    },
                    fit = function(x, y, wts, param, lev, last, classProbs, ...) {
-                     require(rlasso)
                      theDots <- list(...)
                      modelArgs <- c(list(x = x, y = y), theDots)
                      out <- do.call(hdm::rlasso, modelArgs)

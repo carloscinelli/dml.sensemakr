@@ -23,14 +23,13 @@ plot.dml.bounds <- function(x,
                             ...) {
   type <- match.arg(type)
   if (type == "confidence_bounds") {
-    plot.bounds2(x = x, combine.method = combine.method, level = level,...)
+    .plot_bounds_confidence(x = x, combine.method = combine.method, level = level,...)
   } else {
-    plot.bounds1(x = x, combine.method = combine.method, level = level,...)
+    .plot_bounds_all(x = x, combine.method = combine.method, level = level,...)
   }
 }
 
-#' @keywords internal
-plot.bounds2 <- function(x, combine.method = "median", level = 0.95, ...){
+.plot_bounds_confidence <- function(x, combine.method = "median", level = 0.95, ...){
   coef_plot(estimate = coef(x)["theta.s", ],
              labels =  names(coef(x)["theta.s", ]),
              lwr1 = coef(x)["theta.m", ],
@@ -39,8 +38,7 @@ plot.bounds2 <- function(x, combine.method = "median", level = 0.95, ...){
              upr2 = confidence_bounds(x)[,"upr"], ...)
 }
 
-#' @keywords internal
-plot.bounds1 <- function(x, combine.method = "median", level = 0.95,...){
+.plot_bounds_all <- function(x, combine.method = "median", level = 0.95,...){
   estimate <- coef(x, combine.method = combine.method)
   conf <- confint(x, combine.method = combine.method, level = level)
   labels <- c("Short Estimate", "|Bias| Bounds","Lower Bound", "Upper Bound")

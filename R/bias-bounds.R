@@ -12,7 +12,7 @@ bounds <- function(short.results, cf.y = 0.04, cf.d = 0.03, rho2 = 1){
   sigma2.s <- short.results$estimates$sigma2.s
   nu2.s    <- short.results$estimates$nu2.s
 
-  if (nu2.s < 0) {
+  if (isTRUE(nu2.s < 0)) {
     warning("Unable to compute bounds because nu^2 is negative,
             this is an indication of a very poor fitting of the treatment model.
             Consider choosing a different learner for the treatment.")
@@ -20,7 +20,8 @@ bounds <- function(short.results, cf.y = 0.04, cf.d = 0.03, rho2 = 1){
 
   # bias bound
   bf <- bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
-  S  <- sqrt(sigma2.s*nu2.s)
+  S2 <- sigma2.s * nu2.s
+  S  <- if (isTRUE(S2 < 0)) NA_real_ else sqrt(S2)
   bias.bound <- S*bf
 
   # plug-in bounds
