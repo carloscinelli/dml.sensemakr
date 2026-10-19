@@ -24,7 +24,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.3.9000</span>
       </span>
     </div>
 
@@ -165,7 +165,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
 
 
 <dt id="arg-centered">centered<a class="anchor" aria-label="anchor" href="#arg-centered"></a></dt>
-<dd><p>logical. Controls the parameterization of the Riesz-representer imbalance <code>nu2.s</code> in the conditional model. When <code>FALSE</code> (default), <code>nu2.s</code> is the full second moment of the Riesz representer, \(\chi^2 + 1\) (uncentered); when <code>TRUE</code>, it is the centered version, the \(\chi^2\) divergence (that moment minus 1). Only relevant when <code>conditional = TRUE</code>. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Note the centered version can yield negative estimates of <code>nu2.s</code> in finite samples.</p></dd>
+<dd><p>logical. Controls the parameterization of the Riesz-representer imbalance <code>nu2.s</code> in the conditional model. When <code>FALSE</code> (default), <code>nu2.s</code> is the full second moment of the Riesz representer, \(\chi^2 + 1\) (uncentered); when <code>TRUE</code>, it is the centered version, the \(\chi^2\) divergence (that moment minus 1). Only relevant when <code>conditional = TRUE</code>. The uncentered parameterization is the recommended one (Wang et al., 2026); the centered version corresponds to the parameterization of Huang and Pimentel (2025), retained so those results can be reproduced. Estimates of <code>nu2.s</code> are bounded below by 1 in the uncentered version and by 0 in the centered version.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -206,6 +206,19 @@ The function dml_gate is a convenience function that adds groups to a dml object
 
 
 </dl></div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>Estimates of <code>nu2.s</code> are constrained in each cross-fitting repetition.
+For unconditional binary-treatment models the lower bound is
+\(1/[\hat p(1-\hat p)]\), where \(\hat p\) is the sample treatment share.
+For partially linear models it is the reciprocal of the empirical treatment
+variance, computed with divisor \(n\). Group-specific estimates use the
+corresponding within-group share or variance. The original influence
+functions are retained; sensitivity scales use the constrained estimates.
+In the centered conditional model, a zero sensitivity scale gives zero
+point-estimate bias. When confounding is positive, bound standard errors
+requiring the square-root delta method are unavailable at that scale.</p>
+    </div>
     <div id="references">
     <h2>References</h2>
     <p>Chernozhukov, V., Cinelli, C., Newey, W., Sharma A., and Syrgkanis, V. (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning." <em>Review of Economics and Statistics</em>. <a href="https://doi.org/10.1162/REST.a.1705" class="external-link">doi:10.1162/REST.a.1705</a></p>
@@ -328,16 +341,16 @@ The function dml_gate is a convenience function that adds groups to a dml object
 <span class="r-in"><span><span class="co">### Robustness Values</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="robustness_value.html">robustness_value</a></span><span class="op">(</span><span class="va">dml.401k</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        ate   g.ate.q1   g.ate.q2   g.ate.q3   g.ate.q4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.04824061 0.07683029 0.00000000 0.03561389 0.06788745 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.04824061 0.07683029 0.00000000 0.03536087 0.06785112 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Confidence Bounds</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="dml_bounds.html">confidence_bounds</a></span><span class="op">(</span><span class="va">dml.401k</span>, cf.y <span class="op">=</span> <span class="fl">0.03</span>, cf.d <span class="op">=</span> <span class="fl">0.04</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                  lwr         upr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ate       1862.87448 14944.23750</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q1  1905.72981  7548.05070</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q2 -2610.40602  6328.55520</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q3    95.65788 13207.58426</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q4  6635.82716 33206.70469</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q2 -2629.90349  6343.04541</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q3    68.59443 13233.29542</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> g.ate.q4  6632.14260 33210.57632</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Confidence level: point = 95%; region = 90%.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Sensitivity parameters: cf.y = 0.03; cf.d = 0.04; rho2 = 1.</span>

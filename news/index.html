@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dml.sensemakr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.3.9000</span>
       </span>
     </div>
 
@@ -53,6 +53,18 @@
       <small>Source: <a href="https://github.com/carloscinelli/dml.sensemakr/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="development version" id="dmlsensemakr-development-version">dml.sensemakr (development version)<a class="anchor" aria-label="anchor" href="#dmlsensemakr-development-version"></a></h2>
+<ul><li>Package checks now cover the declared testing dependencies, vignettes, and PDF manual. Test fixtures and documentation have been updated for clean, reproducible package development.</li>
+<li>Invalid negative sensitivity scales return unavailable bounds with the diagnostic warning, without an additional square-root warning.</li>
+<li>Regression-only learners no longer request class probabilities. Rigorous lasso uses its declared <code>hdm</code> dependency without trying to attach <code>rlasso</code>.</li>
+<li>The warning about different outcome learners for a partially linear model is emitted once per fit rather than once per cross-fitting fold.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.2.3" id="dmlsensemakr-023">dml.sensemakr 0.2.3<a class="anchor" aria-label="anchor" href="#dmlsensemakr-023"></a></h2>
+<ul><li>Estimates of <code>nu2.s</code> now respect their parameter-space lower bounds in all implemented models and parameterizations, including group-specific effects. The original influence functions are retained, and sensitivity scales are recomputed using the constrained estimates.</li>
+<li>At a zero sensitivity scale, zero-confounding bounds retain the treatment effect standard error. Bound standard errors requiring the square-root delta method are reported as unavailable when confounding is positive.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.0" id="dmlsensemakr-020">dml.sensemakr 0.2.0<a class="anchor" aria-label="anchor" href="#dmlsensemakr-020"></a></h2>
 <ul><li>Initial CRAN submission.</li>
