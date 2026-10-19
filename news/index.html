@@ -55,7 +55,8 @@
 
     <div class="section level2">
 <h2 class="page-header" data-toc-text="development version" id="dmlsensemakr-development-version">dml.sensemakr (development version)<a class="anchor" aria-label="anchor" href="#dmlsensemakr-development-version"></a></h2>
-<ul><li>Package checks now cover the declared testing dependencies, vignettes, and PDF manual. Test fixtures and documentation have been updated for clean, reproducible package development.</li>
+<ul><li>Group-specific estimates now inherit the fitted model’s propensity-score trimming bounds, including groups added later with <code><a href="../reference/dml.html">dml_gate()</a></code>.</li>
+<li>Package checks now cover the declared testing dependencies, vignettes, and PDF manual. Test fixtures and documentation have been updated for clean, reproducible package development.</li>
 <li>Invalid negative sensitivity scales return unavailable bounds with the diagnostic warning, without an additional square-root warning.</li>
 <li>Regression-only learners no longer request class probabilities. Rigorous lasso uses its declared <code>hdm</code> dependency without trying to attach <code>rlasso</code>.</li>
 <li>The warning about different outcome learners for a partially linear model is emitted once per fit rather than once per cross-fitting fold.</li>

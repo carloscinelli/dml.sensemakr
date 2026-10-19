@@ -129,7 +129,7 @@ The function dml_gate is a convenience function that adds groups to a dml object
 
 
 <dt id="arg-ps-trim">ps.trim<a class="anchor" aria-label="anchor" href="#arg-ps-trim"></a></dt>
-<dd><p>trims propensity scores lower than <code>ps.trim</code> and greater than <code>1-ps.trim</code>, in order to obtain more stable estimates. Alternatively, a named list with elements <code>lower</code> and <code>upper</code> specifying the lower and upper bounds for trimming. This is only relevant for the case of a binary treatment and when <code>model = "npm"</code>.</p></dd>
+<dd><p>trims propensity scores lower than <code>ps.trim</code> and greater than <code>1-ps.trim</code>, in order to obtain more stable estimates. Alternatively, a named list with elements <code>lower</code> and <code>upper</code> specifying the lower and upper bounds for trimming. The same bounds are used for main and group-specific estimates, including groups added with <code>dml_gate()</code>. This is only relevant for the case of a binary treatment and when <code>model = "npm"</code>.</p></dd>
 
 
 <dt id="arg-reg">reg<a class="anchor" aria-label="anchor" href="#arg-reg"></a></dt>
