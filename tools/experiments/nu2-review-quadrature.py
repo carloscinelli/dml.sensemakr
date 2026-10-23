@@ -33,7 +33,7 @@ if __name__ == "__main__":
             for order in (160, 320, 640)]
     path = Path("tools/experiments/nu2-review-quadrature.csv")
     with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=rows[0])
+        writer = csv.DictWriter(handle, fieldnames=rows[0], lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     for row in rows:
