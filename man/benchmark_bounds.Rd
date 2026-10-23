@@ -72,6 +72,15 @@ bounds that \emph{propagate the estimation uncertainty of the benchmarked
 gains}. Both the fixed-gain and the propagated bounds are
 returned so the two can be compared.
 }
+\details{
+An explicitly zero \code{kY}, \code{kD}, or fixed \code{rho2} gives the
+ordinary treatment-effect confidence bounds without requiring benchmark
+gains or their influence functions. For positive requested strength, an
+undefined gain remains unavailable; it is not treated as an estimated zero.
+Propagated normal inference requires regularity of the benchmark gains and
+sensitivity scale. In particular, square-root inference is not generally
+valid at or near a zero centered population scale; see \code{\link{dml}}.
+}
 \examples{
 data("pension")
 set.seed(3); idx <- sample(nrow(pension), 2000)

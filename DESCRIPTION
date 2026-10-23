@@ -42,5 +42,6 @@ VignetteBuilder:
     knitr
 Config/roxygen2/version: 8.0.0
 Config/testthat/edition: 3
+Config/Needs/check-r41: cran::bbotk@1.9.0, cran::mlr3tuning@1.6.1
 Encoding: UTF-8
 LazyData: true

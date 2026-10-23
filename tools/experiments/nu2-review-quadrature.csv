@@ -1,0 +1,4 @@
+order,h,bias_factor,nominal_coverage,coverage_with_all_zero_branches_covered
+160,6,1,0.95,0.9345948137726969
+320,6,1,0.95,0.9345946097806781
+640,6,1,0.95,0.9345946069012124

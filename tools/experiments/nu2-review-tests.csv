@@ -1,0 +1,170 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-01-data.R","01-data","pension dataset loads and has expected structure",6,0,FALSE,FALSE,0,0.04,0,0.04,6
+"test-01-data.R","01-data","Penn dataset loads and has expected structure",5,0,FALSE,FALSE,0,0.0169999999999999,0,0.0180000000000002,5
+"test-01-data.R","01-data","gasdemand dataset loads and has expected structure",4,0,FALSE,FALSE,0,0.0139999999999998,0,0.0140000000000002,4
+"test-02-helpers.R","02-helpers","psi.sd computes standard error from influence function",1,0,FALSE,FALSE,0,0.00599999999999978,0,0.00600000000000023,1
+"test-02-helpers.R","02-helpers","psi.sd returns zero for zero influence function",1,0,FALSE,FALSE,0,0.004,0,0.00499999999999989,1
+"test-02-helpers.R","02-helpers","trim.ps clips propensity scores correctly with numeric trim",3,0,FALSE,FALSE,0,0.0100000000000002,0,0.0100000000000002,3
+"test-02-helpers.R","02-helpers","trim.ps clips propensity scores correctly with list trim",1,0,FALSE,FALSE,0,0.00499999999999989,0,0.00500000000000034,1
+"test-02-helpers.R","02-helpers","trim.ps tracks trimmed indices correctly",5,0,FALSE,FALSE,0,0.0169999999999999,0,0.0169999999999999,5
+"test-02-helpers.R","02-helpers","trim.ps returns no trimmed indices when nothing is trimmed",2,0,FALSE,FALSE,0,0.00600000000000023,0,0.00599999999999978,2
+"test-02-helpers.R","02-helpers","trim.ps errors with bad trim input",2,0,FALSE,FALSE,0,0.0120000000000005,0,0.012,2
+"test-02-helpers.R","02-helpers","bias.factor computes correct value",1,0,FALSE,FALSE,0,0.004,0,0.00499999999999989,1
+"test-02-helpers.R","02-helpers","bias.factor is zero when cf.y is zero",1,0,FALSE,FALSE,0,0.00499999999999989,0,0.004,1
+"test-02-helpers.R","02-helpers","bias.factor is zero when cf.d is zero",1,0,FALSE,FALSE,0,0.004,0,0.00500000000000034,1
+"test-02-helpers.R","02-helpers","bias.factor scales with sqrt(rho2)",1,0,FALSE,FALSE,0,0.00599999999999978,0,0.00499999999999989,1
+"test-02-helpers.R","02-helpers","combine.mean computes correct estimate",3,0,FALSE,FALSE,0,0.00800000000000001,0,0.0089999999999999,3
+"test-02-helpers.R","02-helpers","combine.median computes correct estimate",3,0,FALSE,FALSE,0,0.0170000000000003,0.003,0.0199999999999996,3
+"test-02-helpers.R","02-helpers","combine.mean and combine.median agree for single estimate",2,0,FALSE,FALSE,0,0.00799999999999956,0,0.00800000000000001,2
+"test-02-helpers.R","02-helpers","combine.mean SE incorporates cross-rep variation",2,0,FALSE,FALSE,0,0.00699999999999967,0,0.00700000000000012,2
+"test-02-helpers.R","02-helpers","r2 computes correct R-squared",1,0,FALSE,FALSE,0,0.004,0,0.004,1
+"test-02-helpers.R","02-helpers","r2 returns 0 for constant prediction at mean",1,0,FALSE,FALSE,0,0.004,0,0.00300000000000011,1
+"test-02-helpers.R","02-helpers","r2 floors at 0 for terrible predictions",1,0,FALSE,FALSE,0,0.00399999999999956,0,0.004,1
+"test-02-helpers.R","02-helpers","expand.cmat adds t-value and p-value columns",5,0,FALSE,FALSE,0,0.0169999999999999,0,0.016,5
+"test-02-helpers.R","02-helpers","calc_confint produces correct confidence intervals",2,0,FALSE,FALSE,0,0.00900000000000034,0,0.00800000000000001,2
+"test-02-helpers.R","02-helpers","calc_confint filters by parm argument",2,0,FALSE,FALSE,0,0.00800000000000001,0,0.00800000000000001,2
+"test-02-helpers.R","02-helpers","format_perc formats probabilities as percentages",4,0,FALSE,FALSE,0,0.0110000000000001,0,0.00999999999999979,4
+"test-02-helpers.R","02-helpers","check_r2 validates sensitivity parameters",8,0,FALSE,FALSE,0,0.0219999999999998,0,0.0209999999999999,8
+"test-02-helpers.R","02-helpers","num converts factor to numeric",1,0,FALSE,FALSE,0,0.004,0,0.00299999999999967,1
+"test-02-helpers.R","02-helpers","num returns numeric unchanged",1,0,FALSE,FALSE,0,0.00400000000000045,0,0.004,1
+"test-03-bounds-computation.R","03-bounds-computation","bounds() computes correct bias bound and adjusted estimates",12,0,FALSE,FALSE,0,0.0329999999999999,0,0.032,12
+"test-03-bounds-computation.R","03-bounds-computation","bounds() warns when nu2 is negative",3,0,FALSE,FALSE,0,0.0169999999999999,0,0.016,3
+"test-03-bounds-computation.R","03-bounds-computation","bounds() with zero sensitivity parameters gives zero bias",3,0,FALSE,FALSE,0,0.0129999999999999,0,0.0139999999999998,3
+"test-03-bounds-computation.R","03-bounds-computation","ate.plm computes correct ATE in simple case",5,0,FALSE,FALSE,0,0.0179999999999998,0,0.0189999999999997,5
+"test-03-bounds-computation.R","03-bounds-computation","ate.npm computes ATE for binary treatment",4,0,FALSE,FALSE,0,0.0219999999999998,0,0.0230000000000001,4
+"test-03-bounds-computation.R","03-bounds-computation","combine.cross.fits produces correct matrix",6,0,FALSE,FALSE,0,0.0230000000000001,0,0.0230000000000001,6
+"test-03-bounds-computation.R","03-bounds-computation","confidence_bounds.numeric computes correct bounds",3,0,FALSE,FALSE,0,0.00800000000000001,0,0.00800000000000001,3
+"test-04-dml-plm.R","04-dml-plm","dml() returns correct class and structure for PLM",6,0,FALSE,FALSE,0,0.579,0.046,0.338,6
+"test-04-dml-plm.R","04-dml-plm","dml() stores data correctly",3,0,FALSE,FALSE,0,0.0220000000000002,0,0.0219999999999998,3
+"test-04-dml-plm.R","04-dml-plm","dml() PLM fits contain predictions",7,0,FALSE,FALSE,0,0.012,0,0.0129999999999999,7
+"test-04-dml-plm.R","04-dml-plm","dml() PLM produces main coefficients",6,0,FALSE,FALSE,0,0.0169999999999999,0.003,0.02,6
+"test-04-dml-plm.R","04-dml-plm","coef.dml returns named vector",3,0,FALSE,FALSE,0,0.00800000000000001,0,0.00700000000000012,3
+"test-04-dml-plm.R","04-dml-plm","coef.dml works with mean and median methods",3,0,FALSE,FALSE,0,0.00599999999999978,0,0.00600000000000023,3
+"test-04-dml-plm.R","04-dml-plm","se.dml returns positive standard errors",3,0,FALSE,FALSE,0,0.00800000000000001,0,0.00800000000000001,3
+"test-04-dml-plm.R","04-dml-plm","confint.dml returns matrix with correct dimensions",3,0,FALSE,FALSE,0,0.0100000000000002,0,0.0110000000000001,3
+"test-04-dml-plm.R","04-dml-plm","confint.dml respects level parameter",1,0,FALSE,FALSE,0,0.00500000000000034,0,0.00599999999999978,1
+"test-04-dml-plm.R","04-dml-plm","summary.dml returns correct class",1,0,FALSE,FALSE,0,0.004,0,0.004,1
+"test-04-dml-plm.R","04-dml-plm","print.dml does not error",1,0,FALSE,FALSE,0,0.00499999999999989,0,0.00499999999999989,1
+"test-04-dml-plm.R","04-dml-plm","print.summary_dml does not error",1,0,FALSE,FALSE,0,0.00700000000000012,0,0.00699999999999967,1
+"test-04-dml-plm.R","04-dml-plm","dml_bounds returns correct class and structure",6,0,FALSE,FALSE,0,0.0199999999999996,0,0.02,6
+"test-04-dml-plm.R","04-dml-plm","coef.dml.bounds returns matrix",6,0,FALSE,FALSE,0,0.0190000000000001,0,0.0189999999999997,6
+"test-04-dml-plm.R","04-dml-plm","se.dml.bounds returns matrix with positive values",2,0,FALSE,FALSE,0,0.00800000000000001,0,0.00800000000000001,2
+"test-04-dml-plm.R","04-dml-plm","confint.dml.bounds returns a list",2,0,FALSE,FALSE,0,0.00600000000000023,0,0.00700000000000012,2
+"test-04-dml-plm.R","04-dml-plm","summary.dml.bounds does not error",1,0,FALSE,FALSE,0,0.00700000000000012,0,0.00699999999999967,1
+"test-04-dml-plm.R","04-dml-plm","confidence_bounds.dml returns correct structure",5,0,FALSE,FALSE,0,0.0150000000000001,0,0.0150000000000001,5
+"test-04-dml-plm.R","04-dml-plm","confidence_bounds.dml.bounds returns correct structure",4,0,FALSE,FALSE,0,0.0150000000000001,0.00499999999999998,0.02,4
+"test-04-dml-plm.R","04-dml-plm","robustness_value.dml returns named numeric",3,0,FALSE,FALSE,0,0.0279999999999996,0,0.028,3
+"test-04-dml-plm.R","04-dml-plm","robustness_value.dml.bounds returns named numeric",3,0,FALSE,FALSE,0,0.0230000000000001,0,0.024,3
+"test-04-dml-plm.R","04-dml-plm","sensemakr.dml returns correct class",5,0,FALSE,FALSE,0,0.0390000000000001,0.004,0.0420000000000003,5
+"test-04-dml-plm.R","04-dml-plm","print.dml.sensemakr does not error",1,0,FALSE,FALSE,0,0.0310000000000001,0,0.032,1
+"test-04-dml-plm.R","04-dml-plm","summary.dml.sensemakr does not error",1,0,FALSE,FALSE,0,0.0459999999999998,0,0.0459999999999998,1
+"test-05-dml-npm.R","05-dml-npm","dml() NPM returns correct structure",2,0,FALSE,FALSE,0,0.492,0.016,0.361,2
+"test-05-dml-npm.R","05-dml-npm","dml() NPM fits have yhat0 and yhat1 predictions",8,0,FALSE,FALSE,0,0.0149999999999997,0,0.016,8
+"test-05-dml-npm.R","05-dml-npm","dml() with groups produces group coefficients",2,0,FALSE,FALSE,0,0.00799999999999912,0,0.00800000000000001,2
+"test-05-dml-npm.R","05-dml-npm","coef.dml returns both ATE and GATE",2,0,FALSE,FALSE,0,0.00800000000000001,0,0.00800000000000001,2
+"test-05-dml-npm.R","05-dml-npm","se.dml returns SEs for ATE and GATE",3,0,FALSE,FALSE,0,0.0119999999999996,0,0.0120000000000005,3
+"test-05-dml-npm.R","05-dml-npm","confint.dml with groups has correct number of rows",1,0,FALSE,FALSE,0,0.00600000000000023,0,0.00600000000000023,1
+"test-05-dml-npm.R","05-dml-npm","dml_bounds with groups produces group bounds",2,0,FALSE,FALSE,0,0.00800000000000001,0,0.00900000000000034,2
+"test-05-dml-npm.R","05-dml-npm","coef.dml.bounds with groups returns matrix with GATE rows",3,0,FALSE,FALSE,0,0.0120000000000005,0.001,0.0120000000000005,3
+"test-05-dml-npm.R","05-dml-npm","confidence_bounds with groups returns multi-row matrix",3,0,FALSE,FALSE,0,0.016,0,0.0150000000000006,3
+"test-05-dml-npm.R","05-dml-npm","sensemakr with groups works correctly",2,0,FALSE,FALSE,0,0.0999999999999996,0.001,0.101,2
+"test-05-dml-npm.R","05-dml-npm","plot.dml does not error for NPM",1,0,FALSE,FALSE,0,0.0329999999999995,0,0.0330000000000004,1
+"test-05-dml-npm.R","05-dml-npm","plot.dml.bounds does not error",1,0,FALSE,FALSE,0,0.0259999999999998,0,0.0259999999999998,1
+"test-05-dml-npm.R","05-dml-npm","coef_plot returns a ggplot object",1,0,FALSE,FALSE,0,0.0190000000000001,0,0.0190000000000001,1
+"test-05-dml-npm.R","05-dml-npm","ovb_contour_plot does not error",1,0,FALSE,FALSE,0,0.518,0.002,0.519,1
+"test-06-benchmarks.R","06-benchmarks","dml_benchmark returns correct class",1,0,FALSE,FALSE,0,0.744,0.059,0.406000000000001,1
+"test-06-benchmarks.R","06-benchmarks","dml_benchmark with multiple covariates",1,0,FALSE,FALSE,0,0.656000000000001,0.025,0.386,1
+"test-06-benchmarks.R","06-benchmarks","summary.dml_benchmark does not error",1,0,FALSE,FALSE,0,0.274999999999999,0.001,0.194,1
+"test-07-edge-cases.R","07-edge-cases","dml() errors on invalid model",1,0,FALSE,FALSE,0,0.0150000000000006,0,0.0149999999999997,1
+"test-07-edge-cases.R","07-edge-cases","caretArgs handles string input",3,0,FALSE,FALSE,0,0.00999999999999979,0,0.00899999999999945,3
+"test-07-edge-cases.R","07-edge-cases","caretArgs handles list input",2,0,FALSE,FALSE,0,0.00599999999999934,0,0.00599999999999934,2
+"test-07-edge-cases.R","07-edge-cases","combine.cross.fits with single repetition",2,0,FALSE,FALSE,0,0.00800000000000001,0,0.00699999999999967,2
+"test-07-edge-cases.R","07-edge-cases","confidence_bounds.dml.bounds respects return parameter",5,0,FALSE,FALSE,0,0.537999999999999,0.037,0.429,5
+"test-07-edge-cases.R","07-edge-cases","confidence_bounds.dml.bounds recomputes with new parameters",1,0,FALSE,FALSE,0,0.220000000000001,0.016,0.14,1
+"test-07-edge-cases.R","07-edge-cases","robustness_value returns 0 when CI includes theta",1,0,FALSE,FALSE,0,0.189,0.00999999999999995,0.154,1
+"test-08-401k.R","08-401k","401k PLM supports group estimates and sensitivity plots",4,0,FALSE,FALSE,0,37.183,0.625,10.625,4
+"test-09-darfur.R","09-darfur","Darfur NPM supports factor covariates and benchmarking",4,0,FALSE,FALSE,0,363.407,1.548,70.82,4
+"test-10-rlasso.R","10-rlasso","rigorous lasso fits a partially linear effect",4,0,FALSE,FALSE,0,0.089,0.004,0.093,4
+"test-11-conditional.R","11-conditional","dml() auto-sets conditional = TRUE for a single npm att/atu target",2,0,FALSE,FALSE,0,0.865999999999985,0.0449999999999999,0.670999999999992,2
+"test-11-conditional.R","11-conditional","conditional ATT populates the 'treat' slot and not 'untr'",2,0,FALSE,FALSE,0,0.00799999999998136,0,0.00799999999999557,2
+"test-11-conditional.R","11-conditional","conditional ATU populates the 'untr' slot and not 'treat'",2,0,FALSE,FALSE,0,0.007000000000005,0,0.007000000000005,2
+"test-11-conditional.R","11-conditional","conditional ATT produces finite short parameters with positive SEs",4,0,FALSE,FALSE,0,0.0130000000000337,0,0.0120000000000005,4
+"test-11-conditional.R","11-conditional","centered leaves theta.s and sigma2.s unchanged and shifts nu2.s by exactly 1",3,0,FALSE,FALSE,0,0.00899999999995771,0,0.00900000000000034,3
+"test-11-conditional.R","11-conditional","dml_bounds, robustness_value and extreme_robustness_value run on conditional ATT",3,0,FALSE,FALSE,0,0.0080000000000382,0,0.00799999999999557,3
+"test-11-conditional.R","11-conditional","conditional = TRUE is disabled with a warning for plm",2,0,FALSE,FALSE,0,0.159000000000049,0.0389999999999997,0.113,2
+"test-12-benchmark-bounds.R","12-benchmark-bounds","benchmark_bounds returns a dml_benchmark_bounds data frame",3,0,FALSE,FALSE,0,0.435999999999979,0.0220000000000002,0.277000000000001,3
+"test-12-benchmark-bounds.R","12-benchmark-bounds","benchmark_bounds point bounds and confidence bounds are ordered",7,0,FALSE,FALSE,0,0.23399999999998,0.0229999999999997,0.163000000000011,7
+"test-12-benchmark-bounds.R","12-benchmark-bounds","benchmark_bounds accepts a dml_benchmark object",1,0,FALSE,FALSE,0,0.231999999999971,0.0100000000000002,0.156000000000006,1
+"test-12-benchmark-bounds.R","12-benchmark-bounds","benchmark_bounds returns -Inf/Inf with a warning when kD * gain.D >= 1",7,0,FALSE,FALSE,0,0.271000000000015,0.0329999999999999,0.197000000000003,7
+"test-12-benchmark-bounds.R","12-benchmark-bounds","benchmark_bounds rejects rho2 outside [0, 1]",1,0,FALSE,FALSE,0,0.00599999999997181,0,0.00600000000000023,1
+"test-12-benchmark-bounds.R","12-benchmark-bounds","print.dml_benchmark_bounds does not error",1,0,FALSE,FALSE,0,0.319999999999993,0.0169999999999999,0.192999999999998,1
+"test-13-xrv.R","13-xrv","extreme_robustness_value returns a named numeric in [0, 1]",3,0,FALSE,FALSE,0,0.423000000000002,0.052,0.295000000000002,3
+"test-13-xrv.R","13-xrv","extreme_robustness_value at alpha = 1 matches the closed form f0^2 / (1 + f0^2)",1,0,FALSE,FALSE,0,0.00499999999999545,0,0.00399999999999068,1
+"test-13-xrv.R","13-xrv","extreme_robustness_value is ~0 when the confidence bound includes theta",1,0,FALSE,FALSE,0,0.0040000000000191,0,0.00400000000000489,1
+"test-14-dml-gate.R","14-dml-gate","dml_gate() attaches group ATEs to a fitted dml object",3,0,FALSE,FALSE,0,0.638000000000034,0.0760000000000001,0.39800000000001,3
+"test-14-dml-gate.R","14-dml-gate","dml_gate() reproduces the inline groups= estimates",3,0,FALSE,FALSE,0,0.0110000000000241,0,0.0109999999999957,3
+"test-14-dml-gate.R","14-dml-gate","a group containing everyone reproduces the ATE with the same trimming",9,0,FALSE,FALSE,0,0.376000000000033,0,0.376000000000005,9
+"test-14-dml-gate.R","14-dml-gate","all npm group targets inherit the fitted propensity-score bounds",10,0,FALSE,FALSE,0,0.284999999999968,0,0.286000000000001,10
+"test-14-dml-gate.R","14-dml-gate","dml_gate() recovers trimming from older fits and permits an override",3,0,FALSE,FALSE,0,0.11099999999999,0.00099999999999989,0.113,3
+"test-15-atu-theory.R","15-atu-theory","atu.npm.cond is the exact mirror of att.npm.cond",3,0,FALSE,FALSE,0,0.0109999999999673,0,0.0109999999999957,3
+"test-15-atu-theory.R","15-atu-theory","centered leaves ATU theta.s/sigma2.s unchanged and shifts nu2.s by 1",3,0,FALSE,FALSE,0,0.338999999999999,0.052,0.248000000000005,3
+"test-15-atu-theory.R","15-atu-theory","dml_bounds, robustness_value and extreme_robustness_value run on ATU",3,0,FALSE,FALSE,0,0.00799999999998136,0,0.00900000000000034,3
+"test-15-atu-theory.R","15-atu-theory","dml_benchmark on a conditional fit matches the gain-metric formulas",5,0,FALSE,FALSE,0,0.365999999999985,0.0350000000000001,0.283999999999992,5
+"test-16-benchmark-sign.R","16-benchmark-sign","unconditional ATT rho aligns with ATE and ATU",8,0,FALSE,FALSE,0,0.953000000000031,0,0.952999999999989,8
+"test-16-benchmark-sign.R","16-benchmark-sign","conditional ATT keeps the opposite (DiD-mirror) rho sign",5,0,FALSE,FALSE,0,0.647999999999968,0.00099999999999989,0.649000000000001,5
+"test-17-review-fixes.R","17-review-fixes","plm fit with dirty tuning keeps the yreg0/yreg1 record and summary reports the learner",3,0,FALSE,FALSE,0,2.006,0.199,1.363,3
+"test-17-review-fixes.R","17-review-fixes","dml_benchmark resolves the stored call in the user's environment",2,0,FALSE,FALSE,0,0.0220000000000002,0,0.0219999999999998,2
+"test-17-review-fixes.R","17-review-fixes","plm with target 'att' warns and reports the ATE instead of crashing",4,0,FALSE,FALSE,0,0.406000000000001,0.03,0.241,4
+"test-17-review-fixes.R","17-review-fixes","summary.dml_benchmark drops NA repetitions when na.rm = TRUE",2,0,FALSE,FALSE,0,0.0119999999999996,0,0.0119999999999996,2
+"test-17-review-fixes.R","17-review-fixes","conditional ATT fit has no stale unconditional 'all' slot",5,0,FALSE,FALSE,0,0.0209999999999999,0,0.0210000000000008,5
+"test-17-review-fixes.R","17-review-fixes","requesting groups keeps the conditional parameterization for the main target",8,0,FALSE,FALSE,0,0.395,0.043,0.269,8
+"test-17-review-fixes.R","17-review-fixes","dml_gate reproduces the inline groups= estimates on a conditional fit",2,0,FALSE,FALSE,0,0.00900000000000034,0,0.00900000000000034,2
+"test-17-review-fixes.R","17-review-fixes","unconditional and centered parameterizations remain reachable",4,0,FALSE,FALSE,0,0.711,0.04,0.481,4
+"test-17-review-fixes.R","17-review-fixes","extreme_robustness_value at alpha = 1 scales with rho2",2,0,FALSE,FALSE,0,0.0120000000000005,0,0.0120000000000005,2
+"test-17-review-fixes.R","17-review-fixes","extreme_robustness_value at alpha = 1 handles gate rows",3,0,FALSE,FALSE,0,0.0129999999999999,0.001,0.0129999999999999,3
+"test-17-review-fixes.R","17-review-fixes","extreme_robustness_value short-circuits to an exact 0",1,0,FALSE,FALSE,0,0.00700000000000056,0,0.00700000000000056,1
+"test-17-review-fixes.R","17-review-fixes","benchmark_bounds with a zero multiplier returns the plain CI",9,0,FALSE,FALSE,0,0.0460000000000003,0,0.0460000000000003,9
+"test-17-review-fixes.R","17-review-fixes","benchmark_bounds accepts one k per benchmark covariate",5,0,FALSE,FALSE,0,0.0309999999999997,0,0.032,5
+"test-17-review-fixes.R","17-review-fixes","conditional ATT never trains the treated-arm outcome model",3,0,FALSE,FALSE,0,0.0110000000000001,0.004,0.0140000000000002,3
+"test-17-review-fixes.R","17-review-fixes","contour and sensemakr plots work on conditional and grouped fits",4,0,FALSE,FALSE,0,1.673,0.01,1.684,4
+"test-17-review-fixes.R","17-review-fixes","conditional/centered come after all 0.2.0 parameters",3,0,FALSE,FALSE,0,0.00499999999999989,0,0.00599999999999934,3
+"test-17-review-fixes.R","17-review-fixes","collect.trimmed.obs keeps a single trimmed row as a matrix",3,0,FALSE,FALSE,0,0.00800000000000001,0,0.00800000000000001,3
+"test-17-review-fixes.R","17-review-fixes","each requested target gets its own group block",3,0,FALSE,FALSE,0,0.296999999999999,0.033,0.207,3
+"test-17-review-fixes.R","17-review-fixes","group rows carry the estimand and the level in their names",2,0,FALSE,FALSE,0,0.00999999999999979,0,0.00999999999999979,2
+"test-17-review-fixes.R","17-review-fixes","a group that cannot identify the target returns NA with a warning",3,0,FALSE,FALSE,0,0.491999999999999,0.00800000000000001,0.426,3
+"test-17-review-fixes.R","17-review-fixes","call.env stores the call's variables, not the caller's frame",2,0,FALSE,FALSE,0,0.299999999999999,0.00800000000000001,0.162,2
+"test-17-review-fixes.R","17-review-fixes","the default contour parameter follows a multi-target fit",1,0,FALSE,FALSE,0,0.731,0.038,0.669,1
+"test-17-review-fixes.R","17-review-fixes","a conditional fit does not build the estimand it discards",2,0,FALSE,FALSE,0,0.00399999999999956,0,0.00399999999999956,2
+"test-17-review-fixes.R","17-review-fixes","combine.median matches the CCDDHNR median rule",2,0,FALSE,FALSE,0,0.00699999999999967,0,0.00699999999999967,2
+"test-17-review-fixes.R","17-review-fixes","combine.median does not inflate the SE as repetitions grow",1,0,FALSE,FALSE,0,0.00300000000000011,0,0.00300000000000011,1
+"test-17-review-fixes.R","17-review-fixes","combine.mean matches the CCDDHNR mean rule",1,0,FALSE,FALSE,0,0.00399999999999956,0,0.00399999999999956,1
+"test-17-review-fixes.R","17-review-fixes","d.class = TRUE gives a usable propensity score and finite ATT/ATU",4,0,FALSE,FALSE,0,0.215,0.000999999999999945,0.217000000000001,4
+"test-17-review-fixes.R","17-review-fixes","benchmark_bounds separates a missing gain from a zero gain",9,0,FALSE,FALSE,0,0.712999999999999,0.036,0.494,9
+"test-17-review-fixes.R","17-review-fixes","plm fits the requested outcome learner under both tuning settings",16,0,FALSE,FALSE,0,0.834999999999999,0.015,0.850000000000001,16
+"test-17-review-fixes.R","17-review-fixes","plm warns once per fit when the two outcome arms differ",3,0,FALSE,FALSE,0,0.318000000000001,0.005,0.323,3
+"test-17-review-fixes.R","17-review-fixes","npm fits the requested outcome learner under both tuning settings",2,0,FALSE,FALSE,0,0.286,0.005,0.291,2
+"test-17-review-fixes.R","17-review-fixes","combine.mean drops incomplete pairs, matching combine.median",2,0,FALSE,FALSE,0,0.00700000000000145,0,0.00699999999999967,2
+"test-17-review-fixes.R","17-review-fixes","benchmark_bounds clamps level at 0.5 like confidence_bounds",4,0,FALSE,FALSE,0,0.572000000000001,0.0509999999999999,0.446,4
+"test-17-review-fixes.R","17-review-fixes","extreme_robustness_value accepts a dml.bounds object",2,0,FALSE,FALSE,0,0.420999999999999,0.029,0.304,2
+"test-17-review-fixes.R","17-review-fixes","dml.bounds print names the estimand, not the internal slot",2,0,FALSE,FALSE,0,0.231,0.037,0.166,2
+"test-18-sensemakr-bounds.R","18-sensemakr-bounds","sensemakr builds the postulated and benchmark tables",19,0,FALSE,FALSE,0,0.386000000000024,0.0180000000000002,0.297999999999988,19
+"test-18-sensemakr-bounds.R","18-sensemakr-bounds","asymmetric multipliers get an unambiguous label",3,0,FALSE,FALSE,0,0.240999999999985,0.0529999999999999,0.149999999999991,3
+"test-18-sensemakr-bounds.R","18-sensemakr-bounds","a diverging multiplier shows infinite bounds",3,0,FALSE,FALSE,0,0.215000000000032,0.0179999999999998,0.158000000000001,3
+"test-18-sensemakr-bounds.R","18-sensemakr-bounds","multi-target fits warn and keep the postulated rows per target",4,0,FALSE,FALSE,0,0.283000000000015,0.0230000000000001,0.183999999999997,4
+"test-18-sensemakr-bounds.R","18-sensemakr-bounds","no cf.y and no benchmarks means no bounds tables",3,0,FALSE,FALSE,0,0.0250000000000341,0,0.0250000000000057,3
+"test-21-nu2-floors.R","21-nu2-floors","unconditional binary floors propagate their sample share",30,0,FALSE,FALSE,0,0.0910000000000082,0,0.090999999999994,30
+"test-21-nu2-floors.R","21-nu2-floors","conditional constant floors have zero scores and preserve symmetry",62,0,FALSE,FALSE,0,0.148000000000025,0.004,0.152000000000001,62
+"test-21-nu2-floors.R","21-nu2-floors","PLM floors use empirical treatment variance with divisor n",18,0,FALSE,FALSE,0,0.0400000000000205,0,0.0400000000000063,18
+"test-21-nu2-floors.R","21-nu2-floors","estimates above their floors are unchanged",11,0,FALSE,FALSE,0,0.0379999999999541,0,0.0369999999999919,11
+"test-21-nu2-floors.R","21-nu2-floors","group estimates use their own floors in every parameterization",56,0,FALSE,FALSE,0,0.141999999999996,0,0.143000000000001,56
+"test-21-nu2-floors.R","21-nu2-floors","zero centered scale gives explicit unavailable SEs except at zero confounding",21,0,FALSE,FALSE,0,0.0489999999999782,0,0.0490000000000066,21
+"test-21-nu2-floors.R","21-nu2-floors","undefined conditional parameters are not converted to finite estimates",1,0,FALSE,FALSE,0,0.0040000000000191,0,0.00300000000000011,1
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","binary boundary scores equal the empirical-floor influence function",42,0,FALSE,FALSE,0,0.137,0,0.13600000000001,42
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","PLM boundary scores include variation of the estimated variance floor",4,0,FALSE,FALSE,0,0.0120000000000005,0,0.0109999999999957,4
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","active propensity clipping propagates the empirical-floor uncertainty",5,0,FALSE,FALSE,0,0.0169999999999959,0,0.0169999999999959,5
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","centered conditional scores do not cross the floor through cancellation",8,0,FALSE,FALSE,0,0.0190000000000055,0,0.0200000000000102,8
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","stable centered scores preserve positive values and the uncentered identity",6,0,FALSE,FALSE,0,0.0129999999999768,0,0.0130000000000052,6
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","conditional parameterizations select the same floor before adding one",8,0,FALSE,FALSE,0,0.0200000000000387,0,0.0210000000000008,8
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","numeric confidence bounds retain effect uncertainty at zero confounding",6,0,FALSE,FALSE,0,0.0160000000000196,0,0.0160000000000053,6
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","numeric and score confidence bounds agree at positive and zero scales",4,0,FALSE,FALSE,0,0.0169999999999959,0,0.0169999999999959,4
+"test-22-nu2-boundary-review.R","22-nu2-boundary-review","explicit zero benchmarking strength bypasses undefined relative gains",29,0,FALSE,FALSE,0,0.0729999999999791,0.004,0.078000000000003,29

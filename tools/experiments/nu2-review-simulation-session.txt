@@ -1,0 +1,7 @@
+Reviewed revision: 27f58b4351eb9e13179de7b670517c2f4020d6a1
+R version 4.3.3 (2024-02-29)
+RNG seed: 20261023
+Regular repetitions: 2000
+Regular intervals: two-sided nominal 95%, fixed cf.y=.04, cf.d=.03, rho2=1.
+Centered-null endpoint diagnostics: BF=1, conditional on a finite reported SE.
+These are Monte Carlo diagnostics under specified data-generating processes.

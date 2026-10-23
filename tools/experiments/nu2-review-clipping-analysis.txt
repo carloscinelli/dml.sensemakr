@@ -1,0 +1,5 @@
+Expanded-source validation max absolute difference: 2.700062395888381e-13
+Asymptotic original nu SE / true SD: 0.2499213762972911
+Asymptotic original endpoint SE / true SD: 0.2689203544567492
+Asymptotic original two-sided endpoint coverage: 0.4018579441967298
+Asymptotic original outward endpoint coverage: 0.6708764589650155

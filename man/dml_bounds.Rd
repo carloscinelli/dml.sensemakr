@@ -80,6 +80,14 @@ For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidenc
 \description{
 Computes confidence bounds on the target parameter of interest accounting for omitted variable biases.
 }
+\details{
+With zero confounding (\code{cf.y = 0}, \code{cf.d = 0}, or
+\code{rho2 = 0}), the endpoints and their standard errors reduce to those
+of the short treatment effect, including when \code{S2 = 0}. For positive
+confounding at zero scale, square-root delta-method standard errors are
+unavailable. A positive estimated scale does not by itself justify normal
+inference near a zero population centered scale; see \code{\link{dml}}.
+}
 \examples{
 data("pension")
 set.seed(3); idx <- sample(nrow(pension), 2000)

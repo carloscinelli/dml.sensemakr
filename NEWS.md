@@ -1,5 +1,17 @@
 # dml.sensemakr (development version)
 
+* Binding `nu2.s` constraints now propagate the influence function of the
+  selected lower bound, including its empirical treatment share or variance.
+  This fixes understated uncertainty when fixed propensity trimming keeps the
+  raw score below an estimated floor. Inactive constraints keep their scores.
+* Conditional ATT/ATU imbalance scores use an algebraically equivalent stable
+  expression near the centered boundary, shared by both parameterizations.
+* Numeric confidence bounds and covariate benchmark bounds preserve treatment
+  effect uncertainty under explicitly zero confounding, including zero scales
+  and irrelevant undefined relative gains.
+* Documentation clarifies the limits of ordinary normal inference at a
+  degenerate imbalance and of square-root inference near a zero centered
+  sensitivity scale.
 * Group-specific estimates now inherit the fitted model's propensity-score
   trimming bounds, including groups added later with `dml_gate()`.
 * Package checks now cover the declared testing dependencies, vignettes, and
