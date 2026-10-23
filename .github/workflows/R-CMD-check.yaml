@@ -24,7 +24,9 @@ jobs:
 
           - {os: windows-latest, r: 'release'}
           # use 4.1 to check with rtools40's older compiler
-          - {os: windows-latest, r: '4.1'}
+          # bbotk >= 1.10 triggers R 4.1's lazy-load database bug for ParamSet
+          # environments; check-r41 selects compatible dependencies.
+          - {os: windows-latest, r: '4.1', needs: 'check, check-r41'}
 
           - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,  r: 'release'}
@@ -51,7 +53,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
-          needs: check
+          needs: ${{ matrix.config.needs || 'check' }}
 
       - uses: r-lib/actions/check-r-package@v2
         with:
