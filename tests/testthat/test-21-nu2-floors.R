@@ -1,4 +1,4 @@
-# Check the scale and its uncertainty against the retained, unconstrained score.
+# Check the scale and its uncertainty against the selected score or floor.
 expect_nu2_scale <- function(result, nu2, psi.nu2) {
   e <- result$estimates
   psi <- result$psis
@@ -13,7 +13,7 @@ expect_nu2_scale <- function(result, nu2, psi.nu2) {
                mean(psi$psi.theta.s * psi.S2) / length(psi.S2))
 }
 
-test_that("unconditional binary floors use the sample share and retain scores", {
+test_that("unconditional binary floors propagate their sample share", {
   d <- c(rep(0, 9), rep(1, 3))
   y <- seq_along(d) / 3
   pi <- ifelse(d == 0, 0.85, 0.15)
@@ -33,7 +33,10 @@ test_that("unconditional binary floors use the sample share and retain scores", 
     psi <- (2 * m - r^2 - (2 * l - 1) * raw) / mean(2 * l - 1)
     expect_lt(raw, floor)
     fit <- dml.sensemakr:::ate.npm(y, d, target, y + 1, y - 1, pi, p)
-    expect_nu2_scale(fit, floor, psi)
+    p.sample <- mean(d)
+    psi.floor <- (2 * p.sample - 1) * (d - p.sample) /
+      (p.sample^2 * (1 - p.sample)^2)
+    expect_nu2_scale(fit, floor, psi.floor)
     b <- dml.sensemakr:::bounds(fit)
     expect_true(all(is.finite(unlist(b$estimates))))
     expect_equal(b$estimates$bias.bound,
@@ -41,7 +44,7 @@ test_that("unconditional binary floors use the sample share and retain scores", 
   }
 })
 
-test_that("conditional floors preserve ATT and ATU scores and symmetry", {
+test_that("conditional constant floors have zero scores and preserve symmetry", {
   d <- c(rep(0, 9), rep(1, 3))
   y <- seq_along(d) / 3
   pi <- ifelse(d == 0, 0.85, 0.15)
@@ -61,8 +64,8 @@ test_that("conditional floors preserve ATT and ATU scores and symmetry", {
       atu <- dml.sensemakr:::atu.npm.cond(y, 1 - dd, yhat1 = y / 2,
                                          dhat = 1 - pp, phat = 1 - p,
                                          centered = centered)
-      expect_nu2_scale(att, if (centered) 0 else 1, psi)
-      expect_nu2_scale(atu, if (centered) 0 else 1, psi)
+      expect_nu2_scale(att, if (centered) 0 else 1, numeric(length(d)))
+      expect_nu2_scale(atu, if (centered) 0 else 1, numeric(length(d)))
       expect_equal(atu$estimates$theta.s, -att$estimates$theta.s)
     }
   }
@@ -77,7 +80,8 @@ test_that("PLM floors use empirical treatment variance with divisor n", {
     floor <- 1 / mean((d - mean(d))^2)
     fit <- dml.sensemakr:::ate.plm(y, d, rep(0, length(d)), dhat)
     expect_lt(raw, floor)
-    expect_nu2_scale(fit, floor, psi)
+    psi.floor <- floor - (d - mean(d))^2 * floor^2
+    expect_nu2_scale(fit, floor, psi.floor)
     # Only the sensitivity scale changes, not the treatment effect.
     expect_equal(fit$estimates$theta.s, mean(y * (d - dhat)) / mean((d - dhat)^2))
   }

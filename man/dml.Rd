@@ -100,11 +100,27 @@ For unconditional binary-treatment models the lower bound is
 \eqn{1/[\hat p(1-\hat p)]}, where \eqn{\hat p} is the sample treatment share.
 For partially linear models it is the reciprocal of the empirical treatment
 variance, computed with divisor \eqn{n}. Group-specific estimates use the
-corresponding within-group share or variance. The original influence
-functions are retained; sensitivity scales use the constrained estimates.
+corresponding within-group share or variance. When a finite estimate is
+below its finite lower bound, inference uses the influence function of
+that bound, including uncertainty in the empirical share or variance.
+Constant conditional floors have zero influence function. Otherwise the
+original score is used. Sensitivity scales use the constrained estimates.
+With consistent nuisance estimates, the original and lower-bound influence
+functions coincide at population equality. This correction also propagates
+the empirical floor when propensity trimming keeps the raw score below it;
+it does not generally correct misspecified nuisance functions or inadequate
+overlap.
 In the centered conditional model, a zero sensitivity scale gives zero
 point-estimate bias. When confounding is positive, bound standard errors
 requiring the square-root delta method are unavailable at that scale.
+A positive estimated centered scale alone does not ensure valid normal
+inference at or near a population value of zero: the square root is
+nonregular there. For positive confounding, normal endpoint inference
+requires a positive population scale and nondegenerate endpoint variance,
+together with the usual nuisance-rate conditions. The uncentered conditional
+parameterization avoids the zero imbalance scale when the outcome residual
+variance is positive. A zero first-order variance for \code{nu2.s} itself
+also does not justify a studentized normal interval for that quantity.
 }
 \examples{
 # loads package

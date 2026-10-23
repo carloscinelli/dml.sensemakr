@@ -130,6 +130,14 @@ print.summary_dml_benchmark <- function(x, digits = max(3L, getOption("digits") 
 ##'   dropped before the repetitions are combined? Default is \code{TRUE}. With
 ##'   \code{FALSE}, a single failed repetition makes the combined gain
 ##'   \code{NA}.
+##' @details
+##' An explicitly zero \code{kY}, \code{kD}, or fixed \code{rho2} gives the
+##' ordinary treatment-effect confidence bounds without requiring benchmark
+##' gains or their influence functions. For positive requested strength, an
+##' undefined gain remains unavailable; it is not treated as an estimated zero.
+##' Propagated normal inference requires regularity of the benchmark gains and
+##' sensitivity scale. In particular, square-root inference is not generally
+##' valid at or near a zero centered population scale; see \code{\link{dml}}.
 ##' @returns An object of class \code{dml_benchmark_bounds} (a data frame, one row
 ##'   per benchmark covariate) with the bias factor \code{BF}, the point bounds
 ##'   \code{theta.minus}/\code{theta.plus}, the fixed-gain confidence bounds
@@ -209,6 +217,21 @@ benchmark_bounds <- function(model, benchmark, kY = 1, kD = 1, rho2 = NULL,
     kD   <- kD.j[j]
     est  <- bench$benchmarks[[v]]
     psis <- bench$benchmarks_psis[[v]]
+
+    # A user-specified zero strength fixes the bias at zero, even when a
+    # centered model has an undefined relative gain (for example, 0 / 0).
+    # No gain or gain influence function enters this bound.
+    if (isTRUE(kY == 0) || isTRUE(kD == 0) ||
+        (rho2.fixed && isTRUE(rho2 == 0))) {
+      se.th <- vapply(post, function(x) psi.sd(x$psis$psi.theta.s), numeric(1))
+      ct <- combine(theta.s.rep, se.th)
+      th <- unname(ct["estimate"])
+      se <- unname(ct["se"])
+      return(data.frame(BF = 0, theta.minus = th, theta.plus = th,
+                        lwr.fixed = th - z * se, upr.fixed = th + z * se,
+                        lwr = th - z * se, upr = th + z * se,
+                        se.minus = se, se.plus = se, row.names = v))
+    }
 
     # combined benchmark gains -> the (fixed) bias factor, as in confidence_bounds()
     GY <- cmb(est$gain.Y); GD <- cmb(est$gain.D)

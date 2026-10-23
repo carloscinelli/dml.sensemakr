@@ -1,0 +1,2 @@
+"h","repetitions","finite.se.rate","available.lower.coverage95.outward","available.upper.coverage95.outward","lower.coverage.if.NA.always.covered","upper.coverage.if.NA.always.covered"
+6,1000000,0.997242,0.93454447365835,0.934818228674685,0.934725,0.934998

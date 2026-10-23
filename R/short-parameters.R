@@ -55,31 +55,20 @@ att.npm.cond <- function(y, d,
 
   # nu2.0s  =  conditional imbalance (propensity-score based)
 
-  if (centered) {
-    nu2.0s <- mean(
-      (d * (phat - dhat.t) * (phat + dhat.t - 2) +
-         (phat^2) * (1 - 2 * dhat.t) -
-         (dhat.t^2) * (1 - 2 * phat)) /
-        ((phat^2) * (1 - phat) * (1 - dhat.t)^2)) / mean(2 * l - lc)
-
-    psi.nu2.0s <- (
-      (d * (phat - dhat.t) * (phat + dhat.t - 2) +
-         (phat^2) * (1 - 2 * dhat.t) -
-         (dhat.t^2) * (1 - 2 * phat)) /
-        ((phat^2) * (1 - phat) * (1 - dhat.t)^2) -
-        (2 * l - lc) * nu2.0s
-    ) / mean(2 * l - lc)
-  } else {
-    OX <- dhat.t / (1 - dhat.t)
-    O  <- phat   / (1 - phat)
-    nu2.0s     <- mean(2 * l * (OX / O) - lc * (OX / O)^2) /
-                  mean(2 * l - lc)
-    psi.nu2.0s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.0s) /
-                  mean(2 * l - lc)
+  # Write r - 1 directly, where r is the normalized odds ratio. Expanding
+  # the centered score as a polynomial in phat and dhat loses precision
+  # near r = 1 and can put a negative score on the wrong side of the floor.
+  # Both parameterizations share this score and the same floor decision.
+  delta <- (dhat.t - phat) / (phat * (1 - dhat.t))
+  num.nu <- 2 * (l - lc) * delta - lc * delta^2
+  nu2.centered <- mean(num.nu) / mean(2 * l - lc)
+  psi.nu2.0s <- (num.nu - (2 * l - lc) * nu2.centered) / mean(2 * l - lc)
+  # An active constant floor has zero influence function. At population
+  # equality the original score also has zero first-order variation.
+  if (is.finite(nu2.centered) && nu2.centered < 0) {
+    psi.nu2.0s <- numeric(length(d))
   }
-
-  # Impose the parameter-space bound after computing the original score.
-  nu2.0s <- max(nu2.0s, if (centered) 0 else 1)
+  nu2.0s <- max(nu2.centered, 0) + if (centered) 0 else 1
 
   # S02 = sigma2.0s * nu2.0s
   S02     <- sigma2.0s * nu2.0s
@@ -164,31 +153,15 @@ atu.npm.cond <- function(y, d,
 
   # nu2.1s  =  conditional imbalance (propensity-score based)
 
-  if (centered) {
-    # ATT centered imbalance with p -> 1-p, pi -> 1-pi, D -> 1-D
-    pa <- 1 - phat     # 1 - p
-    ba <- 1 - dhat.t   # 1 - pi(X)
-    da <- 1 - d        # 1 - D
-    num.nu <- (da * (pa - ba) * (pa + ba - 2) +
-                 (pa^2) * (1 - 2 * ba) -
-                 (ba^2) * (1 - 2 * pa)) /
-              ((pa^2) * (1 - pa) * (1 - ba)^2)
-
-    nu2.1s     <- mean(num.nu) /
-                  mean(2 * l - lc)
-    psi.nu2.1s <- (num.nu - (2 * l - lc) * nu2.1s) /
-                  mean(2 * l - lc)
-  } else {
-    OX <- (1 - dhat.t) / dhat.t   # (1 - pi)/pi  = 1 / O_X
-    O  <- (1 - phat)   / phat     # (1 - p)/p    = 1 / O
-    nu2.1s     <- mean(2 * l * (OX / O) - lc * (OX / O)^2) /
-                  mean(2 * l - lc)
-    psi.nu2.1s <- (2 * l * (OX / O) - lc * (OX / O)^2 - (2 * l - lc) * nu2.1s) /
-                  mean(2 * l - lc)
+  # Center the normalized inverse odds directly, mirroring the ATT score.
+  delta <- (phat - dhat.t) / ((1 - phat) * dhat.t)
+  num.nu <- 2 * (l - lc) * delta - lc * delta^2
+  nu2.centered <- mean(num.nu) / mean(2 * l - lc)
+  psi.nu2.1s <- (num.nu - (2 * l - lc) * nu2.centered) / mean(2 * l - lc)
+  if (is.finite(nu2.centered) && nu2.centered < 0) {
+    psi.nu2.1s <- numeric(length(d))
   }
-
-  # Impose the parameter-space bound after computing the original score.
-  nu2.1s <- max(nu2.1s, if (centered) 0 else 1)
+  nu2.1s <- max(nu2.centered, 0) + if (centered) 0 else 1
 
   # S12 = sigma2.1s * nu2.1s
   S12     <- sigma2.1s * nu2.1s
@@ -314,9 +287,14 @@ ate.npm <- function(y, d, parameter = "all",
   psi.nu2.s    <-  (2*Msa  - RRs^2 - (2 * l - 1) * nu2.s) / mean(2 * l - 1)
 
   # Use the empirical treatment share, including within group-specific calls.
-  # Keep the original influence function, including its share variation.
+  # When the floor is active, propagate its estimated share. This matters
+  # when fixed propensity clipping keeps the raw score below the floor.
   p <- mean(d)
-  nu2.s <- max(nu2.s, 1 / (p * (1 - p)))
+  nu2.lower <- 1 / (p * (1 - p))
+  if (is.finite(nu2.s) && is.finite(nu2.lower) && nu2.s < nu2.lower) {
+    psi.nu2.s <- (2 * p - 1) * (d - p) / (p^2 * (1 - p)^2)
+  }
+  nu2.s <- max(nu2.s, nu2.lower)
 
   # S2
   S2           <- sigma2.s*nu2.s
@@ -367,8 +345,13 @@ ate.plm <- function(y, d, yhat, dhat){
   psi.nu2.s      <- nu2.s - (resD)^2 * (nu2.s)^2
 
   # The empirical variance uses divisor n, for binary or continuous treatment.
-  # Apply the bound only after computing the original influence function.
-  nu2.s <- max(nu2.s, 1 / mean((d - mean(d))^2))
+  # Propagate that variance when the floor, rather than the raw score, is used.
+  centered.d2 <- (d - mean(d))^2
+  nu2.lower <- 1 / mean(centered.d2)
+  if (is.finite(nu2.s) && is.finite(nu2.lower) && nu2.s < nu2.lower) {
+    psi.nu2.s <- nu2.lower - centered.d2 * nu2.lower^2
+  }
+  nu2.s <- max(nu2.s, nu2.lower)
 
   # S2
   S2           <- sigma2.s*nu2.s

@@ -92,6 +92,13 @@ get_bounds <- function(bounds, combine.method = "mean"){
 ##' @param combine.method method to combine the results of each repetition. Options are \code{mean} and \code{median}. Default is \code{median}.
 ##' @param level confidence level. Default is \code{0.95}.
 ##' @returns For \code{dml_bounds}: an object of class \code{dml.bounds}. For \code{confidence_bounds}: a matrix or numeric vector of confidence bounds.
+##' @details
+##' With zero confounding (\code{cf.y = 0}, \code{cf.d = 0}, or
+##' \code{rho2 = 0}), the endpoints and their standard errors reduce to those
+##' of the short treatment effect, including when \code{S2 = 0}. For positive
+##' confounding at zero scale, square-root delta-method standard errors are
+##' unavailable. A positive estimated scale does not by itself justify normal
+##' inference near a zero population centered scale; see \code{\link{dml}}.
 ##' @references
 ##'   Chernozhukov, V., Cinelli, C., Newey, W., Sharma, A., and Syrgkanis, V.
 ##'   (2026). "Long Story Short: Omitted Variable Bias in Causal Machine Learning."
@@ -179,10 +186,20 @@ confidence_bounds.numeric <- function(theta.s, S2,
                                       combine.method = "median",
                                       level = 0.95, ...){
   k = bias.factor(cf.y = cf.y, cf.d = cf.d, rho2 = rho2)
-  se.m <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 - (k/sqrt(S2))*cov.theta.S2)
-  se.p <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 + (k/sqrt(S2))*cov.theta.S2)
-  theta.m <- theta.s - k*sqrt(S2)
-  theta.p <- theta.s + k*sqrt(S2)
+  if (isTRUE(k == 0)) {
+    # The scale and its uncertainty do not enter a zero-confounding bound.
+    # In particular, avoid 0/0 when a centered conditional scale is zero.
+    se.m <- se.p <- se.theta.s
+    theta.m <- theta.p <- theta.s
+  } else {
+    se.m <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 - (k/sqrt(S2))*cov.theta.S2)
+    se.p <- sqrt((se.theta.s)^2 + (k^2/(4*S2))*se.S2^2 + (k/sqrt(S2))*cov.theta.S2)
+    # Match bounds(): the square-root delta method is unavailable at zero.
+    se.m[!is.na(S2) & S2 == 0] <- NA_real_
+    se.p[!is.na(S2) & S2 == 0] <- NA_real_
+    theta.m <- theta.s - k*sqrt(S2)
+    theta.p <- theta.s + k*sqrt(S2)
+  }
   level[level < 0.5] <- 0.5
   t_crit <- qnorm(level)
   combine <- if (combine.method == "mean") combine.mean else combine.median

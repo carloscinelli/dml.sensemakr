@@ -1,0 +1,3 @@
+"n","h","repetitions","true.centered.nu","finite.se.rate","available.lower.coverage95.outward","available.upper.coverage95.outward","lower.coverage.if.NA.always.covered","upper.coverage.if.NA.always.covered"
+2000,6,4000,0.0733197556008146,0.99525,0.934187390102989,0.926651595076614,0.9345,0.927
+10000,6,4000,0.0144520272982738,0.99525,0.930921878924893,0.940216026124089,0.93125,0.9405
