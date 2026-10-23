@@ -38,6 +38,9 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # ranger requires C++14 but does not request it from R 4.1's C++11 default.
+      # Explicit package standards still override this fallback.
+      R_PKG_CXX_STD: ${{ matrix.config.os == 'windows-latest' && matrix.config.r == '4.1' && '14' || '' }}
 
     steps:
       - uses: actions/checkout@v4
